@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container-fluid">
@@ -9,9 +9,19 @@
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" th:href="@{/records}">Records</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/finance}">Finance</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/academics}">Academics</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF')">
+                    <a class="nav-link" th:href="@{/records}">Records</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')">
+                    <a class="nav-link" th:href="@{/finance}">Finance</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF')">
+                    <a class="nav-link" th:href="@{/academics}">Academics</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('PARENT_GUARDIAN')">
+                    <a class="nav-link" th:href="@{/portal/guardian}">Family Portal</a>
+                </li>
             </ul>
             <form th:action="@{/logout}" method="post">
                 <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>

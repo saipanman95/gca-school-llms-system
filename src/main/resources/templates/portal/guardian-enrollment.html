@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Enrollment Request | GCA School MS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<main class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h1 class="h3 mb-1">Register or reenroll a student</h1>
+                            <p class="text-secondary mb-0">Parents can submit a reenrollment request for an existing student or start a new student application for the next school year.</p>
+                        </div>
+                        <a class="btn btn-outline-primary" th:href="@{/portal/guardian}">Back to portal</a>
+                    </div>
+                    <form method="post" th:action="@{/portal/guardian/enrollment}" th:object="${form}">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Request type</label>
+                                <select class="form-select" th:field="*{requestType}">
+                                    <option th:each="type : ${requestTypes}" th:value="${type}" th:text="${type}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">School year</label>
+                                <input class="form-control" th:field="*{schoolYear}" type="text">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Existing student</label>
+                                <select class="form-select" th:field="*{existingStudentId}">
+                                    <option value="">New student / not applicable</option>
+                                    <option th:each="student : ${students}" th:value="${student.id}" th:text="${student.displayName + ' - Grade ' + student.gradeLevel.label}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Student first name</label>
+                                <input class="form-control" th:field="*{studentFirstName}" type="text">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Student last name</label>
+                                <input class="form-control" th:field="*{studentLastName}" type="text">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Requested grade level</label>
+                                <select class="form-select" th:field="*{requestedGradeLevel}">
+                                    <option th:each="gradeLevel : ${gradeLevels}" th:value="${gradeLevel}" th:text="${gradeLevel.label}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Campus</label>
+                                <select class="form-select" th:field="*{campusId}">
+                                    <option th:each="campus : ${campuses}" th:value="${campus.id}" th:text="${campus.displayName}"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-between align-items-center">
+                            <div class="text-secondary small">Existing students can be preselected for faster reenrollment next year.</div>
+                            <button class="btn btn-primary" type="submit">Submit request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

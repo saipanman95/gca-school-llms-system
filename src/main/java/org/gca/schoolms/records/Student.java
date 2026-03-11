@@ -32,6 +32,10 @@ public class Student {
 
     private LocalDate dateOfBirth;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private GradeLevel gradeLevel;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "campus_id", nullable = false)
     private Campus campus;
@@ -47,12 +51,13 @@ public class Student {
     protected Student() {
     }
 
-    public Student(String studentNumber, String firstName, String lastName, LocalDate dateOfBirth,
+    public Student(String studentNumber, String firstName, String lastName, LocalDate dateOfBirth, GradeLevel gradeLevel,
                    Campus campus, FamilyAccount familyAccount, StudentStatus status) {
         this.studentNumber = studentNumber;
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
+        this.gradeLevel = gradeLevel;
         this.campus = campus;
         this.familyAccount = familyAccount;
         this.status = status;
@@ -76,6 +81,10 @@ public class Student {
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public GradeLevel getGradeLevel() {
+        return gradeLevel;
     }
 
     public Campus getCampus() {

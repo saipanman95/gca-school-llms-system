@@ -22,6 +22,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/webjars/**", "/login").permitAll()
                 .requestMatchers("/", "/dashboard").authenticated()
+                .requestMatchers("/portal/guardian/**").hasRole("PARENT_GUARDIAN")
                 .requestMatchers("/records/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
                 .requestMatchers("/finance/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_FINANCE")
                 .requestMatchers("/academics/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
