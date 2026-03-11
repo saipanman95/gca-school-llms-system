@@ -89,7 +89,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h2 class="h5 mb-3">Enrollment activity</h2>
-                    <div class="list-group list-group-flush">
+                        <div class="list-group list-group-flush">
                         <div class="list-group-item px-0" th:each="request : ${portal.enrollmentRequests}">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
@@ -101,8 +101,20 @@
                                         <span> / grade </span>
                                         <span th:text="${request.requestedGradeLevel.label}"></span>
                                     </div>
+                                    <div class="small text-secondary mt-1">
+                                        Completion:
+                                        <span th:text="${request.completionPercentage} + '%'">0%</span>
+                                    </div>
                                 </div>
                                 <span class="badge text-bg-info" th:text="${request.status}"></span>
+                            </div>
+                            <div class="mt-2 d-flex gap-2" th:if="${request.editable or request.deletable}">
+                                <a class="btn btn-sm btn-outline-primary" th:if="${request.editable}"
+                                   th:href="@{/portal/guardian/enrollment(requestId=${request.id})}">Edit draft</a>
+                                <form method="post" th:if="${request.deletable}" th:action="@{/portal/guardian/enrollment/delete}">
+                                    <input name="requestId" th:value="${request.id}" type="hidden">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete draft</button>
+                                </form>
                             </div>
                         </div>
                     </div>

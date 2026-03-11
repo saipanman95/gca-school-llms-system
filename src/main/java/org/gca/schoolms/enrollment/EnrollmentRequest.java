@@ -631,4 +631,133 @@ public class EnrollmentRequest {
         }
         return name.toString();
     }
+
+    public void updateDraftOrSubmission(Campus campus, Student student, EnrollmentRequestType requestType,
+                                        EnrollmentRequestStatus status, String schoolYear, String studentFirstName,
+                                        String studentMiddleName, String studentLastName, String studentSuffix,
+                                        String studentAlias, LocalDate studentDateOfBirth,
+                                        String studentReligiousAffiliation, String studentChurchAttending,
+                                        String studentEthnicBackgrounds, String studentEthnicBackgroundOther,
+                                        boolean childPottyTrained, String pottyAccidentFrequency,
+                                        String guardianName, String guardianEmail, String guardianPhone,
+                                        String guardianMailingAddressLine1, String guardianMailingAddressLine2,
+                                        String guardianMailingCity, String guardianMailingState,
+                                        String guardianMailingPostalCode, String guardianEmployerName,
+                                        String guardianWorkPhone, String guardianWorkEmail,
+                                        String guardianWorkAddressLine1, String guardianWorkAddressLine2,
+                                        String guardianWorkCity, String guardianWorkState,
+                                        String guardianWorkPostalCode, String guardianGender,
+                                        String guardianEthnicity, String guardianCitizenshipStatus,
+                                        String guardianCountryOfCitizenship, boolean guardianVisaRequired,
+                                        String guardianVisaType, String guardianVisaNumber,
+                                        LocalDate guardianVisaIssueDate, LocalDate guardianVisaExpirationDate,
+                                        MaritalStatus maritalStatus, String secondaryGuardianName,
+                                        String secondaryGuardianEmail, String secondaryGuardianPhone,
+                                        String secondaryMailingAddressLine1, String secondaryMailingAddressLine2,
+                                        String secondaryMailingCity, String secondaryMailingState,
+                                        String secondaryMailingPostalCode, String secondaryEmployerName,
+                                        String secondaryWorkPhone, String secondaryWorkEmail,
+                                        String secondaryWorkAddressLine1, String secondaryWorkAddressLine2,
+                                        String secondaryWorkCity, String secondaryWorkState,
+                                        String secondaryWorkPostalCode, String secondaryGender,
+                                        String secondaryEthnicity, String secondaryCitizenshipStatus,
+                                        String secondaryCountryOfCitizenship, boolean secondaryVisaRequired,
+                                        String secondaryVisaType, String secondaryVisaNumber,
+                                        LocalDate secondaryVisaIssueDate, LocalDate secondaryVisaExpirationDate,
+                                        boolean secondaryGuardianPortalAccess, boolean primaryGuardianBillingRecipient,
+                                        String studentCitizenshipStatus, String studentCountryOfCitizenship,
+                                        boolean studentVisaRequired, String studentVisaType, String studentVisaNumber,
+                                        LocalDate studentVisaIssueDate, LocalDate studentVisaExpirationDate,
+                                        boolean studentF1Required, String studentI20Status,
+                                        String previousSchoolName, String previousSchoolCity,
+                                        String previousSchoolState, String previousSchoolCountry,
+                                        String previousSchoolLastGradeCompleted, GradeLevel requestedGradeLevel,
+                                        LocalDate submittedOn) {
+        this.campus = campus;
+        this.student = student;
+        this.requestType = requestType;
+        this.status = status;
+        this.schoolYear = schoolYear;
+        this.studentFirstName = studentFirstName;
+        this.studentMiddleName = studentMiddleName;
+        this.studentLastName = studentLastName;
+        this.studentSuffix = studentSuffix;
+        this.studentAlias = studentAlias;
+        this.studentDateOfBirth = studentDateOfBirth;
+        this.studentReligiousAffiliation = studentReligiousAffiliation;
+        this.studentChurchAttending = studentChurchAttending;
+        this.studentEthnicBackgrounds = studentEthnicBackgrounds;
+        this.studentEthnicBackgroundOther = studentEthnicBackgroundOther;
+        this.childPottyTrained = childPottyTrained;
+        this.pottyAccidentFrequency = pottyAccidentFrequency;
+        this.guardianName = guardianName;
+        this.guardianEmail = guardianEmail;
+        this.guardianPhone = guardianPhone;
+        this.guardianMailingAddressLine1 = guardianMailingAddressLine1;
+        this.guardianMailingAddressLine2 = guardianMailingAddressLine2;
+        this.guardianMailingCity = guardianMailingCity;
+        this.guardianMailingState = guardianMailingState;
+        this.guardianMailingPostalCode = guardianMailingPostalCode;
+        this.guardianEmployerName = guardianEmployerName;
+        this.guardianWorkPhone = guardianWorkPhone;
+        this.guardianWorkEmail = guardianWorkEmail;
+        this.guardianWorkAddressLine1 = guardianWorkAddressLine1;
+        this.guardianWorkAddressLine2 = guardianWorkAddressLine2;
+        this.guardianWorkCity = guardianWorkCity;
+        this.guardianWorkState = guardianWorkState;
+        this.guardianWorkPostalCode = guardianWorkPostalCode;
+        this.guardianGender = guardianGender;
+        this.guardianEthnicity = guardianEthnicity;
+        this.guardianCitizenshipStatus = guardianCitizenshipStatus;
+        this.guardianCountryOfCitizenship = guardianCountryOfCitizenship;
+        this.guardianVisaRequired = guardianVisaRequired;
+        this.guardianVisaType = guardianVisaType;
+        this.guardianVisaNumber = guardianVisaNumber;
+        this.guardianVisaIssueDate = guardianVisaIssueDate;
+        this.guardianVisaExpirationDate = guardianVisaExpirationDate;
+        this.maritalStatus = maritalStatus;
+        this.secondaryGuardianName = secondaryGuardianName;
+        this.secondaryGuardianEmail = secondaryGuardianEmail;
+        this.secondaryGuardianPhone = secondaryGuardianPhone;
+        this.secondaryMailingAddressLine1 = secondaryMailingAddressLine1;
+        this.secondaryMailingAddressLine2 = secondaryMailingAddressLine2;
+        this.secondaryMailingCity = secondaryMailingCity;
+        this.secondaryMailingState = secondaryMailingState;
+        this.secondaryMailingPostalCode = secondaryMailingPostalCode;
+        this.secondaryEmployerName = secondaryEmployerName;
+        this.secondaryWorkPhone = secondaryWorkPhone;
+        this.secondaryWorkEmail = secondaryWorkEmail;
+        this.secondaryWorkAddressLine1 = secondaryWorkAddressLine1;
+        this.secondaryWorkAddressLine2 = secondaryWorkAddressLine2;
+        this.secondaryWorkCity = secondaryWorkCity;
+        this.secondaryWorkState = secondaryWorkState;
+        this.secondaryWorkPostalCode = secondaryWorkPostalCode;
+        this.secondaryGender = secondaryGender;
+        this.secondaryEthnicity = secondaryEthnicity;
+        this.secondaryCitizenshipStatus = secondaryCitizenshipStatus;
+        this.secondaryCountryOfCitizenship = secondaryCountryOfCitizenship;
+        this.secondaryVisaRequired = secondaryVisaRequired;
+        this.secondaryVisaType = secondaryVisaType;
+        this.secondaryVisaNumber = secondaryVisaNumber;
+        this.secondaryVisaIssueDate = secondaryVisaIssueDate;
+        this.secondaryVisaExpirationDate = secondaryVisaExpirationDate;
+        this.secondaryGuardianPortalAccess = secondaryGuardianPortalAccess;
+        this.primaryGuardianBillingRecipient = primaryGuardianBillingRecipient;
+        this.studentCitizenshipStatus = studentCitizenshipStatus;
+        this.studentCountryOfCitizenship = studentCountryOfCitizenship;
+        this.studentVisaRequired = studentVisaRequired;
+        this.studentVisaType = studentVisaType;
+        this.studentVisaNumber = studentVisaNumber;
+        this.studentVisaIssueDate = studentVisaIssueDate;
+        this.studentVisaExpirationDate = studentVisaExpirationDate;
+        this.studentF1Required = studentF1Required;
+        this.studentI20Status = studentI20Status;
+        this.previousSchoolName = previousSchoolName;
+        this.previousSchoolCity = previousSchoolCity;
+        this.previousSchoolState = previousSchoolState;
+        this.previousSchoolCountry = previousSchoolCountry;
+        this.previousSchoolLastGradeCompleted = previousSchoolLastGradeCompleted;
+        this.requestedGradeLevel = requestedGradeLevel;
+        this.submittedOn = submittedOn;
+    }
 }

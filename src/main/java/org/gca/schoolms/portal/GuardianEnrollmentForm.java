@@ -23,6 +23,8 @@ public class GuardianEnrollmentForm {
     @NotBlank
     private String schoolYear = "2026-2027";
 
+    private Long enrollmentRequestId;
+
     @NotBlank
     private String studentFirstName;
 
@@ -217,6 +219,14 @@ public class GuardianEnrollmentForm {
 
     public void setSchoolYear(String schoolYear) {
         this.schoolYear = schoolYear;
+    }
+
+    public Long getEnrollmentRequestId() {
+        return enrollmentRequestId;
+    }
+
+    public void setEnrollmentRequestId(Long enrollmentRequestId) {
+        this.enrollmentRequestId = enrollmentRequestId;
     }
 
     public String getStudentFirstName() {

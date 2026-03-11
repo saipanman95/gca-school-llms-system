@@ -1,6 +1,7 @@
 package org.gca.schoolms.portal;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,9 +48,28 @@ public class GuardianPortalService {
         this.campusRepository = campusRepository;
     }
 
+    @Transactional(readOnly = true)
     public GuardianDashboardView loadDashboard(String username) {
         FamilyAccount familyAccount = resolveFamilyAccount(username);
         List<Student> students = studentRepository.findByFamilyAccountOrderByLastNameAscFirstNameAsc(familyAccount);
+        List<GuardianEnrollmentActivityView> enrollmentRequests = enrollmentRequestRepository
+            .findByFamilyAccountOrderBySubmittedOnDesc(familyAccount).stream()
+            .map(request -> {
+                EnrollmentCompletionView completion = calculateCompletion(request);
+                boolean editable = request.getStatus() == EnrollmentRequestStatus.DRAFT;
+                return new GuardianEnrollmentActivityView(
+                    request.getId(),
+                    request.getStudentDisplayName(),
+                    request.getRequestType(),
+                    request.getSchoolYear(),
+                    request.getRequestedGradeLevel(),
+                    request.getStatus(),
+                    completion.completionPercentage(),
+                    editable,
+                    editable
+                );
+            })
+            .toList();
         List<GuardianDashboardStudent> dashboardStudents = students.stream()
             .map(student -> new GuardianDashboardStudent(
                 student.getId(),
@@ -68,7 +88,7 @@ public class GuardianPortalService {
             students.size(),
             invoiceRepository.sumOutstandingBalanceByFamilyAccount(familyAccount).orElse(java.math.BigDecimal.ZERO),
             dashboardStudents,
-            enrollmentRequestRepository.findByFamilyAccountOrderBySubmittedOnDesc(familyAccount)
+            enrollmentRequests
         );
     }
 
@@ -84,10 +104,55 @@ public class GuardianPortalService {
         return studentRepository.findByFamilyAccountOrderByLastNameAscFirstNameAsc(resolveFamilyAccount(username));
     }
 
-    public GuardianEnrollmentForm buildEnrollmentForm(String username, Long studentId) {
+    @Transactional(readOnly = true)
+    public GuardianEnrollmentForm buildEnrollmentForm(String username, Long studentId, Long requestId) {
         GuardianEnrollmentForm form = new GuardianEnrollmentForm();
         FamilyAccount familyAccount = resolveFamilyAccount(username);
         applyGuardianProfile(form, familyAccount);
+        if (requestId != null) {
+            EnrollmentRequest request = findEditableEnrollmentRequest(username, requestId);
+            form.setEnrollmentRequestId(request.getId());
+            form.setExistingStudentId(request.getStudent() == null ? null : request.getStudent().getId());
+            form.setRequestType(request.getRequestType());
+            form.setSchoolYear(request.getSchoolYear());
+            form.setStudentFirstName(request.getStudentFirstName());
+            form.setStudentMiddleName(request.getStudentMiddleName());
+            form.setStudentLastName(request.getStudentLastName());
+            form.setStudentSuffix(request.getStudentSuffix());
+            form.setStudentAlias(request.getStudentAlias());
+            form.setStudentDateOfBirth(request.getStudentDateOfBirth());
+            form.setStudentReligiousAffiliation(request.getStudentReligiousAffiliation());
+            form.setStudentChurchAttending(request.getStudentChurchAttending());
+            form.setStudentEthnicBackgrounds(splitCommaSeparatedValues(request.getStudentEthnicBackgrounds()));
+            form.setStudentEthnicBackgroundOther(request.getStudentEthnicBackgroundOther());
+            form.setStudentLanguages(request.getStudentLanguages().stream().map(language -> {
+                StudentLanguageFormRow row = new StudentLanguageFormRow();
+                row.setLanguageName(language.getLanguageName());
+                row.setProficiencyLevel(language.getProficiencyLevel());
+                row.setPreferenceRank(language.getPreferenceRank());
+                return row;
+            }).collect(Collectors.toCollection(ArrayList::new)));
+            form.setChildPottyTrained(request.isChildPottyTrained());
+            form.setPottyAccidentFrequency(request.getPottyAccidentFrequency());
+            form.setStudentCitizenshipStatus(request.getStudentCitizenshipStatus());
+            form.setStudentCountryOfCitizenship(request.getStudentCountryOfCitizenship());
+            form.setStudentVisaRequired(request.isStudentVisaRequired());
+            form.setStudentVisaType(request.getStudentVisaType());
+            form.setStudentVisaNumber(request.getStudentVisaNumber());
+            form.setStudentVisaIssueDate(request.getStudentVisaIssueDate());
+            form.setStudentVisaExpirationDate(request.getStudentVisaExpirationDate());
+            form.setStudentF1Required(request.isStudentF1Required());
+            form.setStudentI20Status(request.getStudentI20Status());
+            form.setPreviousSchoolName(request.getPreviousSchoolName());
+            form.setPreviousSchoolCity(request.getPreviousSchoolCity());
+            form.setPreviousSchoolState(request.getPreviousSchoolState());
+            form.setPreviousSchoolCountry(request.getPreviousSchoolCountry());
+            form.setPreviousSchoolLastGradeCompleted(request.getPreviousSchoolLastGradeCompleted());
+            form.setCampusId(request.getCampus().getId());
+            form.setRequestedGradeLevel(request.getRequestedGradeLevel());
+            form.setReenrollmentPrefill(request.getStudent() != null);
+            return form;
+        }
         if (studentId == null) {
             return form;
         }
@@ -196,101 +261,264 @@ public class GuardianPortalService {
     }
 
     @Transactional
+    public EnrollmentCompletionView calculateCompletion(GuardianEnrollmentForm form) {
+        List<String> missingFields = new ArrayList<>();
+        addMissing(missingFields, form.getSchoolYear(), "School year");
+        addMissing(missingFields, form.getStudentFirstName(), "Student first name");
+        addMissing(missingFields, form.getStudentLastName(), "Student last name");
+        if (form.getStudentDateOfBirth() == null) {
+            missingFields.add("Date of birth");
+        }
+        if (form.getRequestedGradeLevel() == null) {
+            missingFields.add("Requested grade level");
+        }
+        if (form.getCampusId() == null) {
+            missingFields.add("Campus");
+        }
+        addMissing(missingFields, form.getGuardianName(), "Parent/guardian name");
+        addMissing(missingFields, form.getGuardianEmail(), "Parent/guardian email");
+        addMissing(missingFields, form.getGuardianPhone(), "Parent/guardian phone");
+        if (form.getStudentLanguages().stream().noneMatch(language ->
+            language.getLanguageName() != null && !language.getLanguageName().isBlank())) {
+            missingFields.add("Languages spoken");
+        }
+        if (form.getStudentEthnicBackgrounds() == null || form.getStudentEthnicBackgrounds().isEmpty()) {
+            missingFields.add("Student ethnic background");
+        }
+        int totalFields = 11;
+        int completeFields = totalFields - missingFields.size();
+        int completionPercentage = (int) Math.round((completeFields * 100.0) / totalFields);
+        return new EnrollmentCompletionView(completionPercentage, missingFields);
+    }
+
+    public EnrollmentCompletionView calculateCompletion(EnrollmentRequest request) {
+        GuardianEnrollmentForm form = new GuardianEnrollmentForm();
+        form.setSchoolYear(request.getSchoolYear());
+        form.setStudentFirstName(request.getStudentFirstName());
+        form.setStudentLastName(request.getStudentLastName());
+        form.setStudentDateOfBirth(request.getStudentDateOfBirth());
+        form.setRequestedGradeLevel(request.getRequestedGradeLevel());
+        form.setCampusId(request.getCampus().getId());
+        form.setGuardianName(request.getGuardianName());
+        form.setGuardianEmail(request.getGuardianEmail());
+        form.setGuardianPhone(request.getGuardianPhone());
+        form.setStudentEthnicBackgrounds(splitCommaSeparatedValues(request.getStudentEthnicBackgrounds()));
+        form.setStudentLanguages(request.getStudentLanguages().stream().map(language -> {
+            StudentLanguageFormRow row = new StudentLanguageFormRow();
+            row.setLanguageName(language.getLanguageName());
+            row.setProficiencyLevel(language.getProficiencyLevel());
+            row.setPreferenceRank(language.getPreferenceRank());
+            return row;
+        }).collect(Collectors.toCollection(ArrayList::new)));
+        return calculateCompletion(form);
+    }
+
+    @Transactional
+    public void saveEnrollmentDraft(String username, GuardianEnrollmentForm form) {
+        saveEnrollment(username, form, EnrollmentRequestStatus.DRAFT);
+    }
+
+    @Transactional
     public void submitEnrollmentRequest(String username, GuardianEnrollmentForm form) {
+        saveEnrollment(username, form, EnrollmentRequestStatus.SUBMITTED);
+    }
+
+    @Transactional
+    public void deleteEnrollmentDraft(String username, Long requestId) {
+        EnrollmentRequest request = findEditableEnrollmentRequest(username, requestId);
+        enrollmentDocumentRepository.deleteByEnrollmentRequest(request);
+        enrollmentRequestRepository.delete(request);
+    }
+
+    private void saveEnrollment(String username, GuardianEnrollmentForm form, EnrollmentRequestStatus targetStatus) {
         FamilyAccount familyAccount = resolveFamilyAccount(username);
         Student existingStudent = form.getExistingStudentId() == null ? null :
             findGuardianStudent(username, form.getExistingStudentId());
-        EnrollmentRequest request = new EnrollmentRequest(
-            familyAccount,
-            existingStudent,
-            campusRepository.findById(form.getCampusId()).orElseThrow(),
-            existingStudent == null ? form.getRequestType() : EnrollmentRequestType.REENROLLMENT,
-            EnrollmentRequestStatus.SUBMITTED,
-            form.getSchoolYear(),
-            form.getStudentFirstName(),
-            form.getStudentMiddleName(),
-            form.getStudentLastName(),
-            form.getStudentSuffix(),
-            form.getStudentAlias(),
-            form.getStudentDateOfBirth(),
-            form.getStudentReligiousAffiliation(),
-            form.getStudentChurchAttending(),
-            form.getStudentEthnicBackgrounds() == null ? "" : form.getStudentEthnicBackgrounds().stream()
-                .filter(value -> value != null && !value.isBlank())
-                .collect(Collectors.joining(", ")),
-            form.getStudentEthnicBackgroundOther(),
-            form.isChildPottyTrained(),
-            form.getPottyAccidentFrequency(),
-            form.getGuardianName(),
-            form.getGuardianEmail(),
-            form.getGuardianPhone(),
-            form.getGuardianMailingAddressLine1(),
-            form.getGuardianMailingAddressLine2(),
-            form.getGuardianMailingCity(),
-            form.getGuardianMailingState(),
-            form.getGuardianMailingPostalCode(),
-            form.getGuardianEmployerName(),
-            form.getGuardianWorkPhone(),
-            form.getGuardianWorkEmail(),
-            form.getGuardianWorkAddressLine1(),
-            form.getGuardianWorkAddressLine2(),
-            form.getGuardianWorkCity(),
-            form.getGuardianWorkState(),
-            form.getGuardianWorkPostalCode(),
-            form.getGuardianGender(),
-            form.getGuardianEthnicity(),
-            form.getGuardianCitizenshipStatus(),
-            form.getGuardianCountryOfCitizenship(),
-            form.isGuardianVisaRequired(),
-            form.getGuardianVisaType(),
-            form.getGuardianVisaNumber(),
-            form.getGuardianVisaIssueDate(),
-            form.getGuardianVisaExpirationDate(),
-            form.getMaritalStatus(),
-            form.getSecondaryGuardianName(),
-            form.getSecondaryGuardianEmail(),
-            form.getSecondaryGuardianPhone(),
-            form.getSecondaryMailingAddressLine1(),
-            form.getSecondaryMailingAddressLine2(),
-            form.getSecondaryMailingCity(),
-            form.getSecondaryMailingState(),
-            form.getSecondaryMailingPostalCode(),
-            form.getSecondaryEmployerName(),
-            form.getSecondaryWorkPhone(),
-            form.getSecondaryWorkEmail(),
-            form.getSecondaryWorkAddressLine1(),
-            form.getSecondaryWorkAddressLine2(),
-            form.getSecondaryWorkCity(),
-            form.getSecondaryWorkState(),
-            form.getSecondaryWorkPostalCode(),
-            form.getSecondaryGender(),
-            form.getSecondaryEthnicity(),
-            form.getSecondaryCitizenshipStatus(),
-            form.getSecondaryCountryOfCitizenship(),
-            form.isSecondaryVisaRequired(),
-            form.getSecondaryVisaType(),
-            form.getSecondaryVisaNumber(),
-            form.getSecondaryVisaIssueDate(),
-            form.getSecondaryVisaExpirationDate(),
-            form.isSecondaryGuardianPortalAccess(),
-            form.isPrimaryGuardianBillingRecipient(),
-            form.getStudentCitizenshipStatus(),
-            form.getStudentCountryOfCitizenship(),
-            form.isStudentVisaRequired(),
-            form.getStudentVisaType(),
-            form.getStudentVisaNumber(),
-            form.getStudentVisaIssueDate(),
-            form.getStudentVisaExpirationDate(),
-            form.isStudentF1Required(),
-            form.getStudentI20Status(),
-            form.getPreviousSchoolName(),
-            form.getPreviousSchoolCity(),
-            form.getPreviousSchoolState(),
-            form.getPreviousSchoolCountry(),
-            form.getPreviousSchoolLastGradeCompleted(),
-            form.getRequestedGradeLevel(),
-            LocalDate.now()
-        );
+        EnrollmentRequest request = form.getEnrollmentRequestId() == null
+            ? new EnrollmentRequest(
+                familyAccount,
+                existingStudent,
+                campusRepository.findById(form.getCampusId()).orElseThrow(),
+                existingStudent == null ? form.getRequestType() : EnrollmentRequestType.REENROLLMENT,
+                targetStatus,
+                form.getSchoolYear(),
+                form.getStudentFirstName(),
+                form.getStudentMiddleName(),
+                form.getStudentLastName(),
+                form.getStudentSuffix(),
+                form.getStudentAlias(),
+                form.getStudentDateOfBirth(),
+                form.getStudentReligiousAffiliation(),
+                form.getStudentChurchAttending(),
+                form.getStudentEthnicBackgrounds() == null ? "" : form.getStudentEthnicBackgrounds().stream()
+                    .filter(value -> value != null && !value.isBlank())
+                    .collect(Collectors.joining(", ")),
+                form.getStudentEthnicBackgroundOther(),
+                form.isChildPottyTrained(),
+                form.getPottyAccidentFrequency(),
+                form.getGuardianName(),
+                form.getGuardianEmail(),
+                form.getGuardianPhone(),
+                form.getGuardianMailingAddressLine1(),
+                form.getGuardianMailingAddressLine2(),
+                form.getGuardianMailingCity(),
+                form.getGuardianMailingState(),
+                form.getGuardianMailingPostalCode(),
+                form.getGuardianEmployerName(),
+                form.getGuardianWorkPhone(),
+                form.getGuardianWorkEmail(),
+                form.getGuardianWorkAddressLine1(),
+                form.getGuardianWorkAddressLine2(),
+                form.getGuardianWorkCity(),
+                form.getGuardianWorkState(),
+                form.getGuardianWorkPostalCode(),
+                form.getGuardianGender(),
+                form.getGuardianEthnicity(),
+                form.getGuardianCitizenshipStatus(),
+                form.getGuardianCountryOfCitizenship(),
+                form.isGuardianVisaRequired(),
+                form.getGuardianVisaType(),
+                form.getGuardianVisaNumber(),
+                form.getGuardianVisaIssueDate(),
+                form.getGuardianVisaExpirationDate(),
+                form.getMaritalStatus(),
+                form.getSecondaryGuardianName(),
+                form.getSecondaryGuardianEmail(),
+                form.getSecondaryGuardianPhone(),
+                form.getSecondaryMailingAddressLine1(),
+                form.getSecondaryMailingAddressLine2(),
+                form.getSecondaryMailingCity(),
+                form.getSecondaryMailingState(),
+                form.getSecondaryMailingPostalCode(),
+                form.getSecondaryEmployerName(),
+                form.getSecondaryWorkPhone(),
+                form.getSecondaryWorkEmail(),
+                form.getSecondaryWorkAddressLine1(),
+                form.getSecondaryWorkAddressLine2(),
+                form.getSecondaryWorkCity(),
+                form.getSecondaryWorkState(),
+                form.getSecondaryWorkPostalCode(),
+                form.getSecondaryGender(),
+                form.getSecondaryEthnicity(),
+                form.getSecondaryCitizenshipStatus(),
+                form.getSecondaryCountryOfCitizenship(),
+                form.isSecondaryVisaRequired(),
+                form.getSecondaryVisaType(),
+                form.getSecondaryVisaNumber(),
+                form.getSecondaryVisaIssueDate(),
+                form.getSecondaryVisaExpirationDate(),
+                form.isSecondaryGuardianPortalAccess(),
+                form.isPrimaryGuardianBillingRecipient(),
+                form.getStudentCitizenshipStatus(),
+                form.getStudentCountryOfCitizenship(),
+                form.isStudentVisaRequired(),
+                form.getStudentVisaType(),
+                form.getStudentVisaNumber(),
+                form.getStudentVisaIssueDate(),
+                form.getStudentVisaExpirationDate(),
+                form.isStudentF1Required(),
+                form.getStudentI20Status(),
+                form.getPreviousSchoolName(),
+                form.getPreviousSchoolCity(),
+                form.getPreviousSchoolState(),
+                form.getPreviousSchoolCountry(),
+                form.getPreviousSchoolLastGradeCompleted(),
+                form.getRequestedGradeLevel(),
+                LocalDate.now()
+            )
+            : findEditableEnrollmentRequest(username, form.getEnrollmentRequestId());
+        if (form.getEnrollmentRequestId() != null) {
+            request.updateDraftOrSubmission(
+                campusRepository.findById(form.getCampusId()).orElseThrow(),
+                existingStudent,
+                existingStudent == null ? form.getRequestType() : EnrollmentRequestType.REENROLLMENT,
+                targetStatus,
+                form.getSchoolYear(),
+                form.getStudentFirstName(),
+                form.getStudentMiddleName(),
+                form.getStudentLastName(),
+                form.getStudentSuffix(),
+                form.getStudentAlias(),
+                form.getStudentDateOfBirth(),
+                form.getStudentReligiousAffiliation(),
+                form.getStudentChurchAttending(),
+                form.getStudentEthnicBackgrounds() == null ? "" : form.getStudentEthnicBackgrounds().stream()
+                    .filter(value -> value != null && !value.isBlank())
+                    .collect(Collectors.joining(", ")),
+                form.getStudentEthnicBackgroundOther(),
+                form.isChildPottyTrained(),
+                form.getPottyAccidentFrequency(),
+                form.getGuardianName(),
+                form.getGuardianEmail(),
+                form.getGuardianPhone(),
+                form.getGuardianMailingAddressLine1(),
+                form.getGuardianMailingAddressLine2(),
+                form.getGuardianMailingCity(),
+                form.getGuardianMailingState(),
+                form.getGuardianMailingPostalCode(),
+                form.getGuardianEmployerName(),
+                form.getGuardianWorkPhone(),
+                form.getGuardianWorkEmail(),
+                form.getGuardianWorkAddressLine1(),
+                form.getGuardianWorkAddressLine2(),
+                form.getGuardianWorkCity(),
+                form.getGuardianWorkState(),
+                form.getGuardianWorkPostalCode(),
+                form.getGuardianGender(),
+                form.getGuardianEthnicity(),
+                form.getGuardianCitizenshipStatus(),
+                form.getGuardianCountryOfCitizenship(),
+                form.isGuardianVisaRequired(),
+                form.getGuardianVisaType(),
+                form.getGuardianVisaNumber(),
+                form.getGuardianVisaIssueDate(),
+                form.getGuardianVisaExpirationDate(),
+                form.getMaritalStatus(),
+                form.getSecondaryGuardianName(),
+                form.getSecondaryGuardianEmail(),
+                form.getSecondaryGuardianPhone(),
+                form.getSecondaryMailingAddressLine1(),
+                form.getSecondaryMailingAddressLine2(),
+                form.getSecondaryMailingCity(),
+                form.getSecondaryMailingState(),
+                form.getSecondaryMailingPostalCode(),
+                form.getSecondaryEmployerName(),
+                form.getSecondaryWorkPhone(),
+                form.getSecondaryWorkEmail(),
+                form.getSecondaryWorkAddressLine1(),
+                form.getSecondaryWorkAddressLine2(),
+                form.getSecondaryWorkCity(),
+                form.getSecondaryWorkState(),
+                form.getSecondaryWorkPostalCode(),
+                form.getSecondaryGender(),
+                form.getSecondaryEthnicity(),
+                form.getSecondaryCitizenshipStatus(),
+                form.getSecondaryCountryOfCitizenship(),
+                form.isSecondaryVisaRequired(),
+                form.getSecondaryVisaType(),
+                form.getSecondaryVisaNumber(),
+                form.getSecondaryVisaIssueDate(),
+                form.getSecondaryVisaExpirationDate(),
+                form.isSecondaryGuardianPortalAccess(),
+                form.isPrimaryGuardianBillingRecipient(),
+                form.getStudentCitizenshipStatus(),
+                form.getStudentCountryOfCitizenship(),
+                form.isStudentVisaRequired(),
+                form.getStudentVisaType(),
+                form.getStudentVisaNumber(),
+                form.getStudentVisaIssueDate(),
+                form.getStudentVisaExpirationDate(),
+                form.isStudentF1Required(),
+                form.getStudentI20Status(),
+                form.getPreviousSchoolName(),
+                form.getPreviousSchoolCity(),
+                form.getPreviousSchoolState(),
+                form.getPreviousSchoolCountry(),
+                form.getPreviousSchoolLastGradeCompleted(),
+                form.getRequestedGradeLevel(),
+                LocalDate.now()
+            );
+        }
         familyAccount.updateGuardianProfile(
             form.getGuardianName(),
             form.getGuardianEmail(),
@@ -363,6 +591,30 @@ public class GuardianPortalService {
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.VACCINATION_CARD, form.getVaccinationRecordFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.HEALTH_CERTIFICATE, form.getHealthCertificateFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT, form.getPreviousTranscriptFile());
+    }
+
+    private EnrollmentRequest findEditableEnrollmentRequest(String username, Long requestId) {
+        FamilyAccount familyAccount = resolveFamilyAccount(username);
+        return enrollmentRequestRepository.findById(requestId)
+            .filter(request -> request.getFamilyAccount().getId().equals(familyAccount.getId()))
+            .filter(request -> request.getStatus() == EnrollmentRequestStatus.DRAFT)
+            .orElseThrow();
+    }
+
+    private List<String> splitCommaSeparatedValues(String values) {
+        if (values == null || values.isBlank()) {
+            return new ArrayList<>();
+        }
+        return java.util.Arrays.stream(values.split(","))
+            .map(String::trim)
+            .filter(value -> !value.isBlank())
+            .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private void addMissing(List<String> missingFields, String value, String label) {
+        if (value == null || value.isBlank()) {
+            missingFields.add(label);
+        }
     }
 
     private void applyGuardianProfile(GuardianEnrollmentForm form, FamilyAccount familyAccount) {
