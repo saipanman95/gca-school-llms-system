@@ -29,14 +29,26 @@ Spring Boot 3 / Java 21 web application for replacing fragmented school operatio
 
 ## Local run
 
-1. Create a MySQL database and user that match `src/main/resources/application.yml`, or update the credentials.
-2. Start the app:
+By default, the app now starts with an embedded H2 database stored under `./data/` so local development works without MySQL.
+
+1. Start the app:
 
 ```bash
 mvn spring-boot:run
 ```
 
-3. Sign in with one of the seeded in-memory users. All starter passwords are `change-me`.
+2. Sign in with one of the seeded in-memory users. All starter passwords are `change-me`.
+3. Optional: browse the H2 console at `/h2-console`.
+
+## MySQL profile
+
+Use MySQL when you want a closer production-like setup:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+```
+
+That uses [application-mysql.yml](/Users/michaelrodgers/school-llm-system/src/main/resources/application-mysql.yml). Update the credentials there or override them with environment variables.
 
 ## Current scope
 
