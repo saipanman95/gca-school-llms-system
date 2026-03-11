@@ -10,7 +10,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import org.gca.schoolms.finance.FamilyAccount;
 import org.gca.schoolms.finance.MaritalStatus;
 import org.gca.schoolms.organization.Campus;
@@ -229,6 +234,9 @@ public class EnrollmentRequest {
     @Column(nullable = false)
     private LocalDate submittedOn;
 
+    @OneToMany(mappedBy = "enrollmentRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EnrollmentRequestLanguage> studentLanguages = new ArrayList<>();
+
     protected EnrollmentRequest() {
     }
 
@@ -423,6 +431,18 @@ public class EnrollmentRequest {
 
     public String getStudentEthnicBackgroundOther() {
         return studentEthnicBackgroundOther;
+    }
+
+    public List<EnrollmentRequestLanguage> getStudentLanguages() {
+        return studentLanguages.stream()
+            .sorted(Comparator.comparing(EnrollmentRequestLanguage::getPreferenceRank,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .toList();
+    }
+
+    public void replaceStudentLanguages(List<EnrollmentRequestLanguage> studentLanguages) {
+        this.studentLanguages.clear();
+        this.studentLanguages.addAll(studentLanguages);
     }
 
     public boolean isChildPottyTrained() {

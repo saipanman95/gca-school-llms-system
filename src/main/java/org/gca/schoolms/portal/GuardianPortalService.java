@@ -1,6 +1,7 @@
 package org.gca.schoolms.portal;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.gca.schoolms.enrollment.EnrollmentDocument;
@@ -8,6 +9,7 @@ import org.gca.schoolms.enrollment.EnrollmentDocumentRepository;
 import org.gca.schoolms.enrollment.EnrollmentDocumentStorageService;
 import org.gca.schoolms.enrollment.EnrollmentDocumentType;
 import org.gca.schoolms.enrollment.EnrollmentRequest;
+import org.gca.schoolms.enrollment.EnrollmentRequestLanguage;
 import org.gca.schoolms.enrollment.EnrollmentRequestRepository;
 import org.gca.schoolms.enrollment.EnrollmentRequestStatus;
 import org.gca.schoolms.enrollment.EnrollmentRequestType;
@@ -345,6 +347,19 @@ public class GuardianPortalService {
             form.isPrimaryGuardianBillingRecipient()
         );
         EnrollmentRequest savedRequest = enrollmentRequestRepository.save(request);
+        savedRequest.replaceStudentLanguages(
+            form.getStudentLanguages().stream()
+                .filter(language -> language.getLanguageName() != null && !language.getLanguageName().isBlank())
+                .sorted(Comparator.comparing(language ->
+                    language.getPreferenceRank() == null ? Integer.MAX_VALUE : language.getPreferenceRank()))
+                .map(language -> new EnrollmentRequestLanguage(
+                    savedRequest,
+                    language.getLanguageName().trim(),
+                    language.getProficiencyLevel(),
+                    language.getPreferenceRank()))
+                .toList()
+        );
+        enrollmentRequestRepository.save(savedRequest);
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.VACCINATION_CARD, form.getVaccinationRecordFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.HEALTH_CERTIFICATE, form.getHealthCertificateFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT, form.getPreviousTranscriptFile());

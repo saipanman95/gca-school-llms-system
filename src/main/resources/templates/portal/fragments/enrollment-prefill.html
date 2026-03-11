@@ -58,6 +58,41 @@
         <label class="form-label">Other ethnic background</label>
         <input class="form-control" th:field="*{studentEthnicBackgroundOther}" type="text" placeholder="Fill in if Other applies">
     </div>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Languages Spoken</h3>
+            <div class="row g-3 fw-semibold small text-secondary d-none d-md-flex">
+                <div class="col-md-5">Language</div>
+                <div class="col-md-4">Proficiency</div>
+                <div class="col-md-3">Rank</div>
+            </div>
+            <div class="row g-3" th:each="languageRow, iterStat : *{studentLanguages}">
+                <div class="col-md-5">
+                    <label class="form-label d-md-none">Language</label>
+                    <input class="form-control"
+                           th:field="*{studentLanguages[__${iterStat.index}__].languageName}"
+                           type="text"
+                           placeholder="English, Korean, Japanese">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label d-md-none">Proficiency</label>
+                    <input class="form-control"
+                           th:field="*{studentLanguages[__${iterStat.index}__].proficiencyLevel}"
+                           type="text"
+                           placeholder="Native, fluent, intermediate">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label d-md-none">Rank</label>
+                    <input class="form-control"
+                           th:field="*{studentLanguages[__${iterStat.index}__].preferenceRank}"
+                           type="number"
+                           min="1"
+                           placeholder="1">
+                </div>
+            </div>
+            <div class="small text-secondary mt-3">Rank `1` should be the student's most proficient language.</div>
+        </div>
+    </div>
     <div class="col-md-6">
         <label class="form-label">Requested grade level</label>
         <select class="form-select" th:field="*{requestedGradeLevel}"

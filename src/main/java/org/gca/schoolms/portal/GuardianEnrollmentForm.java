@@ -12,6 +12,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class GuardianEnrollmentForm {
 
+    public GuardianEnrollmentForm() {
+        if (studentLanguages.isEmpty()) {
+            studentLanguages.add(new StudentLanguageFormRow());
+            studentLanguages.add(new StudentLanguageFormRow());
+            studentLanguages.add(new StudentLanguageFormRow());
+        }
+    }
+
     @NotBlank
     private String schoolYear = "2026-2027";
 
@@ -36,6 +44,8 @@ public class GuardianEnrollmentForm {
     private List<String> studentEthnicBackgrounds = new ArrayList<>();
 
     private String studentEthnicBackgroundOther;
+
+    private List<StudentLanguageFormRow> studentLanguages = new ArrayList<>();
 
     private boolean childPottyTrained;
 
@@ -287,6 +297,17 @@ public class GuardianEnrollmentForm {
 
     public void setStudentEthnicBackgroundOther(String studentEthnicBackgroundOther) {
         this.studentEthnicBackgroundOther = studentEthnicBackgroundOther;
+    }
+
+    public List<StudentLanguageFormRow> getStudentLanguages() {
+        return studentLanguages;
+    }
+
+    public void setStudentLanguages(List<StudentLanguageFormRow> studentLanguages) {
+        this.studentLanguages = studentLanguages == null ? new ArrayList<>() : studentLanguages;
+        while (this.studentLanguages.size() < 3) {
+            this.studentLanguages.add(new StudentLanguageFormRow());
+        }
     }
 
     public boolean isChildPottyTrained() {
