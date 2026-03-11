@@ -42,6 +42,21 @@ public class GuardianProfileForm {
     private String secondaryGuardianName;
     private String secondaryGuardianEmail;
     private String secondaryGuardianPhone;
+    private String secondaryMailingAddressLine1;
+    private String secondaryMailingAddressLine2;
+    private String secondaryMailingCity;
+    private String secondaryMailingState;
+    private String secondaryMailingPostalCode;
+    private String secondaryEmployerName;
+    private String secondaryWorkPhone;
+    private String secondaryWorkEmail;
+    private String secondaryWorkAddressLine1;
+    private String secondaryWorkAddressLine2;
+    private String secondaryWorkCity;
+    private String secondaryWorkState;
+    private String secondaryWorkPostalCode;
+    private String secondaryGender;
+    private String secondaryEthnicity;
     private boolean secondaryGuardianPortalAccess = true;
     private boolean primaryGuardianBillingRecipient = true;
 
@@ -89,6 +104,36 @@ public class GuardianProfileForm {
     public void setSecondaryGuardianEmail(String secondaryGuardianEmail) { this.secondaryGuardianEmail = secondaryGuardianEmail; }
     public String getSecondaryGuardianPhone() { return secondaryGuardianPhone; }
     public void setSecondaryGuardianPhone(String secondaryGuardianPhone) { this.secondaryGuardianPhone = secondaryGuardianPhone; }
+    public String getSecondaryMailingAddressLine1() { return secondaryMailingAddressLine1; }
+    public void setSecondaryMailingAddressLine1(String secondaryMailingAddressLine1) { this.secondaryMailingAddressLine1 = secondaryMailingAddressLine1; }
+    public String getSecondaryMailingAddressLine2() { return secondaryMailingAddressLine2; }
+    public void setSecondaryMailingAddressLine2(String secondaryMailingAddressLine2) { this.secondaryMailingAddressLine2 = secondaryMailingAddressLine2; }
+    public String getSecondaryMailingCity() { return secondaryMailingCity; }
+    public void setSecondaryMailingCity(String secondaryMailingCity) { this.secondaryMailingCity = secondaryMailingCity; }
+    public String getSecondaryMailingState() { return secondaryMailingState; }
+    public void setSecondaryMailingState(String secondaryMailingState) { this.secondaryMailingState = secondaryMailingState; }
+    public String getSecondaryMailingPostalCode() { return secondaryMailingPostalCode; }
+    public void setSecondaryMailingPostalCode(String secondaryMailingPostalCode) { this.secondaryMailingPostalCode = secondaryMailingPostalCode; }
+    public String getSecondaryEmployerName() { return secondaryEmployerName; }
+    public void setSecondaryEmployerName(String secondaryEmployerName) { this.secondaryEmployerName = secondaryEmployerName; }
+    public String getSecondaryWorkPhone() { return secondaryWorkPhone; }
+    public void setSecondaryWorkPhone(String secondaryWorkPhone) { this.secondaryWorkPhone = secondaryWorkPhone; }
+    public String getSecondaryWorkEmail() { return secondaryWorkEmail; }
+    public void setSecondaryWorkEmail(String secondaryWorkEmail) { this.secondaryWorkEmail = secondaryWorkEmail; }
+    public String getSecondaryWorkAddressLine1() { return secondaryWorkAddressLine1; }
+    public void setSecondaryWorkAddressLine1(String secondaryWorkAddressLine1) { this.secondaryWorkAddressLine1 = secondaryWorkAddressLine1; }
+    public String getSecondaryWorkAddressLine2() { return secondaryWorkAddressLine2; }
+    public void setSecondaryWorkAddressLine2(String secondaryWorkAddressLine2) { this.secondaryWorkAddressLine2 = secondaryWorkAddressLine2; }
+    public String getSecondaryWorkCity() { return secondaryWorkCity; }
+    public void setSecondaryWorkCity(String secondaryWorkCity) { this.secondaryWorkCity = secondaryWorkCity; }
+    public String getSecondaryWorkState() { return secondaryWorkState; }
+    public void setSecondaryWorkState(String secondaryWorkState) { this.secondaryWorkState = secondaryWorkState; }
+    public String getSecondaryWorkPostalCode() { return secondaryWorkPostalCode; }
+    public void setSecondaryWorkPostalCode(String secondaryWorkPostalCode) { this.secondaryWorkPostalCode = secondaryWorkPostalCode; }
+    public String getSecondaryGender() { return secondaryGender; }
+    public void setSecondaryGender(String secondaryGender) { this.secondaryGender = secondaryGender; }
+    public String getSecondaryEthnicity() { return secondaryEthnicity; }
+    public void setSecondaryEthnicity(String secondaryEthnicity) { this.secondaryEthnicity = secondaryEthnicity; }
     public boolean isSecondaryGuardianPortalAccess() { return secondaryGuardianPortalAccess; }
     public void setSecondaryGuardianPortalAccess(boolean secondaryGuardianPortalAccess) { this.secondaryGuardianPortalAccess = secondaryGuardianPortalAccess; }
     public boolean isPrimaryGuardianBillingRecipient() { return primaryGuardianBillingRecipient; }

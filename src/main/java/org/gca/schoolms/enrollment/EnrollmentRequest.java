@@ -105,6 +105,36 @@ public class EnrollmentRequest {
 
     private String secondaryGuardianPhone;
 
+    private String secondaryMailingAddressLine1;
+
+    private String secondaryMailingAddressLine2;
+
+    private String secondaryMailingCity;
+
+    private String secondaryMailingState;
+
+    private String secondaryMailingPostalCode;
+
+    private String secondaryEmployerName;
+
+    private String secondaryWorkPhone;
+
+    private String secondaryWorkEmail;
+
+    private String secondaryWorkAddressLine1;
+
+    private String secondaryWorkAddressLine2;
+
+    private String secondaryWorkCity;
+
+    private String secondaryWorkState;
+
+    private String secondaryWorkPostalCode;
+
+    private String secondaryGender;
+
+    private String secondaryEthnicity;
+
     @Column(nullable = false)
     private boolean secondaryGuardianPortalAccess;
 
@@ -131,6 +161,12 @@ public class EnrollmentRequest {
                              String guardianWorkState, String guardianWorkPostalCode, String guardianGender,
                              String guardianEthnicity, MaritalStatus maritalStatus, String secondaryGuardianName,
                              String secondaryGuardianEmail, String secondaryGuardianPhone,
+                             String secondaryMailingAddressLine1, String secondaryMailingAddressLine2,
+                             String secondaryMailingCity, String secondaryMailingState, String secondaryMailingPostalCode,
+                             String secondaryEmployerName, String secondaryWorkPhone, String secondaryWorkEmail,
+                             String secondaryWorkAddressLine1, String secondaryWorkAddressLine2,
+                             String secondaryWorkCity, String secondaryWorkState, String secondaryWorkPostalCode,
+                             String secondaryGender, String secondaryEthnicity,
                              boolean secondaryGuardianPortalAccess, boolean primaryGuardianBillingRecipient,
                              GradeLevel requestedGradeLevel, LocalDate submittedOn) {
         this.familyAccount = familyAccount;
@@ -163,6 +199,21 @@ public class EnrollmentRequest {
         this.secondaryGuardianName = secondaryGuardianName;
         this.secondaryGuardianEmail = secondaryGuardianEmail;
         this.secondaryGuardianPhone = secondaryGuardianPhone;
+        this.secondaryMailingAddressLine1 = secondaryMailingAddressLine1;
+        this.secondaryMailingAddressLine2 = secondaryMailingAddressLine2;
+        this.secondaryMailingCity = secondaryMailingCity;
+        this.secondaryMailingState = secondaryMailingState;
+        this.secondaryMailingPostalCode = secondaryMailingPostalCode;
+        this.secondaryEmployerName = secondaryEmployerName;
+        this.secondaryWorkPhone = secondaryWorkPhone;
+        this.secondaryWorkEmail = secondaryWorkEmail;
+        this.secondaryWorkAddressLine1 = secondaryWorkAddressLine1;
+        this.secondaryWorkAddressLine2 = secondaryWorkAddressLine2;
+        this.secondaryWorkCity = secondaryWorkCity;
+        this.secondaryWorkState = secondaryWorkState;
+        this.secondaryWorkPostalCode = secondaryWorkPostalCode;
+        this.secondaryGender = secondaryGender;
+        this.secondaryEthnicity = secondaryEthnicity;
         this.secondaryGuardianPortalAccess = secondaryGuardianPortalAccess;
         this.primaryGuardianBillingRecipient = primaryGuardianBillingRecipient;
         this.requestedGradeLevel = requestedGradeLevel;
@@ -292,6 +343,22 @@ public class EnrollmentRequest {
     public String getSecondaryGuardianPhone() {
         return secondaryGuardianPhone;
     }
+
+    public String getSecondaryMailingAddressLine1() { return secondaryMailingAddressLine1; }
+    public String getSecondaryMailingAddressLine2() { return secondaryMailingAddressLine2; }
+    public String getSecondaryMailingCity() { return secondaryMailingCity; }
+    public String getSecondaryMailingState() { return secondaryMailingState; }
+    public String getSecondaryMailingPostalCode() { return secondaryMailingPostalCode; }
+    public String getSecondaryEmployerName() { return secondaryEmployerName; }
+    public String getSecondaryWorkPhone() { return secondaryWorkPhone; }
+    public String getSecondaryWorkEmail() { return secondaryWorkEmail; }
+    public String getSecondaryWorkAddressLine1() { return secondaryWorkAddressLine1; }
+    public String getSecondaryWorkAddressLine2() { return secondaryWorkAddressLine2; }
+    public String getSecondaryWorkCity() { return secondaryWorkCity; }
+    public String getSecondaryWorkState() { return secondaryWorkState; }
+    public String getSecondaryWorkPostalCode() { return secondaryWorkPostalCode; }
+    public String getSecondaryGender() { return secondaryGender; }
+    public String getSecondaryEthnicity() { return secondaryEthnicity; }
 
     public boolean isSecondaryGuardianPortalAccess() {
         return secondaryGuardianPortalAccess;

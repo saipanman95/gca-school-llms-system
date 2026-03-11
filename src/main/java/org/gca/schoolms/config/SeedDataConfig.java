@@ -52,19 +52,32 @@ public class SeedDataConfig {
                     "123 Palm Street", "Unit A", "Saipan", "MP", "96950",
                     "GCA", "670-555-1101", "elena.cruz.work@example.org", "345 School Lane", "",
                     "Saipan", "MP", "96950", "Female", "CHamoru", MaritalStatus.MARRIED,
-                    "David Cruz", "david.cruz@example.org", "670-555-0102", true, true, saipan));
+                    "David Cruz", "david.cruz@example.org", "670-555-0102",
+                    "123 Palm Street", "Unit A", "Saipan", "MP", "96950",
+                    "Marianas Utilities", "670-555-1199", "david.cruz.work@example.org", "22 Port Ave", "",
+                    "Saipan", "MP", "96950", "Male", "CHamoru",
+                    true, true, saipan));
                 santosFamily = familyAccountRepository.save(new FamilyAccount("FA-1002", "Santos Family", "Marco Santos",
                     "marco.santos@example.org", "670-555-0202",
                     "45 Harbor Road", "", "Tinian", "MP", "96952",
                     "Marianas Telecom", "670-555-2202", "marco.santos.work@example.org", "88 Commerce Ave", "",
                     "Tinian", "MP", "96952", "Male", "Carolinian", MaritalStatus.MARRIED,
-                    "Lia Santos", "lia.santos@example.org", "670-555-0203", true, false, tinian));
+                    "Lia Santos", "lia.santos@example.org", "670-555-0203",
+                    "45 Harbor Road", "", "Tinian", "MP", "96952",
+                    "Tinian Health Center", "670-555-2299", "lia.santos.work@example.org", "9 Clinic Rd", "",
+                    "Tinian", "MP", "96952", "Female", "Carolinian",
+                    true, false, tinian));
                 manglonaFamily = familyAccountRepository.save(new FamilyAccount("FA-1003", "Mangi Family", "Rosa Manglona",
                     "rosa.manglona@example.org", "670-555-0303",
                     "12 Sunset Drive", "", "Rota", "MP", "96951",
                     "Rota Clinic", "670-555-3303", "rosa.manglona.work@example.org", "7 Health Center Rd", "",
                     "Rota", "MP", "96951", "Female", "CHamoru", MaritalStatus.WIDOWED,
-                    "", "", "", false, true, rota));
+                    "", "", "",
+                    "", "", "", "", "",
+                    "", "", "", "", "",
+                    "", "", "",
+                    "", "",
+                    false, true, rota));
             } else {
                 cruzFamily = familyAccountRepository.findTop10ByOrderByAccountNameAsc().stream()
                     .filter(account -> "FA-1001".equals(account.getAccountNumber())).findFirst().orElseThrow();
@@ -125,6 +138,14 @@ public class SeedDataConfig {
                     cruzFamily.getWorkPostalCode(), cruzFamily.getGender(), cruzFamily.getEthnicity(),
                     cruzFamily.getMaritalStatus(), cruzFamily.getSecondaryGuardianName(),
                     cruzFamily.getSecondaryGuardianEmail(), cruzFamily.getSecondaryGuardianPhone(),
+                    cruzFamily.getSecondaryMailingAddressLine1(), cruzFamily.getSecondaryMailingAddressLine2(),
+                    cruzFamily.getSecondaryMailingCity(), cruzFamily.getSecondaryMailingState(),
+                    cruzFamily.getSecondaryMailingPostalCode(), cruzFamily.getSecondaryEmployerName(),
+                    cruzFamily.getSecondaryWorkPhone(), cruzFamily.getSecondaryWorkEmail(),
+                    cruzFamily.getSecondaryWorkAddressLine1(), cruzFamily.getSecondaryWorkAddressLine2(),
+                    cruzFamily.getSecondaryWorkCity(), cruzFamily.getSecondaryWorkState(),
+                    cruzFamily.getSecondaryWorkPostalCode(), cruzFamily.getSecondaryGender(),
+                    cruzFamily.getSecondaryEthnicity(),
                     cruzFamily.isSecondaryGuardianPortalAccess(), cruzFamily.isPrimaryGuardianBillingRecipient(),
                     GradeLevel.GRADE_11, LocalDate.now().minusDays(3)));
             }

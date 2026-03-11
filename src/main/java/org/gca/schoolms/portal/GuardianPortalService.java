@@ -132,6 +132,21 @@ public class GuardianPortalService {
             form.getSecondaryGuardianName(),
             form.getSecondaryGuardianEmail(),
             form.getSecondaryGuardianPhone(),
+            form.getSecondaryMailingAddressLine1(),
+            form.getSecondaryMailingAddressLine2(),
+            form.getSecondaryMailingCity(),
+            form.getSecondaryMailingState(),
+            form.getSecondaryMailingPostalCode(),
+            form.getSecondaryEmployerName(),
+            form.getSecondaryWorkPhone(),
+            form.getSecondaryWorkEmail(),
+            form.getSecondaryWorkAddressLine1(),
+            form.getSecondaryWorkAddressLine2(),
+            form.getSecondaryWorkCity(),
+            form.getSecondaryWorkState(),
+            form.getSecondaryWorkPostalCode(),
+            form.getSecondaryGender(),
+            form.getSecondaryEthnicity(),
             form.isSecondaryGuardianPortalAccess(),
             form.isPrimaryGuardianBillingRecipient()
         );
@@ -185,6 +200,21 @@ public class GuardianPortalService {
             form.getSecondaryGuardianName(),
             form.getSecondaryGuardianEmail(),
             form.getSecondaryGuardianPhone(),
+            form.getSecondaryMailingAddressLine1(),
+            form.getSecondaryMailingAddressLine2(),
+            form.getSecondaryMailingCity(),
+            form.getSecondaryMailingState(),
+            form.getSecondaryMailingPostalCode(),
+            form.getSecondaryEmployerName(),
+            form.getSecondaryWorkPhone(),
+            form.getSecondaryWorkEmail(),
+            form.getSecondaryWorkAddressLine1(),
+            form.getSecondaryWorkAddressLine2(),
+            form.getSecondaryWorkCity(),
+            form.getSecondaryWorkState(),
+            form.getSecondaryWorkPostalCode(),
+            form.getSecondaryGender(),
+            form.getSecondaryEthnicity(),
             form.isSecondaryGuardianPortalAccess(),
             form.isPrimaryGuardianBillingRecipient(),
             form.getRequestedGradeLevel(),
@@ -213,6 +243,21 @@ public class GuardianPortalService {
             form.getSecondaryGuardianName(),
             form.getSecondaryGuardianEmail(),
             form.getSecondaryGuardianPhone(),
+            form.getSecondaryMailingAddressLine1(),
+            form.getSecondaryMailingAddressLine2(),
+            form.getSecondaryMailingCity(),
+            form.getSecondaryMailingState(),
+            form.getSecondaryMailingPostalCode(),
+            form.getSecondaryEmployerName(),
+            form.getSecondaryWorkPhone(),
+            form.getSecondaryWorkEmail(),
+            form.getSecondaryWorkAddressLine1(),
+            form.getSecondaryWorkAddressLine2(),
+            form.getSecondaryWorkCity(),
+            form.getSecondaryWorkState(),
+            form.getSecondaryWorkPostalCode(),
+            form.getSecondaryGender(),
+            form.getSecondaryEthnicity(),
             form.isSecondaryGuardianPortalAccess(),
             form.isPrimaryGuardianBillingRecipient()
         );
@@ -242,6 +287,21 @@ public class GuardianPortalService {
         form.setSecondaryGuardianName(familyAccount.getSecondaryGuardianName());
         form.setSecondaryGuardianEmail(familyAccount.getSecondaryGuardianEmail());
         form.setSecondaryGuardianPhone(familyAccount.getSecondaryGuardianPhone());
+        form.setSecondaryMailingAddressLine1(familyAccount.getSecondaryMailingAddressLine1());
+        form.setSecondaryMailingAddressLine2(familyAccount.getSecondaryMailingAddressLine2());
+        form.setSecondaryMailingCity(familyAccount.getSecondaryMailingCity());
+        form.setSecondaryMailingState(familyAccount.getSecondaryMailingState());
+        form.setSecondaryMailingPostalCode(familyAccount.getSecondaryMailingPostalCode());
+        form.setSecondaryEmployerName(familyAccount.getSecondaryEmployerName());
+        form.setSecondaryWorkPhone(familyAccount.getSecondaryWorkPhone());
+        form.setSecondaryWorkEmail(familyAccount.getSecondaryWorkEmail());
+        form.setSecondaryWorkAddressLine1(familyAccount.getSecondaryWorkAddressLine1());
+        form.setSecondaryWorkAddressLine2(familyAccount.getSecondaryWorkAddressLine2());
+        form.setSecondaryWorkCity(familyAccount.getSecondaryWorkCity());
+        form.setSecondaryWorkState(familyAccount.getSecondaryWorkState());
+        form.setSecondaryWorkPostalCode(familyAccount.getSecondaryWorkPostalCode());
+        form.setSecondaryGender(familyAccount.getSecondaryGender());
+        form.setSecondaryEthnicity(familyAccount.getSecondaryEthnicity());
         form.setSecondaryGuardianPortalAccess(familyAccount.isSecondaryGuardianPortalAccess());
         form.setPrimaryGuardianBillingRecipient(familyAccount.isPrimaryGuardianBillingRecipient());
     }
@@ -269,6 +329,21 @@ public class GuardianPortalService {
         form.setSecondaryGuardianName(familyAccount.getSecondaryGuardianName());
         form.setSecondaryGuardianEmail(familyAccount.getSecondaryGuardianEmail());
         form.setSecondaryGuardianPhone(familyAccount.getSecondaryGuardianPhone());
+        form.setSecondaryMailingAddressLine1(familyAccount.getSecondaryMailingAddressLine1());
+        form.setSecondaryMailingAddressLine2(familyAccount.getSecondaryMailingAddressLine2());
+        form.setSecondaryMailingCity(familyAccount.getSecondaryMailingCity());
+        form.setSecondaryMailingState(familyAccount.getSecondaryMailingState());
+        form.setSecondaryMailingPostalCode(familyAccount.getSecondaryMailingPostalCode());
+        form.setSecondaryEmployerName(familyAccount.getSecondaryEmployerName());
+        form.setSecondaryWorkPhone(familyAccount.getSecondaryWorkPhone());
+        form.setSecondaryWorkEmail(familyAccount.getSecondaryWorkEmail());
+        form.setSecondaryWorkAddressLine1(familyAccount.getSecondaryWorkAddressLine1());
+        form.setSecondaryWorkAddressLine2(familyAccount.getSecondaryWorkAddressLine2());
+        form.setSecondaryWorkCity(familyAccount.getSecondaryWorkCity());
+        form.setSecondaryWorkState(familyAccount.getSecondaryWorkState());
+        form.setSecondaryWorkPostalCode(familyAccount.getSecondaryWorkPostalCode());
+        form.setSecondaryGender(familyAccount.getSecondaryGender());
+        form.setSecondaryEthnicity(familyAccount.getSecondaryEthnicity());
         form.setSecondaryGuardianPortalAccess(familyAccount.isSecondaryGuardianPortalAccess());
         form.setPrimaryGuardianBillingRecipient(familyAccount.isPrimaryGuardianBillingRecipient());
     }

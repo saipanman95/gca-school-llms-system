@@ -7,121 +7,197 @@
         <p class="text-secondary small mb-0">Contact, employment, demographic, and spouse access settings.</p>
     </div>
     <div class="col-12 pt-2">
-        <h3 class="h6 text-uppercase text-secondary mb-1">Contact Information</h3>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Parent/guardian name</label>
-        <input class="form-control" th:field="*{guardianName}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Personal email</label>
-        <input class="form-control" th:field="*{guardianEmail}" type="email">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Phone</label>
-        <input class="form-control" th:field="*{guardianPhone}" type="text">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Mailing address line 1</label>
-        <input class="form-control" th:field="*{guardianMailingAddressLine1}" type="text">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Mailing address line 2</label>
-        <input class="form-control" th:field="*{guardianMailingAddressLine2}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Mailing city</label>
-        <input class="form-control" th:field="*{guardianMailingCity}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Mailing state</label>
-        <input class="form-control" th:field="*{guardianMailingState}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Mailing postal code</label>
-        <input class="form-control" th:field="*{guardianMailingPostalCode}" type="text">
-    </div>
-    <div class="col-12 pt-3">
-        <h3 class="h6 text-uppercase text-secondary mb-1">Employer Details</h3>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Employer</label>
-        <input class="form-control" th:field="*{guardianEmployerName}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Work phone</label>
-        <input class="form-control" th:field="*{guardianWorkPhone}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Work email</label>
-        <input class="form-control" th:field="*{guardianWorkEmail}" type="email">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Work address line 1</label>
-        <input class="form-control" th:field="*{guardianWorkAddressLine1}" type="text">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Work address line 2</label>
-        <input class="form-control" th:field="*{guardianWorkAddressLine2}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Work city</label>
-        <input class="form-control" th:field="*{guardianWorkCity}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Work state</label>
-        <input class="form-control" th:field="*{guardianWorkState}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Work postal code</label>
-        <input class="form-control" th:field="*{guardianWorkPostalCode}" type="text">
-    </div>
-    <div class="col-12 pt-3">
-        <h3 class="h6 text-uppercase text-secondary mb-1">Demographics</h3>
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Gender</label>
-        <input class="form-control" th:field="*{guardianGender}" type="text">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Ethnicity</label>
-        <input class="form-control" th:field="*{guardianEthnicity}" type="text">
-    </div>
-    <div class="col-12 pt-3">
-        <h3 class="h6 text-uppercase text-secondary mb-1">Marital Details</h3>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Marital status</label>
-        <select class="form-select" th:field="*{maritalStatus}">
-            <option th:each="status : ${maritalStatuses}" th:value="${status}" th:text="${status}"></option>
-        </select>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Spouse/secondary guardian name</label>
-        <input class="form-control" th:field="*{secondaryGuardianName}" type="text">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Spouse/secondary guardian email</label>
-        <input class="form-control" th:field="*{secondaryGuardianEmail}" type="email">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Spouse/secondary guardian phone</label>
-        <input class="form-control" th:field="*{secondaryGuardianPhone}" type="text">
-    </div>
-    <div class="col-md-4 d-flex align-items-end">
-        <div class="form-check">
-            <input class="form-check-input" th:field="*{secondaryGuardianPortalAccess}" type="checkbox">
-            <label class="form-check-label" for="secondaryGuardianPortalAccess">Grant spouse shared portal access</label>
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Contact Information</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Parent/guardian name</label>
+                    <input class="form-control" th:field="*{guardianName}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Personal email</label>
+                    <input class="form-control" th:field="*{guardianEmail}" type="email">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Phone</label>
+                    <input class="form-control" th:field="*{guardianPhone}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Mailing address line 1</label>
+                    <input class="form-control" th:field="*{guardianMailingAddressLine1}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Mailing address line 2</label>
+                    <input class="form-control" th:field="*{guardianMailingAddressLine2}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Mailing city</label>
+                    <input class="form-control" th:field="*{guardianMailingCity}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Mailing state</label>
+                    <input class="form-control" th:field="*{guardianMailingState}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Mailing postal code</label>
+                    <input class="form-control" th:field="*{guardianMailingPostalCode}" type="text">
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-md-4 d-flex align-items-end">
-        <div class="form-check">
-            <input class="form-check-input" th:field="*{primaryGuardianBillingRecipient}" type="checkbox">
-            <label class="form-check-label" for="primaryGuardianBillingRecipient">Send billing to primary guardian</label>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Employer Details</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Employer</label>
+                    <input class="form-control" th:field="*{guardianEmployerName}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Work phone</label>
+                    <input class="form-control" th:field="*{guardianWorkPhone}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Work email</label>
+                    <input class="form-control" th:field="*{guardianWorkEmail}" type="email">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Work address line 1</label>
+                    <input class="form-control" th:field="*{guardianWorkAddressLine1}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Work address line 2</label>
+                    <input class="form-control" th:field="*{guardianWorkAddressLine2}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Work city</label>
+                    <input class="form-control" th:field="*{guardianWorkCity}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Work state</label>
+                    <input class="form-control" th:field="*{guardianWorkState}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Work postal code</label>
+                    <input class="form-control" th:field="*{guardianWorkPostalCode}" type="text">
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-12">
-        <div class="small text-secondary">If the billing checkbox is off, the spouse/secondary guardian is treated as the billing recipient.</div>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Demographics</h3>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Gender</label>
+                    <input class="form-control" th:field="*{guardianGender}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Ethnicity</label>
+                    <input class="form-control" th:field="*{guardianEthnicity}" type="text">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Marital Details</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Marital status</label>
+                    <select class="form-select" th:field="*{maritalStatus}">
+                        <option th:each="status : ${maritalStatuses}" th:value="${status}" th:text="${status}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse/secondary guardian name</label>
+                    <input class="form-control" th:field="*{secondaryGuardianName}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse/secondary guardian email</label>
+                    <input class="form-control" th:field="*{secondaryGuardianEmail}" type="email">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse/secondary guardian phone</label>
+                    <input class="form-control" th:field="*{secondaryGuardianPhone}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Spouse mailing address line 1</label>
+                    <input class="form-control" th:field="*{secondaryMailingAddressLine1}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Spouse mailing address line 2</label>
+                    <input class="form-control" th:field="*{secondaryMailingAddressLine2}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse mailing city</label>
+                    <input class="form-control" th:field="*{secondaryMailingCity}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse mailing state</label>
+                    <input class="form-control" th:field="*{secondaryMailingState}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse mailing postal code</label>
+                    <input class="form-control" th:field="*{secondaryMailingPostalCode}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse employer</label>
+                    <input class="form-control" th:field="*{secondaryEmployerName}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse work phone</label>
+                    <input class="form-control" th:field="*{secondaryWorkPhone}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse work email</label>
+                    <input class="form-control" th:field="*{secondaryWorkEmail}" type="email">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Spouse work address line 1</label>
+                    <input class="form-control" th:field="*{secondaryWorkAddressLine1}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Spouse work address line 2</label>
+                    <input class="form-control" th:field="*{secondaryWorkAddressLine2}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse work city</label>
+                    <input class="form-control" th:field="*{secondaryWorkCity}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse work state</label>
+                    <input class="form-control" th:field="*{secondaryWorkState}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Spouse work postal code</label>
+                    <input class="form-control" th:field="*{secondaryWorkPostalCode}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Spouse gender</label>
+                    <input class="form-control" th:field="*{secondaryGender}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Spouse ethnicity</label>
+                    <input class="form-control" th:field="*{secondaryEthnicity}" type="text">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{secondaryGuardianPortalAccess}" type="checkbox">
+                        <label class="form-check-label" for="secondaryGuardianPortalAccess">Grant spouse shared portal access</label>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{primaryGuardianBillingRecipient}" type="checkbox">
+                        <label class="form-check-label" for="primaryGuardianBillingRecipient">Send billing to primary guardian</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="small text-secondary">If the billing checkbox is off, the spouse/secondary guardian is treated as the billing recipient.</div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 </body>
