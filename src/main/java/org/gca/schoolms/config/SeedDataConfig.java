@@ -47,11 +47,20 @@ public class SeedDataConfig {
             FamilyAccount manglonaFamily = null;
             if (familyAccountRepository.count() == 0) {
                 cruzFamily = familyAccountRepository.save(new FamilyAccount("FA-1001", "Cruz Family", "Elena Cruz",
-                    "elena.cruz@example.org", saipan));
+                    "elena.cruz@example.org", "670-555-0101",
+                    "123 Palm Street", "Unit A", "Saipan", "MP", "96950",
+                    "GCA", "670-555-1101", "elena.cruz.work@example.org", "345 School Lane", "",
+                    "Saipan", "MP", "96950", "Female", "CHamoru", saipan));
                 santosFamily = familyAccountRepository.save(new FamilyAccount("FA-1002", "Santos Family", "Marco Santos",
-                    "marco.santos@example.org", tinian));
+                    "marco.santos@example.org", "670-555-0202",
+                    "45 Harbor Road", "", "Tinian", "MP", "96952",
+                    "Marianas Telecom", "670-555-2202", "marco.santos.work@example.org", "88 Commerce Ave", "",
+                    "Tinian", "MP", "96952", "Male", "Carolinian", tinian));
                 manglonaFamily = familyAccountRepository.save(new FamilyAccount("FA-1003", "Mangi Family", "Rosa Manglona",
-                    "rosa.manglona@example.org", rota));
+                    "rosa.manglona@example.org", "670-555-0303",
+                    "12 Sunset Drive", "", "Rota", "MP", "96951",
+                    "Rota Clinic", "670-555-3303", "rosa.manglona.work@example.org", "7 Health Center Rd", "",
+                    "Rota", "MP", "96951", "Female", "CHamoru", rota));
             } else {
                 cruzFamily = familyAccountRepository.findTop10ByOrderByAccountNameAsc().stream()
                     .filter(account -> "FA-1001".equals(account.getAccountNumber())).findFirst().orElseThrow();
@@ -103,7 +112,14 @@ public class SeedDataConfig {
             if (enrollmentRequestRepository.count() == 0) {
                 enrollmentRequestRepository.save(new EnrollmentRequest(
                     cruzFamily, ava, saipan, EnrollmentRequestType.REENROLLMENT, EnrollmentRequestStatus.SUBMITTED,
-                    "2026-2027", "Ava", "Cruz", GradeLevel.GRADE_11, LocalDate.now().minusDays(3)));
+                    "2026-2027", "Ava", "Cruz",
+                    cruzFamily.getPrimaryGuardianName(), cruzFamily.getPrimaryGuardianEmail(), cruzFamily.getPrimaryGuardianPhone(),
+                    cruzFamily.getMailingAddressLine1(), cruzFamily.getMailingAddressLine2(), cruzFamily.getMailingCity(),
+                    cruzFamily.getMailingState(), cruzFamily.getMailingPostalCode(), cruzFamily.getEmployerName(),
+                    cruzFamily.getWorkPhone(), cruzFamily.getWorkEmail(), cruzFamily.getWorkAddressLine1(),
+                    cruzFamily.getWorkAddressLine2(), cruzFamily.getWorkCity(), cruzFamily.getWorkState(),
+                    cruzFamily.getWorkPostalCode(), cruzFamily.getGender(), cruzFamily.getEthnicity(),
+                    GradeLevel.GRADE_11, LocalDate.now().minusDays(3)));
             }
         };
     }

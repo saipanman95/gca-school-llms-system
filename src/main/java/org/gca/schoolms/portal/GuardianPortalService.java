@@ -69,6 +69,8 @@ public class GuardianPortalService {
 
     public GuardianEnrollmentForm buildEnrollmentForm(String username, Long studentId) {
         GuardianEnrollmentForm form = new GuardianEnrollmentForm();
+        FamilyAccount familyAccount = resolveFamilyAccount(username);
+        applyGuardianProfile(form, familyAccount);
         if (studentId == null) {
             return form;
         }
@@ -108,10 +110,69 @@ public class GuardianPortalService {
             form.getSchoolYear(),
             form.getStudentFirstName(),
             form.getStudentLastName(),
+            form.getGuardianName(),
+            form.getGuardianEmail(),
+            form.getGuardianPhone(),
+            form.getGuardianMailingAddressLine1(),
+            form.getGuardianMailingAddressLine2(),
+            form.getGuardianMailingCity(),
+            form.getGuardianMailingState(),
+            form.getGuardianMailingPostalCode(),
+            form.getGuardianEmployerName(),
+            form.getGuardianWorkPhone(),
+            form.getGuardianWorkEmail(),
+            form.getGuardianWorkAddressLine1(),
+            form.getGuardianWorkAddressLine2(),
+            form.getGuardianWorkCity(),
+            form.getGuardianWorkState(),
+            form.getGuardianWorkPostalCode(),
+            form.getGuardianGender(),
+            form.getGuardianEthnicity(),
             form.getRequestedGradeLevel(),
             LocalDate.now()
         );
+        familyAccount.updateGuardianProfile(
+            form.getGuardianName(),
+            form.getGuardianEmail(),
+            form.getGuardianPhone(),
+            form.getGuardianMailingAddressLine1(),
+            form.getGuardianMailingAddressLine2(),
+            form.getGuardianMailingCity(),
+            form.getGuardianMailingState(),
+            form.getGuardianMailingPostalCode(),
+            form.getGuardianEmployerName(),
+            form.getGuardianWorkPhone(),
+            form.getGuardianWorkEmail(),
+            form.getGuardianWorkAddressLine1(),
+            form.getGuardianWorkAddressLine2(),
+            form.getGuardianWorkCity(),
+            form.getGuardianWorkState(),
+            form.getGuardianWorkPostalCode(),
+            form.getGuardianGender(),
+            form.getGuardianEthnicity()
+        );
         enrollmentRequestRepository.save(request);
+    }
+
+    private void applyGuardianProfile(GuardianEnrollmentForm form, FamilyAccount familyAccount) {
+        form.setGuardianName(familyAccount.getPrimaryGuardianName());
+        form.setGuardianEmail(familyAccount.getPrimaryGuardianEmail());
+        form.setGuardianPhone(familyAccount.getPrimaryGuardianPhone());
+        form.setGuardianMailingAddressLine1(familyAccount.getMailingAddressLine1());
+        form.setGuardianMailingAddressLine2(familyAccount.getMailingAddressLine2());
+        form.setGuardianMailingCity(familyAccount.getMailingCity());
+        form.setGuardianMailingState(familyAccount.getMailingState());
+        form.setGuardianMailingPostalCode(familyAccount.getMailingPostalCode());
+        form.setGuardianEmployerName(familyAccount.getEmployerName());
+        form.setGuardianWorkPhone(familyAccount.getWorkPhone());
+        form.setGuardianWorkEmail(familyAccount.getWorkEmail());
+        form.setGuardianWorkAddressLine1(familyAccount.getWorkAddressLine1());
+        form.setGuardianWorkAddressLine2(familyAccount.getWorkAddressLine2());
+        form.setGuardianWorkCity(familyAccount.getWorkCity());
+        form.setGuardianWorkState(familyAccount.getWorkState());
+        form.setGuardianWorkPostalCode(familyAccount.getWorkPostalCode());
+        form.setGuardianGender(familyAccount.getGender());
+        form.setGuardianEthnicity(familyAccount.getEthnicity());
     }
 
     private Student findGuardianStudent(String username, Long studentId) {

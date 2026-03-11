@@ -52,6 +52,49 @@ public class EnrollmentRequest {
     @Column(nullable = false)
     private String studentLastName;
 
+    @Column(nullable = false)
+    private String guardianName;
+
+    @Column(nullable = false)
+    private String guardianEmail;
+
+    @Column(nullable = false)
+    private String guardianPhone;
+
+    @Column(nullable = false)
+    private String guardianMailingAddressLine1;
+
+    private String guardianMailingAddressLine2;
+
+    @Column(nullable = false)
+    private String guardianMailingCity;
+
+    @Column(nullable = false)
+    private String guardianMailingState;
+
+    @Column(nullable = false)
+    private String guardianMailingPostalCode;
+
+    private String guardianEmployerName;
+
+    private String guardianWorkPhone;
+
+    private String guardianWorkEmail;
+
+    private String guardianWorkAddressLine1;
+
+    private String guardianWorkAddressLine2;
+
+    private String guardianWorkCity;
+
+    private String guardianWorkState;
+
+    private String guardianWorkPostalCode;
+
+    private String guardianGender;
+
+    private String guardianEthnicity;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private GradeLevel requestedGradeLevel;
@@ -64,7 +107,13 @@ public class EnrollmentRequest {
 
     public EnrollmentRequest(FamilyAccount familyAccount, Student student, Campus campus, EnrollmentRequestType requestType,
                              EnrollmentRequestStatus status, String schoolYear, String studentFirstName,
-                             String studentLastName, GradeLevel requestedGradeLevel, LocalDate submittedOn) {
+                             String studentLastName, String guardianName, String guardianEmail, String guardianPhone,
+                             String guardianMailingAddressLine1, String guardianMailingAddressLine2,
+                             String guardianMailingCity, String guardianMailingState, String guardianMailingPostalCode,
+                             String guardianEmployerName, String guardianWorkPhone, String guardianWorkEmail,
+                             String guardianWorkAddressLine1, String guardianWorkAddressLine2, String guardianWorkCity,
+                             String guardianWorkState, String guardianWorkPostalCode, String guardianGender,
+                             String guardianEthnicity, GradeLevel requestedGradeLevel, LocalDate submittedOn) {
         this.familyAccount = familyAccount;
         this.student = student;
         this.campus = campus;
@@ -73,6 +122,24 @@ public class EnrollmentRequest {
         this.schoolYear = schoolYear;
         this.studentFirstName = studentFirstName;
         this.studentLastName = studentLastName;
+        this.guardianName = guardianName;
+        this.guardianEmail = guardianEmail;
+        this.guardianPhone = guardianPhone;
+        this.guardianMailingAddressLine1 = guardianMailingAddressLine1;
+        this.guardianMailingAddressLine2 = guardianMailingAddressLine2;
+        this.guardianMailingCity = guardianMailingCity;
+        this.guardianMailingState = guardianMailingState;
+        this.guardianMailingPostalCode = guardianMailingPostalCode;
+        this.guardianEmployerName = guardianEmployerName;
+        this.guardianWorkPhone = guardianWorkPhone;
+        this.guardianWorkEmail = guardianWorkEmail;
+        this.guardianWorkAddressLine1 = guardianWorkAddressLine1;
+        this.guardianWorkAddressLine2 = guardianWorkAddressLine2;
+        this.guardianWorkCity = guardianWorkCity;
+        this.guardianWorkState = guardianWorkState;
+        this.guardianWorkPostalCode = guardianWorkPostalCode;
+        this.guardianGender = guardianGender;
+        this.guardianEthnicity = guardianEthnicity;
         this.requestedGradeLevel = requestedGradeLevel;
         this.submittedOn = submittedOn;
     }
@@ -111,6 +178,78 @@ public class EnrollmentRequest {
 
     public String getStudentLastName() {
         return studentLastName;
+    }
+
+    public String getGuardianName() {
+        return guardianName;
+    }
+
+    public String getGuardianEmail() {
+        return guardianEmail;
+    }
+
+    public String getGuardianPhone() {
+        return guardianPhone;
+    }
+
+    public String getGuardianMailingAddressLine1() {
+        return guardianMailingAddressLine1;
+    }
+
+    public String getGuardianMailingAddressLine2() {
+        return guardianMailingAddressLine2;
+    }
+
+    public String getGuardianMailingCity() {
+        return guardianMailingCity;
+    }
+
+    public String getGuardianMailingState() {
+        return guardianMailingState;
+    }
+
+    public String getGuardianMailingPostalCode() {
+        return guardianMailingPostalCode;
+    }
+
+    public String getGuardianEmployerName() {
+        return guardianEmployerName;
+    }
+
+    public String getGuardianWorkPhone() {
+        return guardianWorkPhone;
+    }
+
+    public String getGuardianWorkEmail() {
+        return guardianWorkEmail;
+    }
+
+    public String getGuardianWorkAddressLine1() {
+        return guardianWorkAddressLine1;
+    }
+
+    public String getGuardianWorkAddressLine2() {
+        return guardianWorkAddressLine2;
+    }
+
+    public String getGuardianWorkCity() {
+        return guardianWorkCity;
+    }
+
+    public String getGuardianWorkState() {
+        return guardianWorkState;
+    }
+
+    public String getGuardianWorkPostalCode() {
+        return guardianWorkPostalCode;
+    }
+
+    public String getGuardianGender() {
+        return guardianGender;
+    }
+
+    public String getGuardianEthnicity() {
+        return guardianEthnicity;
     }
 
     public GradeLevel getRequestedGradeLevel() {

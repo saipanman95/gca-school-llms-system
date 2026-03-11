@@ -14,7 +14,7 @@
         <div class="row align-items-center">
             <div class="col-lg-8">
                 <span class="badge text-bg-light mb-3">Parent and guardian portal</span>
-                <h1 class="display-6 fw-semibold" th:text="'Welcome, ' + ${portal.primaryGuardianName()}">Welcome</h1>
+                <h1 class="display-6 fw-semibold" th:text="'Welcome, ' + ${portal.primaryGuardianName}">Welcome</h1>
                 <p class="lead mb-0">Track your enrolled students, review grade levels and campuses, and start reenrollment or a brand-new application for the next school year.</p>
             </div>
             <div class="col-lg-4 mt-4 mt-lg-0">
@@ -22,13 +22,13 @@
                     <div class="col-6">
                         <div class="metric-card">
                             <div class="metric-label">Enrolled students</div>
-                            <div class="metric-value" th:text="${portal.enrolledStudentCount()}">0</div>
+                            <div class="metric-value" th:text="${portal.enrolledStudentCount}">0</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="metric-card">
                             <div class="metric-label">Outstanding balance</div>
-                            <div class="metric-value" th:text="${@moneyFormatter.format(portal.outstandingBalance())}">$0</div>
+                            <div class="metric-value" th:text="${@moneyFormatter.format(portal.outstandingBalance)}">$0</div>
                         </div>
                     </div>
                 </div>
@@ -45,7 +45,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <h2 class="h5 mb-1">Your enrolled students</h2>
-                            <p class="text-secondary mb-0" th:text="${portal.accountName()}">Family Account</p>
+                            <p class="text-secondary mb-0" th:text="${portal.accountName}">Family Account</p>
                         </div>
                         <a class="btn btn-primary" th:href="@{/portal/guardian/enrollment}">Register or reenroll</a>
                     </div>
@@ -61,14 +61,14 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="student : ${portal.students()}">
-                                <td th:text="${student.displayName()}"></td>
-                                <td th:text="${student.gradeLevel()}"></td>
-                                <td th:text="${student.campusCode()}"></td>
-                                <td><span class="badge text-bg-secondary" th:text="${student.status()}"></span></td>
+                            <tr th:each="student : ${portal.students}">
+                                <td th:text="${student.displayName}"></td>
+                                <td th:text="${student.gradeLevel}"></td>
+                                <td th:text="${student.campusCode}"></td>
+                                <td><span class="badge text-bg-secondary" th:text="${student.status}"></span></td>
                                 <td class="text-end">
                                     <a class="btn btn-sm btn-outline-primary"
-                                       th:href="@{/portal/guardian/enrollment(studentId=${student.id()})}">Reenroll</a>
+                                       th:href="@{/portal/guardian/enrollment(studentId=${student.id})}">Reenroll</a>
                                 </td>
                             </tr>
                             </tbody>
@@ -82,19 +82,19 @@
                 <div class="card-body">
                     <h2 class="h5 mb-3">Enrollment activity</h2>
                     <div class="list-group list-group-flush">
-                        <div class="list-group-item px-0" th:each="request : ${portal.enrollmentRequests()}">
+                        <div class="list-group-item px-0" th:each="request : ${portal.enrollmentRequests}">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <div class="fw-semibold" th:text="${request.studentDisplayName()}"></div>
+                                    <div class="fw-semibold" th:text="${request.studentDisplayName}"></div>
                                     <div class="text-secondary small">
-                                        <span th:text="${request.requestType()}"></span>
+                                        <span th:text="${request.requestType}"></span>
                                         <span> for </span>
-                                        <span th:text="${request.schoolYear()}"></span>
+                                        <span th:text="${request.schoolYear}"></span>
                                         <span> / grade </span>
-                                        <span th:text="${request.requestedGradeLevel().label}"></span>
+                                        <span th:text="${request.requestedGradeLevel.label}"></span>
                                     </div>
                                 </div>
-                                <span class="badge text-bg-info" th:text="${request.status()}"></span>
+                                <span class="badge text-bg-info" th:text="${request.status}"></span>
                             </div>
                         </div>
                     </div>
