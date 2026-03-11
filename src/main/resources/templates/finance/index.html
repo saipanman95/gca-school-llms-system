@@ -13,12 +13,39 @@
     <div class="row g-4 mb-4">
         <div class="col-lg-8">
             <h1 class="h3 mb-1">Finance Operations</h1>
-            <p class="text-secondary mb-0">Accounts receivable for families, tuition billing, and visibility into unpaid balances.</p>
+            <p class="text-secondary mb-0">Accounts receivable for families, tuition billing, balances, and statements across Saipan, Tinian, and Rota.</p>
         </div>
         <div class="col-lg-4">
             <div class="metric-card h-100">
                 <div class="metric-label">Total outstanding</div>
                 <div class="metric-value" th:text="${@moneyFormatter.format(outstandingBalance)}">$0</div>
+            </div>
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Family accounts</h2>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Account #</th>
+                        <th>Family</th>
+                        <th>Guardian</th>
+                        <th>Email</th>
+                        <th>Campus</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="account : ${familyAccounts}">
+                        <td th:text="${account.accountNumber}"></td>
+                        <td th:text="${account.accountName}"></td>
+                        <td th:text="${account.primaryGuardianName}"></td>
+                        <td th:text="${account.primaryGuardianEmail}"></td>
+                        <td th:text="${account.campus.code}"></td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -30,6 +57,7 @@
                     <thead>
                     <tr>
                         <th>Account</th>
+                        <th>Campus</th>
                         <th>Description</th>
                         <th>Due</th>
                         <th>Status</th>
@@ -39,6 +67,7 @@
                     <tbody>
                     <tr th:each="invoice : ${invoices}">
                         <td th:text="${invoice.accountName}"></td>
+                        <td th:text="${invoice.campus.code}"></td>
                         <td th:text="${invoice.description}"></td>
                         <td th:text="${invoice.dueDate}"></td>
                         <td><span class="badge text-bg-warning" th:text="${invoice.status}"></span></td>

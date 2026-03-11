@@ -13,9 +13,23 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-1">Records Management</h1>
-            <p class="text-secondary mb-0">Foundation for transcripts, awards, report cards, admissions files, and student medical records.</p>
+            <p class="text-secondary mb-0">Foundation for transcripts, awards, report cards, admissions files, student medical records, and multi-campus record custody.</p>
         </div>
         <button class="btn btn-primary" disabled>New Record Workflow</button>
+    </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Campus footprint</h2>
+            <div class="row g-3">
+                <div class="col-md-4" th:each="campus : ${campuses}">
+                    <div class="metric-card">
+                        <div class="metric-label" th:text="${campus.code}">GCA-SAI</div>
+                        <div class="fw-semibold" th:text="${campus.name}">Grace Christian Academy Saipan</div>
+                        <div class="text-secondary" th:text="${campus.island}">Saipan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="card border-0 shadow-sm">
         <div class="card-body">
@@ -26,6 +40,8 @@
                     <tr>
                         <th>Student #</th>
                         <th>Name</th>
+                        <th>Campus</th>
+                        <th>Guardian account</th>
                         <th>Status</th>
                         <th>Date of birth</th>
                     </tr>
@@ -34,6 +50,8 @@
                     <tr th:each="student : ${students}">
                         <td th:text="${student.studentNumber}"></td>
                         <td th:text="${student.displayName}"></td>
+                        <td th:text="${student.campus.code}"></td>
+                        <td th:text="${student.familyAccount.accountName}"></td>
                         <td><span class="badge text-bg-secondary" th:text="${student.status}"></span></td>
                         <td th:text="${student.dateOfBirth}"></td>
                     </tr>

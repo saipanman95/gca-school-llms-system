@@ -22,6 +22,12 @@
                 <div class="row g-3">
                     <div class="col-6">
                         <div class="metric-card">
+                            <div class="metric-label">Active campuses</div>
+                            <div class="metric-value" th:text="${metrics.activeCampuses()}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
                             <div class="metric-label">Active students</div>
                             <div class="metric-value" th:text="${metrics.activeStudents()}">0</div>
                         </div>
@@ -42,6 +48,18 @@
                         <div class="metric-card">
                             <div class="metric-label">Active sections</div>
                             <div class="metric-value" th:text="${metrics.activeSections()}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Open invoices</div>
+                            <div class="metric-value" th:text="${metrics.openInvoices()}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Absence records</div>
+                            <div class="metric-value" th:text="${metrics.absencesToday()}">0</div>
                         </div>
                     </div>
                 </div>

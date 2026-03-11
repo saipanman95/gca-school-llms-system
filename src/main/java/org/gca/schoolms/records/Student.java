@@ -7,7 +7,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.time.LocalDate;
+import org.gca.schoolms.finance.FamilyAccount;
+import org.gca.schoolms.organization.Campus;
 
 @Entity
 public class Student {
@@ -27,6 +32,14 @@ public class Student {
 
     private LocalDate dateOfBirth;
 
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "campus_id", nullable = false)
+    private Campus campus;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "family_account_id", nullable = false)
+    private FamilyAccount familyAccount;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StudentStatus status = StudentStatus.ACTIVE;
@@ -34,11 +47,14 @@ public class Student {
     protected Student() {
     }
 
-    public Student(String studentNumber, String firstName, String lastName, LocalDate dateOfBirth, StudentStatus status) {
+    public Student(String studentNumber, String firstName, String lastName, LocalDate dateOfBirth,
+                   Campus campus, FamilyAccount familyAccount, StudentStatus status) {
         this.studentNumber = studentNumber;
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
+        this.campus = campus;
+        this.familyAccount = familyAccount;
         this.status = status;
     }
 
@@ -60,6 +76,14 @@ public class Student {
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public Campus getCampus() {
+        return campus;
+    }
+
+    public FamilyAccount getFamilyAccount() {
+        return familyAccount;
     }
 
     public StudentStatus getStatus() {

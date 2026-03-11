@@ -12,4 +12,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("select coalesce(sum(i.outstandingAmount), 0) from Invoice i where i.status <> org.gca.schoolms.finance.InvoiceStatus.PAID")
     Optional<BigDecimal> sumOutstandingBalance();
+
+    @Query("select count(i) from Invoice i where i.status <> org.gca.schoolms.finance.InvoiceStatus.PAID")
+    long countOpenInvoices();
 }

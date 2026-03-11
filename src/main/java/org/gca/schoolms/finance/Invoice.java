@@ -7,8 +7,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import org.gca.schoolms.organization.Campus;
 
 @Entity
 public class Invoice {
@@ -17,8 +21,9 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String accountName;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "family_account_id", nullable = false)
+    private FamilyAccount familyAccount;
 
     @Column(nullable = false)
     private String description;
@@ -33,19 +38,24 @@ public class Invoice {
     @Column(nullable = false)
     private InvoiceStatus status;
 
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "campus_id", nullable = false)
+    private Campus campus;
+
     @Column(nullable = false)
     private LocalDate dueDate;
 
     protected Invoice() {
     }
 
-    public Invoice(String accountName, String description, BigDecimal totalAmount, BigDecimal outstandingAmount,
-                   InvoiceStatus status, LocalDate dueDate) {
-        this.accountName = accountName;
+    public Invoice(FamilyAccount familyAccount, String description, BigDecimal totalAmount, BigDecimal outstandingAmount,
+                   InvoiceStatus status, Campus campus, LocalDate dueDate) {
+        this.familyAccount = familyAccount;
         this.description = description;
         this.totalAmount = totalAmount;
         this.outstandingAmount = outstandingAmount;
         this.status = status;
+        this.campus = campus;
         this.dueDate = dueDate;
     }
 
@@ -54,7 +64,11 @@ public class Invoice {
     }
 
     public String getAccountName() {
-        return accountName;
+        return familyAccount.getAccountName();
+    }
+
+    public FamilyAccount getFamilyAccount() {
+        return familyAccount;
     }
 
     public String getDescription() {
@@ -71,6 +85,10 @@ public class Invoice {
 
     public InvoiceStatus getStatus() {
         return status;
+    }
+
+    public Campus getCampus() {
+        return campus;
     }
 
     public LocalDate getDueDate() {

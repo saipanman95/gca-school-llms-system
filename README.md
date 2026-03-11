@@ -4,7 +4,8 @@ Spring Boot 3 / Java 21 web application for replacing fragmented school operatio
 
 - student records and compliance files
 - tuition, fees, and receivables
-- courses, sections, and grade management
+- courses, sections, grade management, and attendance
+- multiple campuses
 
 ## Stack
 
@@ -43,8 +44,18 @@ This first scaffold includes:
 
 - a secured dashboard
 - records, finance, and academics modules
+- campus-aware data for Saipan, Tinian, and Rota
+- family accounts for parent/guardian billing
+- starter attendance tracking
 - starter data seeders
 - a base domain model to extend into transcripts, medical files, billing, payments, course rosters, and gradebooks
+
+## Current decisions
+
+- Phase 1 supports multiple campuses from the start.
+- Finance is currently scoped around billing, payments, balances, and family statements rather than full accounting.
+- Parent/guardian and student roles stay in the security model now, but the first delivery focus should remain staff-facing workflows to limit complexity while requirements are still changing.
+- AWS S3 is a reasonable default for document storage later because it is durable, cheap for this use case, and easier to scale across campuses than storing binary files in MySQL.
 
 ## Suggested next increments
 

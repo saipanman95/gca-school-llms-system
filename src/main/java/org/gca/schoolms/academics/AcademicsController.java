@@ -10,14 +10,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class AcademicsController {
 
     private final SectionRepository sectionRepository;
+    private final AttendanceRecordRepository attendanceRecordRepository;
 
-    public AcademicsController(SectionRepository sectionRepository) {
+    public AcademicsController(SectionRepository sectionRepository, AttendanceRecordRepository attendanceRecordRepository) {
         this.sectionRepository = sectionRepository;
+        this.attendanceRecordRepository = attendanceRecordRepository;
     }
 
     @GetMapping("/academics")
     public String academicsHome(Model model) {
         model.addAttribute("sections", sectionRepository.findTop10ByOrderByTermNameDescCourseCodeAsc());
+        model.addAttribute("attendanceRecords", attendanceRecordRepository.findTop10ByOrderByAttendanceDateDesc());
         return "academics/index";
     }
 }

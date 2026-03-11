@@ -10,15 +10,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class FinanceController {
 
     private final InvoiceRepository invoiceRepository;
+    private final FamilyAccountRepository familyAccountRepository;
 
-    public FinanceController(InvoiceRepository invoiceRepository) {
+    public FinanceController(InvoiceRepository invoiceRepository, FamilyAccountRepository familyAccountRepository) {
         this.invoiceRepository = invoiceRepository;
+        this.familyAccountRepository = familyAccountRepository;
     }
 
     @GetMapping("/finance")
     public String financeHome(Model model) {
         model.addAttribute("invoices", invoiceRepository.findTop10ByOrderByDueDateAsc());
         model.addAttribute("outstandingBalance", invoiceRepository.sumOutstandingBalance().orElseThrow());
+        model.addAttribute("familyAccounts", familyAccountRepository.findTop10ByOrderByAccountNameAsc());
         return "finance/index";
     }
 }
