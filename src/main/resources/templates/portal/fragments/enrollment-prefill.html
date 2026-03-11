@@ -48,7 +48,11 @@
         <div class="row g-2">
             <div class="col-md-4" th:each="option : ${studentEthnicityOptions}">
                 <div class="form-check">
-                    <input class="form-check-input" th:field="*{studentEthnicBackgrounds}" th:value="${option}" type="checkbox">
+                    <input class="form-check-input"
+                           th:field="*{studentEthnicBackgrounds}"
+                           th:value="${option}"
+                           th:id="${option == 'Other'} ? 'studentEthnicBackgroundOtherCheckbox' : null"
+                           type="checkbox">
                     <label class="form-check-label" th:for="${#ids.prev('studentEthnicBackgrounds')}" th:text="${option}">Chamorro</label>
                 </div>
             </div>
@@ -56,7 +60,11 @@
     </div>
     <div class="col-md-6">
         <label class="form-label">Other ethnic background</label>
-        <input class="form-control" th:field="*{studentEthnicBackgroundOther}" type="text" placeholder="Fill in if Other applies">
+        <input class="form-control"
+               id="studentEthnicBackgroundOtherInput"
+               th:field="*{studentEthnicBackgroundOther}"
+               type="text"
+               placeholder="Fill in if Other applies">
     </div>
     <div class="col-12 pt-3">
         <div class="border rounded-3 p-3 border-secondary-subtle">
@@ -100,6 +108,7 @@
                 hx-target="#kindergarten-readiness"
                 hx-trigger="change"
                 hx-include="[name='requestedGradeLevel'],[name='childPottyTrained'],[name='pottyAccidentFrequency']">
+            <option value="">Select grade level</option>
             <option th:each="gradeLevel : ${gradeLevels}" th:value="${gradeLevel}" th:text="${gradeLevel.label}"></option>
         </select>
     </div>
@@ -171,6 +180,168 @@
     </div>
     <div class="col-12 pt-3">
         <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Student Medical Information</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Primary physician</label>
+                    <input class="form-control" th:field="*{primaryPhysicianName}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Clinic / practice</label>
+                    <input class="form-control" th:field="*{physicianClinicName}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Clinic phone</label>
+                    <input class="form-control" th:field="*{physicianPhone}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Preferred hospital</label>
+                    <input class="form-control" th:field="*{preferredHospital}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Insurance provider</label>
+                    <input class="form-control" th:field="*{insuranceProvider}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Policy number</label>
+                    <input class="form-control" th:field="*{insurancePolicyNumber}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Allergies</label>
+                    <textarea class="form-control" rows="2" th:field="*{studentAllergies}"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Chronic conditions</label>
+                    <textarea class="form-control" rows="2" th:field="*{studentChronicConditions}"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Current medications</label>
+                    <textarea class="form-control" rows="2" th:field="*{studentMedications}"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Dietary restrictions</label>
+                    <textarea class="form-control" rows="2" th:field="*{studentDietaryRestrictions}"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Activity restrictions</label>
+                    <textarea class="form-control" rows="2" th:field="*{studentActivityRestrictions}"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Additional medical notes</label>
+                    <textarea class="form-control" rows="2" th:field="*{studentMedicalNotes}"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Emergency Contacts</h3>
+            <div class="row g-3" th:each="contact, iterStat : *{emergencyContacts}">
+                <div class="col-12">
+                    <div class="small fw-semibold text-secondary" th:text="'Emergency contact ' + (${iterStat.index} + 1)">Emergency contact</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Name</label>
+                    <input class="form-control" th:field="*{emergencyContacts[__${iterStat.index}__].contactName}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Relationship</label>
+                    <input class="form-control" th:field="*{emergencyContacts[__${iterStat.index}__].relationshipToStudent}" type="text" placeholder="Aunt, grandparent, family friend">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               th:field="*{emergencyContacts[__${iterStat.index}__].pickupAuthorized}"
+                               th:id="${'emergencyContactPickupAuthorized' + iterStat.index}"
+                               type="checkbox">
+                        <label class="form-check-label"
+                               th:for="${'emergencyContactPickupAuthorized' + iterStat.index}">Pickup authorized</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Primary phone</label>
+                    <input class="form-control" th:field="*{emergencyContacts[__${iterStat.index}__].primaryPhone}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Secondary phone</label>
+                    <input class="form-control" th:field="*{emergencyContacts[__${iterStat.index}__].secondaryPhone}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Email</label>
+                    <input class="form-control" th:field="*{emergencyContacts[__${iterStat.index}__].email}" type="email">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Medical Consents</h3>
+            <h3 class="h6 text-uppercase text-secondary mb-3">Previous School Attended</h3>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{emergencyTreatmentConsent}" type="checkbox">
+                        <label class="form-check-label" for="emergencyTreatmentConsent">Emergency treatment consent</label>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{medicationAdministrationConsent}" type="checkbox">
+                        <label class="form-check-label" for="medicationAdministrationConsent">Medication administration guidance acknowledged</label>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{emergencyContactReleaseConsent}" type="checkbox">
+                        <label class="form-check-label" for="emergencyContactReleaseConsent">Release to authorized emergency contacts</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <div class="small fw-semibold text-secondary">Medication authorization</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{allowTylenol}" type="checkbox">
+                        <label class="form-check-label" for="allowTylenol">Tylenol</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{allowPeptoBismol}" type="checkbox">
+                        <label class="form-check-label" for="allowPeptoBismol">Pepto Bismol</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{allowRobitussin}" type="checkbox">
+                        <label class="form-check-label" for="allowRobitussin">Robitussin</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{allowTums}" type="checkbox">
+                        <label class="form-check-label" for="allowTums">Tums</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{allowHydrocortisone}" type="checkbox">
+                        <label class="form-check-label" for="allowHydrocortisone">Hydrocortisone</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{allowAspirin}" type="checkbox">
+                        <label class="form-check-label" for="allowAspirin">Aspirin</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Other approved medications</label>
+                    <textarea class="form-control" rows="2" th:field="*{otherApprovedMedications}" placeholder="List any additional medications authorized by the parent"></textarea>
+                </div>
+            </div>
             <h3 class="h6 text-uppercase text-secondary mb-3">Previous School Attended</h3>
             <div class="row g-3">
                 <div class="col-md-6">

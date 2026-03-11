@@ -18,6 +18,10 @@ public class GuardianEnrollmentForm {
             studentLanguages.add(new StudentLanguageFormRow());
             studentLanguages.add(new StudentLanguageFormRow());
         }
+        if (emergencyContacts.isEmpty()) {
+            emergencyContacts.add(new EmergencyContactFormRow());
+            emergencyContacts.add(new EmergencyContactFormRow());
+        }
     }
 
     @NotBlank
@@ -184,6 +188,56 @@ public class GuardianEnrollmentForm {
 
     private String studentI20Status;
 
+    private String primaryPhysicianName;
+
+    private String physicianClinicName;
+
+    private String physicianPhone;
+
+    private String preferredHospital;
+
+    private String insuranceProvider;
+
+    private String insurancePolicyNumber;
+
+    private String studentAllergies;
+
+    private String studentChronicConditions;
+
+    private String studentMedications;
+
+    private String studentDietaryRestrictions;
+
+    private String studentActivityRestrictions;
+
+    private String studentMedicalNotes;
+
+    private List<EmergencyContactFormRow> emergencyContacts = new ArrayList<>();
+
+    private boolean emergencyTreatmentConsent;
+
+    private boolean medicationAdministrationConsent;
+
+    private boolean emergencyContactReleaseConsent;
+
+    private boolean allowTylenol;
+
+    private boolean allowPeptoBismol;
+
+    private boolean allowRobitussin;
+
+    private boolean allowTums;
+
+    private boolean allowHydrocortisone;
+
+    private boolean allowAspirin;
+
+    private String otherApprovedMedications;
+
+    private boolean parentAttestationConfirmed;
+
+    private String parentAttestationInitials;
+
     private String previousSchoolName;
 
     private String previousSchoolCity;
@@ -196,9 +250,15 @@ public class GuardianEnrollmentForm {
 
     private MultipartFile vaccinationRecordFile;
 
+    private boolean vaccinationRecordOnFile;
+
     private MultipartFile healthCertificateFile;
 
+    private boolean healthCertificateOnFile;
+
     private MultipartFile previousTranscriptFile;
+
+    private boolean previousTranscriptOnFile;
 
     @NotNull
     private GradeLevel requestedGradeLevel;
@@ -701,6 +761,209 @@ public class GuardianEnrollmentForm {
         this.studentI20Status = studentI20Status;
     }
 
+    public String getPrimaryPhysicianName() {
+        return primaryPhysicianName;
+    }
+
+    public void setPrimaryPhysicianName(String primaryPhysicianName) {
+        this.primaryPhysicianName = primaryPhysicianName;
+    }
+
+    public String getPhysicianClinicName() {
+        return physicianClinicName;
+    }
+
+    public void setPhysicianClinicName(String physicianClinicName) {
+        this.physicianClinicName = physicianClinicName;
+    }
+
+    public String getPhysicianPhone() {
+        return physicianPhone;
+    }
+
+    public void setPhysicianPhone(String physicianPhone) {
+        this.physicianPhone = physicianPhone;
+    }
+
+    public String getPreferredHospital() {
+        return preferredHospital;
+    }
+
+    public void setPreferredHospital(String preferredHospital) {
+        this.preferredHospital = preferredHospital;
+    }
+
+    public String getInsuranceProvider() {
+        return insuranceProvider;
+    }
+
+    public void setInsuranceProvider(String insuranceProvider) {
+        this.insuranceProvider = insuranceProvider;
+    }
+
+    public String getInsurancePolicyNumber() {
+        return insurancePolicyNumber;
+    }
+
+    public void setInsurancePolicyNumber(String insurancePolicyNumber) {
+        this.insurancePolicyNumber = insurancePolicyNumber;
+    }
+
+    public String getStudentAllergies() {
+        return studentAllergies;
+    }
+
+    public void setStudentAllergies(String studentAllergies) {
+        this.studentAllergies = studentAllergies;
+    }
+
+    public String getStudentChronicConditions() {
+        return studentChronicConditions;
+    }
+
+    public void setStudentChronicConditions(String studentChronicConditions) {
+        this.studentChronicConditions = studentChronicConditions;
+    }
+
+    public String getStudentMedications() {
+        return studentMedications;
+    }
+
+    public void setStudentMedications(String studentMedications) {
+        this.studentMedications = studentMedications;
+    }
+
+    public String getStudentDietaryRestrictions() {
+        return studentDietaryRestrictions;
+    }
+
+    public void setStudentDietaryRestrictions(String studentDietaryRestrictions) {
+        this.studentDietaryRestrictions = studentDietaryRestrictions;
+    }
+
+    public String getStudentActivityRestrictions() {
+        return studentActivityRestrictions;
+    }
+
+    public void setStudentActivityRestrictions(String studentActivityRestrictions) {
+        this.studentActivityRestrictions = studentActivityRestrictions;
+    }
+
+    public String getStudentMedicalNotes() {
+        return studentMedicalNotes;
+    }
+
+    public void setStudentMedicalNotes(String studentMedicalNotes) {
+        this.studentMedicalNotes = studentMedicalNotes;
+    }
+
+    public List<EmergencyContactFormRow> getEmergencyContacts() {
+        return emergencyContacts;
+    }
+
+    public void setEmergencyContacts(List<EmergencyContactFormRow> emergencyContacts) {
+        this.emergencyContacts = emergencyContacts == null ? new ArrayList<>() : emergencyContacts;
+        while (this.emergencyContacts.size() < 2) {
+            this.emergencyContacts.add(new EmergencyContactFormRow());
+        }
+    }
+
+    public boolean isEmergencyTreatmentConsent() {
+        return emergencyTreatmentConsent;
+    }
+
+    public void setEmergencyTreatmentConsent(boolean emergencyTreatmentConsent) {
+        this.emergencyTreatmentConsent = emergencyTreatmentConsent;
+    }
+
+    public boolean isMedicationAdministrationConsent() {
+        return medicationAdministrationConsent;
+    }
+
+    public void setMedicationAdministrationConsent(boolean medicationAdministrationConsent) {
+        this.medicationAdministrationConsent = medicationAdministrationConsent;
+    }
+
+    public boolean isEmergencyContactReleaseConsent() {
+        return emergencyContactReleaseConsent;
+    }
+
+    public void setEmergencyContactReleaseConsent(boolean emergencyContactReleaseConsent) {
+        this.emergencyContactReleaseConsent = emergencyContactReleaseConsent;
+    }
+
+    public boolean isAllowTylenol() {
+        return allowTylenol;
+    }
+
+    public void setAllowTylenol(boolean allowTylenol) {
+        this.allowTylenol = allowTylenol;
+    }
+
+    public boolean isAllowPeptoBismol() {
+        return allowPeptoBismol;
+    }
+
+    public void setAllowPeptoBismol(boolean allowPeptoBismol) {
+        this.allowPeptoBismol = allowPeptoBismol;
+    }
+
+    public boolean isAllowRobitussin() {
+        return allowRobitussin;
+    }
+
+    public void setAllowRobitussin(boolean allowRobitussin) {
+        this.allowRobitussin = allowRobitussin;
+    }
+
+    public boolean isAllowTums() {
+        return allowTums;
+    }
+
+    public void setAllowTums(boolean allowTums) {
+        this.allowTums = allowTums;
+    }
+
+    public boolean isAllowHydrocortisone() {
+        return allowHydrocortisone;
+    }
+
+    public void setAllowHydrocortisone(boolean allowHydrocortisone) {
+        this.allowHydrocortisone = allowHydrocortisone;
+    }
+
+    public boolean isAllowAspirin() {
+        return allowAspirin;
+    }
+
+    public void setAllowAspirin(boolean allowAspirin) {
+        this.allowAspirin = allowAspirin;
+    }
+
+    public String getOtherApprovedMedications() {
+        return otherApprovedMedications;
+    }
+
+    public void setOtherApprovedMedications(String otherApprovedMedications) {
+        this.otherApprovedMedications = otherApprovedMedications;
+    }
+
+    public boolean isParentAttestationConfirmed() {
+        return parentAttestationConfirmed;
+    }
+
+    public void setParentAttestationConfirmed(boolean parentAttestationConfirmed) {
+        this.parentAttestationConfirmed = parentAttestationConfirmed;
+    }
+
+    public String getParentAttestationInitials() {
+        return parentAttestationInitials;
+    }
+
+    public void setParentAttestationInitials(String parentAttestationInitials) {
+        this.parentAttestationInitials = parentAttestationInitials;
+    }
+
     public String getPreviousSchoolName() {
         return previousSchoolName;
     }
@@ -749,6 +1012,14 @@ public class GuardianEnrollmentForm {
         this.vaccinationRecordFile = vaccinationRecordFile;
     }
 
+    public boolean isVaccinationRecordOnFile() {
+        return vaccinationRecordOnFile;
+    }
+
+    public void setVaccinationRecordOnFile(boolean vaccinationRecordOnFile) {
+        this.vaccinationRecordOnFile = vaccinationRecordOnFile;
+    }
+
     public MultipartFile getHealthCertificateFile() {
         return healthCertificateFile;
     }
@@ -757,12 +1028,28 @@ public class GuardianEnrollmentForm {
         this.healthCertificateFile = healthCertificateFile;
     }
 
+    public boolean isHealthCertificateOnFile() {
+        return healthCertificateOnFile;
+    }
+
+    public void setHealthCertificateOnFile(boolean healthCertificateOnFile) {
+        this.healthCertificateOnFile = healthCertificateOnFile;
+    }
+
     public MultipartFile getPreviousTranscriptFile() {
         return previousTranscriptFile;
     }
 
     public void setPreviousTranscriptFile(MultipartFile previousTranscriptFile) {
         this.previousTranscriptFile = previousTranscriptFile;
+    }
+
+    public boolean isPreviousTranscriptOnFile() {
+        return previousTranscriptOnFile;
+    }
+
+    public void setPreviousTranscriptOnFile(boolean previousTranscriptOnFile) {
+        this.previousTranscriptOnFile = previousTranscriptOnFile;
     }
 
     public GradeLevel getRequestedGradeLevel() {

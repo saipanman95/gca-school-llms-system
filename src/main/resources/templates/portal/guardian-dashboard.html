@@ -105,6 +105,10 @@
                                         Completion:
                                         <span th:text="${request.completionPercentage} + '%'">0%</span>
                                     </div>
+                                    <div class="small mt-1">
+                                        Parent status:
+                                        <span class="fw-semibold" th:text="${request.parentStatusLabel}">Missing details</span>
+                                    </div>
                                 </div>
                                 <span class="badge text-bg-info" th:text="${request.status}"></span>
                             </div>

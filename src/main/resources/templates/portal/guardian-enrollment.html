@@ -7,6 +7,30 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
     <script th:src="@{/webjars/htmx.org/1.9.12/dist/htmx.min.js}"></script>
+    <script>
+        window.syncOtherEthnicityField = () => {
+            const otherCheckbox = document.getElementById('studentEthnicBackgroundOtherCheckbox');
+            const otherInput = document.getElementById('studentEthnicBackgroundOtherInput');
+            if (!otherCheckbox || !otherInput) {
+                return;
+            }
+            const enabled = otherCheckbox.checked;
+            otherInput.disabled = !enabled;
+            if (!enabled) {
+                otherInput.value = '';
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.syncOtherEthnicityField();
+            document.body.addEventListener('change', (event) => {
+                if (event.target.id === 'studentEthnicBackgroundOtherCheckbox') {
+                    window.syncOtherEthnicityField();
+                }
+            });
+            document.body.addEventListener('htmx:afterSwap', window.syncOtherEthnicityField);
+        });
+    </script>
 </head>
 <body>
 <div th:replace="~{fragments/layout :: navbar}"></div>
@@ -32,6 +56,7 @@
                                 Missing:
                                 <span th:text="${#strings.listJoin(completion.missingFields, ', ')}">Required fields</span>
                             </div>
+                            <div class="small" th:if="${!completion.documentsComplete()}">Required document uploads are still missing.</div>
                         </div>
                         <span class="badge" th:classappend="${completion.readyForSubmission()} ? ' text-bg-success' : ' text-bg-warning'"
                               th:text="${completion.readyForSubmission()} ? 'Ready to submit' : 'Draft in progress'">Draft in progress</span>
@@ -62,6 +87,19 @@
                             </div>
                             <div id="enrollment-prefill" class="col-12"
                                  th:replace="~{portal/fragments/enrollment-prefill :: prefillPanel}"></div>
+                        </div>
+                        <div class="mt-4 border rounded-3 p-3 border-secondary-subtle">
+                            <h2 class="h6 text-uppercase text-secondary mb-3">Parent Attestation</h2>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" th:field="*{parentAttestationConfirmed}" type="checkbox">
+                                <label class="form-check-label" for="parentAttestationConfirmed">
+                                    I confirm that all information provided is true and correct to the best of my knowledge.
+                                </label>
+                            </div>
+                            <div class="col-md-3 ps-0">
+                                <label class="form-label">Parent initials</label>
+                                <input class="form-control" th:field="*{parentAttestationInitials}" type="text" maxlength="8" placeholder="Initials">
+                            </div>
                         </div>
                         <div class="mt-4 d-flex justify-content-between align-items-center">
                             <div class="text-secondary small">Existing students can be preselected so names, campus, and next grade carry forward into reenrollment.</div>

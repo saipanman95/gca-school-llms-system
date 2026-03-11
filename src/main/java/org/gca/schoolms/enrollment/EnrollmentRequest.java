@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.CascadeType;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -217,6 +218,59 @@ public class EnrollmentRequest {
 
     private String studentI20Status;
 
+    private String primaryPhysicianName;
+
+    private String physicianClinicName;
+
+    private String physicianPhone;
+
+    private String preferredHospital;
+
+    private String insuranceProvider;
+
+    private String insurancePolicyNumber;
+
+    private String studentAllergies;
+
+    private String studentChronicConditions;
+
+    private String studentMedications;
+
+    private String studentDietaryRestrictions;
+
+    private String studentActivityRestrictions;
+
+    private String studentMedicalNotes;
+
+    @Column(nullable = false)
+    private boolean emergencyTreatmentConsent;
+
+    @Column(nullable = false)
+    private boolean medicationAdministrationConsent;
+
+    @Column(nullable = false)
+    private boolean emergencyContactReleaseConsent;
+
+    @Column(nullable = false)
+    private boolean allowTylenol;
+
+    @Column(nullable = false)
+    private boolean allowPeptoBismol;
+
+    @Column(nullable = false)
+    private boolean allowRobitussin;
+
+    @Column(nullable = false)
+    private boolean allowTums;
+
+    @Column(nullable = false)
+    private boolean allowHydrocortisone;
+
+    @Column(nullable = false)
+    private boolean allowAspirin;
+
+    private String otherApprovedMedications;
+
     private String previousSchoolName;
 
     private String previousSchoolCity;
@@ -236,6 +290,12 @@ public class EnrollmentRequest {
 
     @OneToMany(mappedBy = "enrollmentRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EnrollmentRequestLanguage> studentLanguages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "enrollmentRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EnrollmentEmergencyContact> emergencyContacts = new ArrayList<>();
+
+    @OneToOne(mappedBy = "enrollmentRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private EnrollmentAttestation attestation;
 
     protected EnrollmentRequest() {
     }
@@ -445,6 +505,23 @@ public class EnrollmentRequest {
         this.studentLanguages.addAll(studentLanguages);
     }
 
+    public List<EnrollmentEmergencyContact> getEmergencyContacts() {
+        return emergencyContacts;
+    }
+
+    public void replaceEmergencyContacts(List<EnrollmentEmergencyContact> emergencyContacts) {
+        this.emergencyContacts.clear();
+        this.emergencyContacts.addAll(emergencyContacts);
+    }
+
+    public EnrollmentAttestation getAttestation() {
+        return attestation;
+    }
+
+    public void replaceAttestation(EnrollmentAttestation attestation) {
+        this.attestation = attestation;
+    }
+
     public boolean isChildPottyTrained() {
         return childPottyTrained;
     }
@@ -609,6 +686,28 @@ public class EnrollmentRequest {
     public LocalDate getStudentVisaExpirationDate() { return studentVisaExpirationDate; }
     public boolean isStudentF1Required() { return studentF1Required; }
     public String getStudentI20Status() { return studentI20Status; }
+    public String getPrimaryPhysicianName() { return primaryPhysicianName; }
+    public String getPhysicianClinicName() { return physicianClinicName; }
+    public String getPhysicianPhone() { return physicianPhone; }
+    public String getPreferredHospital() { return preferredHospital; }
+    public String getInsuranceProvider() { return insuranceProvider; }
+    public String getInsurancePolicyNumber() { return insurancePolicyNumber; }
+    public String getStudentAllergies() { return studentAllergies; }
+    public String getStudentChronicConditions() { return studentChronicConditions; }
+    public String getStudentMedications() { return studentMedications; }
+    public String getStudentDietaryRestrictions() { return studentDietaryRestrictions; }
+    public String getStudentActivityRestrictions() { return studentActivityRestrictions; }
+    public String getStudentMedicalNotes() { return studentMedicalNotes; }
+    public boolean isEmergencyTreatmentConsent() { return emergencyTreatmentConsent; }
+    public boolean isMedicationAdministrationConsent() { return medicationAdministrationConsent; }
+    public boolean isEmergencyContactReleaseConsent() { return emergencyContactReleaseConsent; }
+    public boolean isAllowTylenol() { return allowTylenol; }
+    public boolean isAllowPeptoBismol() { return allowPeptoBismol; }
+    public boolean isAllowRobitussin() { return allowRobitussin; }
+    public boolean isAllowTums() { return allowTums; }
+    public boolean isAllowHydrocortisone() { return allowHydrocortisone; }
+    public boolean isAllowAspirin() { return allowAspirin; }
+    public String getOtherApprovedMedications() { return otherApprovedMedications; }
     public String getPreviousSchoolName() { return previousSchoolName; }
     public String getPreviousSchoolCity() { return previousSchoolCity; }
     public String getPreviousSchoolState() { return previousSchoolState; }
@@ -630,6 +729,43 @@ public class EnrollmentRequest {
             name.append(" ").append(studentSuffix);
         }
         return name.toString();
+    }
+
+    public void updateMedicalAndEmergency(String primaryPhysicianName, String physicianClinicName,
+                                          String physicianPhone, String preferredHospital,
+                                          String insuranceProvider, String insurancePolicyNumber,
+                                          String studentAllergies, String studentChronicConditions,
+                                          String studentMedications, String studentDietaryRestrictions,
+                                          String studentActivityRestrictions, String studentMedicalNotes,
+                                          boolean emergencyTreatmentConsent,
+                                          boolean medicationAdministrationConsent,
+                                          boolean emergencyContactReleaseConsent,
+                                          boolean allowTylenol, boolean allowPeptoBismol,
+                                          boolean allowRobitussin, boolean allowTums,
+                                          boolean allowHydrocortisone, boolean allowAspirin,
+                                          String otherApprovedMedications) {
+        this.primaryPhysicianName = primaryPhysicianName;
+        this.physicianClinicName = physicianClinicName;
+        this.physicianPhone = physicianPhone;
+        this.preferredHospital = preferredHospital;
+        this.insuranceProvider = insuranceProvider;
+        this.insurancePolicyNumber = insurancePolicyNumber;
+        this.studentAllergies = studentAllergies;
+        this.studentChronicConditions = studentChronicConditions;
+        this.studentMedications = studentMedications;
+        this.studentDietaryRestrictions = studentDietaryRestrictions;
+        this.studentActivityRestrictions = studentActivityRestrictions;
+        this.studentMedicalNotes = studentMedicalNotes;
+        this.emergencyTreatmentConsent = emergencyTreatmentConsent;
+        this.medicationAdministrationConsent = medicationAdministrationConsent;
+        this.emergencyContactReleaseConsent = emergencyContactReleaseConsent;
+        this.allowTylenol = allowTylenol;
+        this.allowPeptoBismol = allowPeptoBismol;
+        this.allowRobitussin = allowRobitussin;
+        this.allowTums = allowTums;
+        this.allowHydrocortisone = allowHydrocortisone;
+        this.allowAspirin = allowAspirin;
+        this.otherApprovedMedications = otherApprovedMedications;
     }
 
     public void updateDraftOrSubmission(Campus campus, Student student, EnrollmentRequestType requestType,

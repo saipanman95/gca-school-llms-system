@@ -1,14 +1,18 @@
 package org.gca.schoolms.portal;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.gca.schoolms.enrollment.EnrollmentAttestation;
 import org.gca.schoolms.enrollment.EnrollmentDocument;
 import org.gca.schoolms.enrollment.EnrollmentDocumentRepository;
 import org.gca.schoolms.enrollment.EnrollmentDocumentStorageService;
 import org.gca.schoolms.enrollment.EnrollmentDocumentType;
+import org.gca.schoolms.enrollment.EnrollmentEmergencyContact;
 import org.gca.schoolms.enrollment.EnrollmentRequest;
 import org.gca.schoolms.enrollment.EnrollmentRequestLanguage;
 import org.gca.schoolms.enrollment.EnrollmentRequestRepository;
@@ -64,6 +68,7 @@ public class GuardianPortalService {
                     request.getSchoolYear(),
                     request.getRequestedGradeLevel(),
                     request.getStatus(),
+                    buildParentStatusLabel(request, completion),
                     completion.completionPercentage(),
                     editable,
                     editable
@@ -111,6 +116,7 @@ public class GuardianPortalService {
         applyGuardianProfile(form, familyAccount);
         if (requestId != null) {
             EnrollmentRequest request = findEditableEnrollmentRequest(username, requestId);
+            applyDocumentFlags(form, request);
             form.setEnrollmentRequestId(request.getId());
             form.setExistingStudentId(request.getStudent() == null ? null : request.getStudent().getId());
             form.setRequestType(request.getRequestType());
@@ -143,6 +149,42 @@ public class GuardianPortalService {
             form.setStudentVisaExpirationDate(request.getStudentVisaExpirationDate());
             form.setStudentF1Required(request.isStudentF1Required());
             form.setStudentI20Status(request.getStudentI20Status());
+            form.setPrimaryPhysicianName(request.getPrimaryPhysicianName());
+            form.setPhysicianClinicName(request.getPhysicianClinicName());
+            form.setPhysicianPhone(request.getPhysicianPhone());
+            form.setPreferredHospital(request.getPreferredHospital());
+            form.setInsuranceProvider(request.getInsuranceProvider());
+            form.setInsurancePolicyNumber(request.getInsurancePolicyNumber());
+            form.setStudentAllergies(request.getStudentAllergies());
+            form.setStudentChronicConditions(request.getStudentChronicConditions());
+            form.setStudentMedications(request.getStudentMedications());
+            form.setStudentDietaryRestrictions(request.getStudentDietaryRestrictions());
+            form.setStudentActivityRestrictions(request.getStudentActivityRestrictions());
+            form.setStudentMedicalNotes(request.getStudentMedicalNotes());
+            form.setEmergencyContacts(request.getEmergencyContacts().stream().map(contact -> {
+                EmergencyContactFormRow row = new EmergencyContactFormRow();
+                row.setContactName(contact.getContactName());
+                row.setRelationshipToStudent(contact.getRelationshipToStudent());
+                row.setPrimaryPhone(contact.getPrimaryPhone());
+                row.setSecondaryPhone(contact.getSecondaryPhone());
+                row.setEmail(contact.getEmail());
+                row.setPickupAuthorized(contact.isPickupAuthorized());
+                return row;
+            }).collect(Collectors.toCollection(ArrayList::new)));
+            form.setEmergencyTreatmentConsent(request.isEmergencyTreatmentConsent());
+            form.setMedicationAdministrationConsent(request.isMedicationAdministrationConsent());
+            form.setEmergencyContactReleaseConsent(request.isEmergencyContactReleaseConsent());
+            form.setAllowTylenol(request.isAllowTylenol());
+            form.setAllowPeptoBismol(request.isAllowPeptoBismol());
+            form.setAllowRobitussin(request.isAllowRobitussin());
+            form.setAllowTums(request.isAllowTums());
+            form.setAllowHydrocortisone(request.isAllowHydrocortisone());
+            form.setAllowAspirin(request.isAllowAspirin());
+            form.setOtherApprovedMedications(request.getOtherApprovedMedications());
+            if (request.getAttestation() != null) {
+                form.setParentAttestationConfirmed(request.getAttestation().isConfirmedTrueAndCorrect());
+                form.setParentAttestationInitials(request.getAttestation().getParentInitials());
+            }
             form.setPreviousSchoolName(request.getPreviousSchoolName());
             form.setPreviousSchoolCity(request.getPreviousSchoolCity());
             form.setPreviousSchoolState(request.getPreviousSchoolState());
@@ -285,10 +327,23 @@ public class GuardianPortalService {
         if (form.getStudentEthnicBackgrounds() == null || form.getStudentEthnicBackgrounds().isEmpty()) {
             missingFields.add("Student ethnic background");
         }
-        int totalFields = 11;
+        if (form.getEmergencyContacts().stream().noneMatch(contact ->
+            contact.getContactName() != null && !contact.getContactName().isBlank()
+                && contact.getPrimaryPhone() != null && !contact.getPrimaryPhone().isBlank())) {
+            missingFields.add("Emergency contact");
+        }
+        if (!form.isParentAttestationConfirmed()) {
+            missingFields.add("Parent confirmation");
+        }
+        addMissing(missingFields, form.getParentAttestationInitials(), "Parent initials");
+        int totalFields = 14;
         int completeFields = totalFields - missingFields.size();
         int completionPercentage = (int) Math.round((completeFields * 100.0) / totalFields);
-        return new EnrollmentCompletionView(completionPercentage, missingFields);
+        boolean documentsComplete = hasRequiredDocuments(form);
+        if (!documentsComplete) {
+            missingFields.add("Required documents");
+        }
+        return new EnrollmentCompletionView(completionPercentage, missingFields, documentsComplete);
     }
 
     public EnrollmentCompletionView calculateCompletion(EnrollmentRequest request) {
@@ -310,6 +365,20 @@ public class GuardianPortalService {
             row.setPreferenceRank(language.getPreferenceRank());
             return row;
         }).collect(Collectors.toCollection(ArrayList::new)));
+        form.setEmergencyContacts(request.getEmergencyContacts().stream().map(contact -> {
+            EmergencyContactFormRow row = new EmergencyContactFormRow();
+            row.setContactName(contact.getContactName());
+            row.setRelationshipToStudent(contact.getRelationshipToStudent());
+            row.setPrimaryPhone(contact.getPrimaryPhone());
+            row.setSecondaryPhone(contact.getSecondaryPhone());
+            row.setEmail(contact.getEmail());
+            row.setPickupAuthorized(contact.isPickupAuthorized());
+            return row;
+        }).collect(Collectors.toCollection(ArrayList::new)));
+        if (request.getAttestation() != null) {
+            form.setParentAttestationConfirmed(request.getAttestation().isConfirmedTrueAndCorrect());
+            form.setParentAttestationInitials(request.getAttestation().getParentInitials());
+        }
         return calculateCompletion(form);
     }
 
@@ -519,6 +588,30 @@ public class GuardianPortalService {
                 LocalDate.now()
             );
         }
+        request.updateMedicalAndEmergency(
+            form.getPrimaryPhysicianName(),
+            form.getPhysicianClinicName(),
+            form.getPhysicianPhone(),
+            form.getPreferredHospital(),
+            form.getInsuranceProvider(),
+            form.getInsurancePolicyNumber(),
+            form.getStudentAllergies(),
+            form.getStudentChronicConditions(),
+            form.getStudentMedications(),
+            form.getStudentDietaryRestrictions(),
+            form.getStudentActivityRestrictions(),
+            form.getStudentMedicalNotes(),
+            form.isEmergencyTreatmentConsent(),
+            form.isMedicationAdministrationConsent(),
+            form.isEmergencyContactReleaseConsent(),
+            form.isAllowTylenol(),
+            form.isAllowPeptoBismol(),
+            form.isAllowRobitussin(),
+            form.isAllowTums(),
+            form.isAllowHydrocortisone(),
+            form.isAllowAspirin(),
+            form.getOtherApprovedMedications()
+        );
         familyAccount.updateGuardianProfile(
             form.getGuardianName(),
             form.getGuardianEmail(),
@@ -587,6 +680,31 @@ public class GuardianPortalService {
                     language.getPreferenceRank()))
                 .toList()
         );
+        savedRequest.replaceEmergencyContacts(
+            form.getEmergencyContacts().stream()
+                .filter(contact -> contact.getContactName() != null && !contact.getContactName().isBlank())
+                .filter(contact -> contact.getPrimaryPhone() != null && !contact.getPrimaryPhone().isBlank())
+                .map(contact -> new EnrollmentEmergencyContact(
+                    savedRequest,
+                    contact.getContactName().trim(),
+                    contact.getRelationshipToStudent(),
+                    contact.getPrimaryPhone().trim(),
+                    contact.getSecondaryPhone(),
+                    contact.getEmail(),
+                    contact.isPickupAuthorized()))
+                .toList()
+        );
+        if (form.isParentAttestationConfirmed() && form.getParentAttestationInitials() != null
+            && !form.getParentAttestationInitials().isBlank()) {
+            savedRequest.replaceAttestation(new EnrollmentAttestation(
+                savedRequest,
+                true,
+                form.getParentAttestationInitials().trim().toUpperCase(),
+                LocalDateTime.now()
+            ));
+        } else {
+            savedRequest.replaceAttestation(null);
+        }
         enrollmentRequestRepository.save(savedRequest);
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.VACCINATION_CARD, form.getVaccinationRecordFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.HEALTH_CERTIFICATE, form.getHealthCertificateFile());
@@ -615,6 +733,52 @@ public class GuardianPortalService {
         if (value == null || value.isBlank()) {
             missingFields.add(label);
         }
+    }
+
+    private String buildParentStatusLabel(EnrollmentRequest request, EnrollmentCompletionView completion) {
+        if (!completion.documentsComplete()) {
+            return "Needs documents";
+        }
+        if (!completion.missingFields().isEmpty()) {
+            return "Missing details";
+        }
+        if (request.getStatus() == EnrollmentRequestStatus.DRAFT) {
+            return "Complete draft";
+        }
+        return switch (request.getStatus()) {
+            case SUBMITTED -> "Submitted";
+            case UNDER_REVIEW -> "Under review";
+            case APPROVED -> "Approved";
+            case DRAFT -> "Draft";
+        };
+    }
+
+    private boolean hasRequiredDocuments(GuardianEnrollmentForm form) {
+        return (form.isVaccinationRecordOnFile() || hasFile(form.getVaccinationRecordFile()))
+            && (form.isHealthCertificateOnFile() || hasFile(form.getHealthCertificateFile()))
+            && (form.isPreviousTranscriptOnFile() || hasFile(form.getPreviousTranscriptFile()));
+    }
+
+    private boolean hasRequiredDocuments(EnrollmentRequest request) {
+        EnumSet<EnrollmentDocumentType> presentTypes = enrollmentDocumentRepository.findByEnrollmentRequest(request).stream()
+            .map(document -> document.getRecordType())
+            .collect(Collectors.toCollection(() -> EnumSet.noneOf(EnrollmentDocumentType.class)));
+        return presentTypes.contains(EnrollmentDocumentType.VACCINATION_CARD)
+            && presentTypes.contains(EnrollmentDocumentType.HEALTH_CERTIFICATE)
+            && presentTypes.contains(EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT);
+    }
+
+    private boolean hasFile(org.springframework.web.multipart.MultipartFile file) {
+        return file != null && !file.isEmpty();
+    }
+
+    private void applyDocumentFlags(GuardianEnrollmentForm form, EnrollmentRequest request) {
+        EnumSet<EnrollmentDocumentType> presentTypes = enrollmentDocumentRepository.findByEnrollmentRequest(request).stream()
+            .map(EnrollmentDocument::getRecordType)
+            .collect(Collectors.toCollection(() -> EnumSet.noneOf(EnrollmentDocumentType.class)));
+        form.setVaccinationRecordOnFile(presentTypes.contains(EnrollmentDocumentType.VACCINATION_CARD));
+        form.setHealthCertificateOnFile(presentTypes.contains(EnrollmentDocumentType.HEALTH_CERTIFICATE));
+        form.setPreviousTranscriptOnFile(presentTypes.contains(EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT));
     }
 
     private void applyGuardianProfile(GuardianEnrollmentForm form, FamilyAccount familyAccount) {
