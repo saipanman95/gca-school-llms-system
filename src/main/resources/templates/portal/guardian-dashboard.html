@@ -29,6 +29,7 @@
                         <div class="metric-card">
                             <div class="metric-label">Outstanding balance</div>
                             <div class="metric-value" th:text="${@moneyFormatter.format(portal.outstandingBalance)}">$0</div>
+                            <a class="btn btn-sm btn-outline-primary mt-2" th:href="@{/portal/guardian/finance}">View charges and payments</a>
                         </div>
                     </div>
                 </div>
@@ -46,8 +47,15 @@
                         <div>
                             <h2 class="h5 mb-1">Your enrolled students</h2>
                             <p class="text-secondary mb-0" th:text="${portal.accountName}">Family Account</p>
+                            <p class="text-secondary mb-0" th:if="${portal.spouseName != null and !#strings.isEmpty(portal.spouseName)}">
+                                Spouse: <span th:text="${portal.spouseName}"></span>
+                            </p>
+                            <p class="text-secondary mb-0">Billing recipient: <span th:text="${portal.billingRecipient}"></span></p>
                         </div>
-                        <a class="btn btn-primary" th:href="@{/portal/guardian/enrollment}">Register or reenroll</a>
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-outline-primary" th:href="@{/portal/guardian/profile}">Update parent information</a>
+                            <a class="btn btn-primary" th:href="@{/portal/guardian/enrollment}">Register or reenroll</a>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table align-middle">

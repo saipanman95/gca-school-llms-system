@@ -5,4 +5,5 @@
 *.iml
 /.DS_Store
 /security-github-stuff-do-not-commit
+/context-thread-history
 /new_token

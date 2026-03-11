@@ -35,6 +35,35 @@ public class GuardianPortalController {
         return "portal/guardian-dashboard";
     }
 
+    @GetMapping("/portal/guardian/profile")
+    public String profileForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        if (!model.containsAttribute("profileForm")) {
+            model.addAttribute("profileForm", guardianPortalService.buildProfileForm(userDetails.getUsername()));
+        }
+        model.addAttribute("maritalStatuses", MaritalStatus.values());
+        return "portal/guardian-profile";
+    }
+
+    @PostMapping("/portal/guardian/profile")
+    public String updateProfile(@AuthenticationPrincipal UserDetails userDetails,
+                                @Valid @ModelAttribute("profileForm") GuardianProfileForm profileForm,
+                                BindingResult bindingResult, Model model,
+                                RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("maritalStatuses", MaritalStatus.values());
+            return "portal/guardian-profile";
+        }
+        guardianPortalService.updateGuardianProfile(userDetails.getUsername(), profileForm);
+        redirectAttributes.addFlashAttribute("message", "Parent information updated.");
+        return "redirect:/portal/guardian";
+    }
+
+    @GetMapping("/portal/guardian/finance")
+    public String financeView(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        model.addAttribute("financeView", guardianPortalService.loadFinance(userDetails.getUsername()));
+        return "portal/guardian-finance";
+    }
+
     @GetMapping("/portal/guardian/enrollment")
     public String enrollmentForm(@AuthenticationPrincipal UserDetails userDetails,
                                  @RequestParam(name = "studentId", required = false) Long studentId,

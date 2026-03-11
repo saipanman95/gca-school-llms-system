@@ -48,6 +48,10 @@ public class GuardianPortalService {
         return new GuardianDashboardView(
             familyAccount.getAccountName(),
             familyAccount.getPrimaryGuardianName(),
+            familyAccount.getSecondaryGuardianName(),
+            familyAccount.isPrimaryGuardianBillingRecipient()
+                ? familyAccount.getPrimaryGuardianName()
+                : familyAccount.getSecondaryGuardianName(),
             students.size(),
             invoiceRepository.sumOutstandingBalanceByFamilyAccount(familyAccount).orElse(java.math.BigDecimal.ZERO),
             dashboardStudents,
@@ -93,6 +97,55 @@ public class GuardianPortalService {
         return new GuardianEnrollmentPrefillView(
             student.getDisplayName() + " / current grade " + student.getGradeLevel().getLabel(),
             student.getGradeLevel().nextGradeLevel().getLabel()
+        );
+    }
+
+    public GuardianProfileForm buildProfileForm(String username) {
+        GuardianProfileForm form = new GuardianProfileForm();
+        applyGuardianProfile(form, resolveFamilyAccount(username));
+        return form;
+    }
+
+    @Transactional
+    public void updateGuardianProfile(String username, GuardianProfileForm form) {
+        FamilyAccount familyAccount = resolveFamilyAccount(username);
+        familyAccount.updateGuardianProfile(
+            form.getGuardianName(),
+            form.getGuardianEmail(),
+            form.getGuardianPhone(),
+            form.getGuardianMailingAddressLine1(),
+            form.getGuardianMailingAddressLine2(),
+            form.getGuardianMailingCity(),
+            form.getGuardianMailingState(),
+            form.getGuardianMailingPostalCode(),
+            form.getGuardianEmployerName(),
+            form.getGuardianWorkPhone(),
+            form.getGuardianWorkEmail(),
+            form.getGuardianWorkAddressLine1(),
+            form.getGuardianWorkAddressLine2(),
+            form.getGuardianWorkCity(),
+            form.getGuardianWorkState(),
+            form.getGuardianWorkPostalCode(),
+            form.getGuardianGender(),
+            form.getGuardianEthnicity(),
+            form.getMaritalStatus(),
+            form.getSecondaryGuardianName(),
+            form.getSecondaryGuardianEmail(),
+            form.getSecondaryGuardianPhone(),
+            form.isSecondaryGuardianPortalAccess(),
+            form.isPrimaryGuardianBillingRecipient()
+        );
+    }
+
+    public GuardianFinanceView loadFinance(String username) {
+        FamilyAccount familyAccount = resolveFamilyAccount(username);
+        String billingRecipient = familyAccount.isPrimaryGuardianBillingRecipient()
+            ? familyAccount.getPrimaryGuardianName()
+            : familyAccount.getSecondaryGuardianName();
+        return new GuardianFinanceView(
+            invoiceRepository.sumOutstandingBalanceByFamilyAccount(familyAccount).orElse(java.math.BigDecimal.ZERO),
+            billingRecipient,
+            invoiceRepository.findByFamilyAccountOrderByDueDateAsc(familyAccount)
         );
     }
 
@@ -167,6 +220,33 @@ public class GuardianPortalService {
     }
 
     private void applyGuardianProfile(GuardianEnrollmentForm form, FamilyAccount familyAccount) {
+        form.setGuardianName(familyAccount.getPrimaryGuardianName());
+        form.setGuardianEmail(familyAccount.getPrimaryGuardianEmail());
+        form.setGuardianPhone(familyAccount.getPrimaryGuardianPhone());
+        form.setGuardianMailingAddressLine1(familyAccount.getMailingAddressLine1());
+        form.setGuardianMailingAddressLine2(familyAccount.getMailingAddressLine2());
+        form.setGuardianMailingCity(familyAccount.getMailingCity());
+        form.setGuardianMailingState(familyAccount.getMailingState());
+        form.setGuardianMailingPostalCode(familyAccount.getMailingPostalCode());
+        form.setGuardianEmployerName(familyAccount.getEmployerName());
+        form.setGuardianWorkPhone(familyAccount.getWorkPhone());
+        form.setGuardianWorkEmail(familyAccount.getWorkEmail());
+        form.setGuardianWorkAddressLine1(familyAccount.getWorkAddressLine1());
+        form.setGuardianWorkAddressLine2(familyAccount.getWorkAddressLine2());
+        form.setGuardianWorkCity(familyAccount.getWorkCity());
+        form.setGuardianWorkState(familyAccount.getWorkState());
+        form.setGuardianWorkPostalCode(familyAccount.getWorkPostalCode());
+        form.setGuardianGender(familyAccount.getGender());
+        form.setGuardianEthnicity(familyAccount.getEthnicity());
+        form.setMaritalStatus(familyAccount.getMaritalStatus());
+        form.setSecondaryGuardianName(familyAccount.getSecondaryGuardianName());
+        form.setSecondaryGuardianEmail(familyAccount.getSecondaryGuardianEmail());
+        form.setSecondaryGuardianPhone(familyAccount.getSecondaryGuardianPhone());
+        form.setSecondaryGuardianPortalAccess(familyAccount.isSecondaryGuardianPortalAccess());
+        form.setPrimaryGuardianBillingRecipient(familyAccount.isPrimaryGuardianBillingRecipient());
+    }
+
+    private void applyGuardianProfile(GuardianProfileForm form, FamilyAccount familyAccount) {
         form.setGuardianName(familyAccount.getPrimaryGuardianName());
         form.setGuardianEmail(familyAccount.getPrimaryGuardianEmail());
         form.setGuardianPhone(familyAccount.getPrimaryGuardianPhone());

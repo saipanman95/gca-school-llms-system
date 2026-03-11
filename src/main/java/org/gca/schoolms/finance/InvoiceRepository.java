@@ -19,4 +19,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("select coalesce(sum(i.outstandingAmount), 0) from Invoice i where i.familyAccount = :familyAccount and i.status <> org.gca.schoolms.finance.InvoiceStatus.PAID")
     Optional<BigDecimal> sumOutstandingBalanceByFamilyAccount(FamilyAccount familyAccount);
+
+    List<Invoice> findByFamilyAccountOrderByDueDateAsc(FamilyAccount familyAccount);
 }
