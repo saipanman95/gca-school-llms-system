@@ -115,6 +115,43 @@
         <label class="form-label">Ethnicity</label>
         <input class="form-control" th:field="*{guardianEthnicity}" type="text">
     </div>
+    <div class="col-12 pt-3">
+        <h2 class="h5 mb-1">Family structure and spouse access</h2>
+        <p class="text-secondary small mb-0">A married spouse can have access to the same student details, while billing still goes to only one designated guardian.</p>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Marital status</label>
+        <select class="form-select" th:field="*{maritalStatus}">
+            <option th:each="status : ${maritalStatuses}" th:value="${status}" th:text="${status}"></option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Spouse/secondary guardian name</label>
+        <input class="form-control" th:field="*{secondaryGuardianName}" type="text">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Spouse/secondary guardian email</label>
+        <input class="form-control" th:field="*{secondaryGuardianEmail}" type="email">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Spouse/secondary guardian phone</label>
+        <input class="form-control" th:field="*{secondaryGuardianPhone}" type="text">
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <div class="form-check">
+            <input class="form-check-input" th:field="*{secondaryGuardianPortalAccess}" type="checkbox">
+            <label class="form-check-label" for="secondaryGuardianPortalAccess">Grant spouse shared portal access</label>
+        </div>
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <div class="form-check">
+            <input class="form-check-input" th:field="*{primaryGuardianBillingRecipient}" type="checkbox">
+            <label class="form-check-label" for="primaryGuardianBillingRecipient">Send billing to primary guardian</label>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="small text-secondary">If the billing checkbox is off, the spouse/secondary guardian is the intended billing recipient.</div>
+    </div>
 </div>
 </body>
 </html>

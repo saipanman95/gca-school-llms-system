@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import org.gca.schoolms.organization.Campus;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 public class FamilyAccount {
@@ -66,6 +68,21 @@ public class FamilyAccount {
 
     private String ethnicity;
 
+    @Enumerated(EnumType.STRING)
+    private MaritalStatus maritalStatus;
+
+    private String secondaryGuardianName;
+
+    private String secondaryGuardianEmail;
+
+    private String secondaryGuardianPhone;
+
+    @Column(nullable = false)
+    private boolean secondaryGuardianPortalAccess;
+
+    @Column(nullable = false)
+    private boolean primaryGuardianBillingRecipient = true;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "campus_id", nullable = false)
     private Campus campus;
@@ -79,7 +96,10 @@ public class FamilyAccount {
                          String mailingState, String mailingPostalCode, String employerName,
                          String workPhone, String workEmail, String workAddressLine1, String workAddressLine2,
                          String workCity, String workState, String workPostalCode, String gender,
-                         String ethnicity, Campus campus) {
+                         String ethnicity, MaritalStatus maritalStatus, String secondaryGuardianName,
+                         String secondaryGuardianEmail, String secondaryGuardianPhone,
+                         boolean secondaryGuardianPortalAccess, boolean primaryGuardianBillingRecipient,
+                         Campus campus) {
         this.accountNumber = accountNumber;
         this.accountName = accountName;
         this.primaryGuardianName = primaryGuardianName;
@@ -100,6 +120,12 @@ public class FamilyAccount {
         this.workPostalCode = workPostalCode;
         this.gender = gender;
         this.ethnicity = ethnicity;
+        this.maritalStatus = maritalStatus;
+        this.secondaryGuardianName = secondaryGuardianName;
+        this.secondaryGuardianEmail = secondaryGuardianEmail;
+        this.secondaryGuardianPhone = secondaryGuardianPhone;
+        this.secondaryGuardianPortalAccess = secondaryGuardianPortalAccess;
+        this.primaryGuardianBillingRecipient = primaryGuardianBillingRecipient;
         this.campus = campus;
     }
 
@@ -187,6 +213,30 @@ public class FamilyAccount {
         return ethnicity;
     }
 
+    public MaritalStatus getMaritalStatus() {
+        return maritalStatus;
+    }
+
+    public String getSecondaryGuardianName() {
+        return secondaryGuardianName;
+    }
+
+    public String getSecondaryGuardianEmail() {
+        return secondaryGuardianEmail;
+    }
+
+    public String getSecondaryGuardianPhone() {
+        return secondaryGuardianPhone;
+    }
+
+    public boolean isSecondaryGuardianPortalAccess() {
+        return secondaryGuardianPortalAccess;
+    }
+
+    public boolean isPrimaryGuardianBillingRecipient() {
+        return primaryGuardianBillingRecipient;
+    }
+
     public Campus getCampus() {
         return campus;
     }
@@ -196,7 +246,9 @@ public class FamilyAccount {
                                       String mailingState, String mailingPostalCode, String employerName,
                                       String workPhone, String workEmail, String workAddressLine1, String workAddressLine2,
                                       String workCity, String workState, String workPostalCode, String gender,
-                                      String ethnicity) {
+                                      String ethnicity, MaritalStatus maritalStatus, String secondaryGuardianName,
+                                      String secondaryGuardianEmail, String secondaryGuardianPhone,
+                                      boolean secondaryGuardianPortalAccess, boolean primaryGuardianBillingRecipient) {
         this.primaryGuardianName = primaryGuardianName;
         this.primaryGuardianEmail = primaryGuardianEmail;
         this.primaryGuardianPhone = primaryGuardianPhone;
@@ -215,5 +267,11 @@ public class FamilyAccount {
         this.workPostalCode = workPostalCode;
         this.gender = gender;
         this.ethnicity = ethnicity;
+        this.maritalStatus = maritalStatus;
+        this.secondaryGuardianName = secondaryGuardianName;
+        this.secondaryGuardianEmail = secondaryGuardianEmail;
+        this.secondaryGuardianPhone = secondaryGuardianPhone;
+        this.secondaryGuardianPortalAccess = secondaryGuardianPortalAccess;
+        this.primaryGuardianBillingRecipient = primaryGuardianBillingRecipient;
     }
 }

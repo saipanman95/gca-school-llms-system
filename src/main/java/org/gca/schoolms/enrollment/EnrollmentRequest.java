@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDate;
 import org.gca.schoolms.finance.FamilyAccount;
+import org.gca.schoolms.finance.MaritalStatus;
 import org.gca.schoolms.organization.Campus;
 import org.gca.schoolms.records.GradeLevel;
 import org.gca.schoolms.records.Student;
@@ -96,6 +97,21 @@ public class EnrollmentRequest {
     private String guardianEthnicity;
 
     @Enumerated(EnumType.STRING)
+    private MaritalStatus maritalStatus;
+
+    private String secondaryGuardianName;
+
+    private String secondaryGuardianEmail;
+
+    private String secondaryGuardianPhone;
+
+    @Column(nullable = false)
+    private boolean secondaryGuardianPortalAccess;
+
+    @Column(nullable = false)
+    private boolean primaryGuardianBillingRecipient;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private GradeLevel requestedGradeLevel;
 
@@ -113,7 +129,10 @@ public class EnrollmentRequest {
                              String guardianEmployerName, String guardianWorkPhone, String guardianWorkEmail,
                              String guardianWorkAddressLine1, String guardianWorkAddressLine2, String guardianWorkCity,
                              String guardianWorkState, String guardianWorkPostalCode, String guardianGender,
-                             String guardianEthnicity, GradeLevel requestedGradeLevel, LocalDate submittedOn) {
+                             String guardianEthnicity, MaritalStatus maritalStatus, String secondaryGuardianName,
+                             String secondaryGuardianEmail, String secondaryGuardianPhone,
+                             boolean secondaryGuardianPortalAccess, boolean primaryGuardianBillingRecipient,
+                             GradeLevel requestedGradeLevel, LocalDate submittedOn) {
         this.familyAccount = familyAccount;
         this.student = student;
         this.campus = campus;
@@ -140,6 +159,12 @@ public class EnrollmentRequest {
         this.guardianWorkPostalCode = guardianWorkPostalCode;
         this.guardianGender = guardianGender;
         this.guardianEthnicity = guardianEthnicity;
+        this.maritalStatus = maritalStatus;
+        this.secondaryGuardianName = secondaryGuardianName;
+        this.secondaryGuardianEmail = secondaryGuardianEmail;
+        this.secondaryGuardianPhone = secondaryGuardianPhone;
+        this.secondaryGuardianPortalAccess = secondaryGuardianPortalAccess;
+        this.primaryGuardianBillingRecipient = primaryGuardianBillingRecipient;
         this.requestedGradeLevel = requestedGradeLevel;
         this.submittedOn = submittedOn;
     }
@@ -250,6 +275,30 @@ public class EnrollmentRequest {
 
     public String getGuardianEthnicity() {
         return guardianEthnicity;
+    }
+
+    public MaritalStatus getMaritalStatus() {
+        return maritalStatus;
+    }
+
+    public String getSecondaryGuardianName() {
+        return secondaryGuardianName;
+    }
+
+    public String getSecondaryGuardianEmail() {
+        return secondaryGuardianEmail;
+    }
+
+    public String getSecondaryGuardianPhone() {
+        return secondaryGuardianPhone;
+    }
+
+    public boolean isSecondaryGuardianPortalAccess() {
+        return secondaryGuardianPortalAccess;
+    }
+
+    public boolean isPrimaryGuardianBillingRecipient() {
+        return primaryGuardianBillingRecipient;
     }
 
     public GradeLevel getRequestedGradeLevel() {

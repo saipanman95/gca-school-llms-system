@@ -3,6 +3,7 @@ package org.gca.schoolms.portal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.gca.schoolms.enrollment.EnrollmentRequestType;
+import org.gca.schoolms.finance.MaritalStatus;
 import org.gca.schoolms.records.GradeLevel;
 
 public class GuardianEnrollmentForm {
@@ -58,6 +59,18 @@ public class GuardianEnrollmentForm {
     private String guardianGender;
 
     private String guardianEthnicity;
+
+    private MaritalStatus maritalStatus = MaritalStatus.MARRIED;
+
+    private String secondaryGuardianName;
+
+    private String secondaryGuardianEmail;
+
+    private String secondaryGuardianPhone;
+
+    private boolean secondaryGuardianPortalAccess = true;
+
+    private boolean primaryGuardianBillingRecipient = true;
 
     @NotNull
     private GradeLevel requestedGradeLevel;
@@ -238,6 +251,54 @@ public class GuardianEnrollmentForm {
 
     public void setGuardianEthnicity(String guardianEthnicity) {
         this.guardianEthnicity = guardianEthnicity;
+    }
+
+    public MaritalStatus getMaritalStatus() {
+        return maritalStatus;
+    }
+
+    public void setMaritalStatus(MaritalStatus maritalStatus) {
+        this.maritalStatus = maritalStatus;
+    }
+
+    public String getSecondaryGuardianName() {
+        return secondaryGuardianName;
+    }
+
+    public void setSecondaryGuardianName(String secondaryGuardianName) {
+        this.secondaryGuardianName = secondaryGuardianName;
+    }
+
+    public String getSecondaryGuardianEmail() {
+        return secondaryGuardianEmail;
+    }
+
+    public void setSecondaryGuardianEmail(String secondaryGuardianEmail) {
+        this.secondaryGuardianEmail = secondaryGuardianEmail;
+    }
+
+    public String getSecondaryGuardianPhone() {
+        return secondaryGuardianPhone;
+    }
+
+    public void setSecondaryGuardianPhone(String secondaryGuardianPhone) {
+        this.secondaryGuardianPhone = secondaryGuardianPhone;
+    }
+
+    public boolean isSecondaryGuardianPortalAccess() {
+        return secondaryGuardianPortalAccess;
+    }
+
+    public void setSecondaryGuardianPortalAccess(boolean secondaryGuardianPortalAccess) {
+        this.secondaryGuardianPortalAccess = secondaryGuardianPortalAccess;
+    }
+
+    public boolean isPrimaryGuardianBillingRecipient() {
+        return primaryGuardianBillingRecipient;
+    }
+
+    public void setPrimaryGuardianBillingRecipient(boolean primaryGuardianBillingRecipient) {
+        this.primaryGuardianBillingRecipient = primaryGuardianBillingRecipient;
     }
 
     public GradeLevel getRequestedGradeLevel() {

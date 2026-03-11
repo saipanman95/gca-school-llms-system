@@ -3,6 +3,7 @@ package org.gca.schoolms.portal;
 import jakarta.validation.Valid;
 import org.gca.schoolms.enrollment.EnrollmentRequestType;
 import org.gca.schoolms.organization.CampusRepository;
+import org.gca.schoolms.finance.MaritalStatus;
 import org.gca.schoolms.records.GradeLevel;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,6 +45,7 @@ public class GuardianPortalController {
         model.addAttribute("students", guardianPortalService.loadStudentsForGuardian(userDetails.getUsername()));
         model.addAttribute("campuses", campusRepository.findAllByOrderByNameAsc());
         model.addAttribute("gradeLevels", GradeLevel.values());
+        model.addAttribute("maritalStatuses", MaritalStatus.values());
         model.addAttribute("requestTypes", EnrollmentRequestType.values());
         model.addAttribute("prefill", guardianPortalService.buildEnrollmentPrefill(userDetails.getUsername(), studentId));
         return "portal/guardian-enrollment";
@@ -57,6 +59,7 @@ public class GuardianPortalController {
         model.addAttribute("form", guardianPortalService.buildEnrollmentForm(userDetails.getUsername(), studentId));
         model.addAttribute("campuses", campusRepository.findAllByOrderByNameAsc());
         model.addAttribute("gradeLevels", GradeLevel.values());
+        model.addAttribute("maritalStatuses", MaritalStatus.values());
         return "portal/fragments/enrollment-prefill";
     }
 
@@ -69,6 +72,7 @@ public class GuardianPortalController {
             model.addAttribute("students", guardianPortalService.loadStudentsForGuardian(userDetails.getUsername()));
             model.addAttribute("campuses", campusRepository.findAllByOrderByNameAsc());
             model.addAttribute("gradeLevels", GradeLevel.values());
+            model.addAttribute("maritalStatuses", MaritalStatus.values());
             model.addAttribute("requestTypes", EnrollmentRequestType.values());
             model.addAttribute("prefill",
                 guardianPortalService.buildEnrollmentPrefill(userDetails.getUsername(), form.getExistingStudentId()));

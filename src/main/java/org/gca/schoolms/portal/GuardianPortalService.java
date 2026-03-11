@@ -128,6 +128,12 @@ public class GuardianPortalService {
             form.getGuardianWorkPostalCode(),
             form.getGuardianGender(),
             form.getGuardianEthnicity(),
+            form.getMaritalStatus(),
+            form.getSecondaryGuardianName(),
+            form.getSecondaryGuardianEmail(),
+            form.getSecondaryGuardianPhone(),
+            form.isSecondaryGuardianPortalAccess(),
+            form.isPrimaryGuardianBillingRecipient(),
             form.getRequestedGradeLevel(),
             LocalDate.now()
         );
@@ -149,7 +155,13 @@ public class GuardianPortalService {
             form.getGuardianWorkState(),
             form.getGuardianWorkPostalCode(),
             form.getGuardianGender(),
-            form.getGuardianEthnicity()
+            form.getGuardianEthnicity(),
+            form.getMaritalStatus(),
+            form.getSecondaryGuardianName(),
+            form.getSecondaryGuardianEmail(),
+            form.getSecondaryGuardianPhone(),
+            form.isSecondaryGuardianPortalAccess(),
+            form.isPrimaryGuardianBillingRecipient()
         );
         enrollmentRequestRepository.save(request);
     }
@@ -173,6 +185,12 @@ public class GuardianPortalService {
         form.setGuardianWorkPostalCode(familyAccount.getWorkPostalCode());
         form.setGuardianGender(familyAccount.getGender());
         form.setGuardianEthnicity(familyAccount.getEthnicity());
+        form.setMaritalStatus(familyAccount.getMaritalStatus());
+        form.setSecondaryGuardianName(familyAccount.getSecondaryGuardianName());
+        form.setSecondaryGuardianEmail(familyAccount.getSecondaryGuardianEmail());
+        form.setSecondaryGuardianPhone(familyAccount.getSecondaryGuardianPhone());
+        form.setSecondaryGuardianPortalAccess(familyAccount.isSecondaryGuardianPortalAccess());
+        form.setPrimaryGuardianBillingRecipient(familyAccount.isPrimaryGuardianBillingRecipient());
     }
 
     private Student findGuardianStudent(String username, Long studentId) {
