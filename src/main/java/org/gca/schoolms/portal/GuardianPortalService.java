@@ -128,6 +128,13 @@ public class GuardianPortalService {
             form.getGuardianWorkPostalCode(),
             form.getGuardianGender(),
             form.getGuardianEthnicity(),
+            form.getGuardianCitizenshipStatus(),
+            form.getGuardianCountryOfCitizenship(),
+            form.isGuardianVisaRequired(),
+            form.getGuardianVisaType(),
+            form.getGuardianVisaNumber(),
+            form.getGuardianVisaIssueDate(),
+            form.getGuardianVisaExpirationDate(),
             form.getMaritalStatus(),
             form.getSecondaryGuardianName(),
             form.getSecondaryGuardianEmail(),
@@ -147,6 +154,13 @@ public class GuardianPortalService {
             form.getSecondaryWorkPostalCode(),
             form.getSecondaryGender(),
             form.getSecondaryEthnicity(),
+            form.getSecondaryCitizenshipStatus(),
+            form.getSecondaryCountryOfCitizenship(),
+            form.isSecondaryVisaRequired(),
+            form.getSecondaryVisaType(),
+            form.getSecondaryVisaNumber(),
+            form.getSecondaryVisaIssueDate(),
+            form.getSecondaryVisaExpirationDate(),
             form.isSecondaryGuardianPortalAccess(),
             form.isPrimaryGuardianBillingRecipient()
         );
@@ -196,6 +210,13 @@ public class GuardianPortalService {
             form.getGuardianWorkPostalCode(),
             form.getGuardianGender(),
             form.getGuardianEthnicity(),
+            form.getGuardianCitizenshipStatus(),
+            form.getGuardianCountryOfCitizenship(),
+            form.isGuardianVisaRequired(),
+            form.getGuardianVisaType(),
+            form.getGuardianVisaNumber(),
+            form.getGuardianVisaIssueDate(),
+            form.getGuardianVisaExpirationDate(),
             form.getMaritalStatus(),
             form.getSecondaryGuardianName(),
             form.getSecondaryGuardianEmail(),
@@ -215,8 +236,24 @@ public class GuardianPortalService {
             form.getSecondaryWorkPostalCode(),
             form.getSecondaryGender(),
             form.getSecondaryEthnicity(),
+            form.getSecondaryCitizenshipStatus(),
+            form.getSecondaryCountryOfCitizenship(),
+            form.isSecondaryVisaRequired(),
+            form.getSecondaryVisaType(),
+            form.getSecondaryVisaNumber(),
+            form.getSecondaryVisaIssueDate(),
+            form.getSecondaryVisaExpirationDate(),
             form.isSecondaryGuardianPortalAccess(),
             form.isPrimaryGuardianBillingRecipient(),
+            form.getStudentCitizenshipStatus(),
+            form.getStudentCountryOfCitizenship(),
+            form.isStudentVisaRequired(),
+            form.getStudentVisaType(),
+            form.getStudentVisaNumber(),
+            form.getStudentVisaIssueDate(),
+            form.getStudentVisaExpirationDate(),
+            form.isStudentF1Required(),
+            form.getStudentI20Status(),
             form.getRequestedGradeLevel(),
             LocalDate.now()
         );
@@ -239,6 +276,13 @@ public class GuardianPortalService {
             form.getGuardianWorkPostalCode(),
             form.getGuardianGender(),
             form.getGuardianEthnicity(),
+            form.getGuardianCitizenshipStatus(),
+            form.getGuardianCountryOfCitizenship(),
+            form.isGuardianVisaRequired(),
+            form.getGuardianVisaType(),
+            form.getGuardianVisaNumber(),
+            form.getGuardianVisaIssueDate(),
+            form.getGuardianVisaExpirationDate(),
             form.getMaritalStatus(),
             form.getSecondaryGuardianName(),
             form.getSecondaryGuardianEmail(),
@@ -258,6 +302,13 @@ public class GuardianPortalService {
             form.getSecondaryWorkPostalCode(),
             form.getSecondaryGender(),
             form.getSecondaryEthnicity(),
+            form.getSecondaryCitizenshipStatus(),
+            form.getSecondaryCountryOfCitizenship(),
+            form.isSecondaryVisaRequired(),
+            form.getSecondaryVisaType(),
+            form.getSecondaryVisaNumber(),
+            form.getSecondaryVisaIssueDate(),
+            form.getSecondaryVisaExpirationDate(),
             form.isSecondaryGuardianPortalAccess(),
             form.isPrimaryGuardianBillingRecipient()
         );
@@ -283,6 +334,13 @@ public class GuardianPortalService {
         form.setGuardianWorkPostalCode(familyAccount.getWorkPostalCode());
         form.setGuardianGender(familyAccount.getGender());
         form.setGuardianEthnicity(familyAccount.getEthnicity());
+        form.setGuardianCitizenshipStatus(familyAccount.getCitizenshipStatus());
+        form.setGuardianCountryOfCitizenship(familyAccount.getCountryOfCitizenship());
+        form.setGuardianVisaRequired(familyAccount.isVisaRequired());
+        form.setGuardianVisaType(familyAccount.getVisaType());
+        form.setGuardianVisaNumber(familyAccount.getVisaNumber());
+        form.setGuardianVisaIssueDate(familyAccount.getVisaIssueDate());
+        form.setGuardianVisaExpirationDate(familyAccount.getVisaExpirationDate());
         form.setMaritalStatus(familyAccount.getMaritalStatus());
         form.setSecondaryGuardianName(familyAccount.getSecondaryGuardianName());
         form.setSecondaryGuardianEmail(familyAccount.getSecondaryGuardianEmail());
@@ -302,6 +360,13 @@ public class GuardianPortalService {
         form.setSecondaryWorkPostalCode(familyAccount.getSecondaryWorkPostalCode());
         form.setSecondaryGender(familyAccount.getSecondaryGender());
         form.setSecondaryEthnicity(familyAccount.getSecondaryEthnicity());
+        form.setSecondaryCitizenshipStatus(familyAccount.getSecondaryCitizenshipStatus());
+        form.setSecondaryCountryOfCitizenship(familyAccount.getSecondaryCountryOfCitizenship());
+        form.setSecondaryVisaRequired(familyAccount.isSecondaryVisaRequired());
+        form.setSecondaryVisaType(familyAccount.getSecondaryVisaType());
+        form.setSecondaryVisaNumber(familyAccount.getSecondaryVisaNumber());
+        form.setSecondaryVisaIssueDate(familyAccount.getSecondaryVisaIssueDate());
+        form.setSecondaryVisaExpirationDate(familyAccount.getSecondaryVisaExpirationDate());
         form.setSecondaryGuardianPortalAccess(familyAccount.isSecondaryGuardianPortalAccess());
         form.setPrimaryGuardianBillingRecipient(familyAccount.isPrimaryGuardianBillingRecipient());
     }
@@ -325,6 +390,13 @@ public class GuardianPortalService {
         form.setGuardianWorkPostalCode(familyAccount.getWorkPostalCode());
         form.setGuardianGender(familyAccount.getGender());
         form.setGuardianEthnicity(familyAccount.getEthnicity());
+        form.setGuardianCitizenshipStatus(familyAccount.getCitizenshipStatus());
+        form.setGuardianCountryOfCitizenship(familyAccount.getCountryOfCitizenship());
+        form.setGuardianVisaRequired(familyAccount.isVisaRequired());
+        form.setGuardianVisaType(familyAccount.getVisaType());
+        form.setGuardianVisaNumber(familyAccount.getVisaNumber());
+        form.setGuardianVisaIssueDate(familyAccount.getVisaIssueDate());
+        form.setGuardianVisaExpirationDate(familyAccount.getVisaExpirationDate());
         form.setMaritalStatus(familyAccount.getMaritalStatus());
         form.setSecondaryGuardianName(familyAccount.getSecondaryGuardianName());
         form.setSecondaryGuardianEmail(familyAccount.getSecondaryGuardianEmail());
@@ -344,6 +416,13 @@ public class GuardianPortalService {
         form.setSecondaryWorkPostalCode(familyAccount.getSecondaryWorkPostalCode());
         form.setSecondaryGender(familyAccount.getSecondaryGender());
         form.setSecondaryEthnicity(familyAccount.getSecondaryEthnicity());
+        form.setSecondaryCitizenshipStatus(familyAccount.getSecondaryCitizenshipStatus());
+        form.setSecondaryCountryOfCitizenship(familyAccount.getSecondaryCountryOfCitizenship());
+        form.setSecondaryVisaRequired(familyAccount.isSecondaryVisaRequired());
+        form.setSecondaryVisaType(familyAccount.getSecondaryVisaType());
+        form.setSecondaryVisaNumber(familyAccount.getSecondaryVisaNumber());
+        form.setSecondaryVisaIssueDate(familyAccount.getSecondaryVisaIssueDate());
+        form.setSecondaryVisaExpirationDate(familyAccount.getSecondaryVisaExpirationDate());
         form.setSecondaryGuardianPortalAccess(familyAccount.isSecondaryGuardianPortalAccess());
         form.setPrimaryGuardianBillingRecipient(familyAccount.isPrimaryGuardianBillingRecipient());
     }

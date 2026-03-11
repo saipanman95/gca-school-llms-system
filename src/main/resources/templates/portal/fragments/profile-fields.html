@@ -101,6 +101,43 @@
     </div>
     <div class="col-12 pt-3">
         <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Parent Immigration Status</h3>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Citizenship status</label>
+                    <input class="form-control" th:field="*{guardianCitizenshipStatus}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Country of citizenship</label>
+                    <input class="form-control" th:field="*{guardianCountryOfCitizenship}" type="text">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{guardianVisaRequired}" type="checkbox">
+                        <label class="form-check-label" for="guardianVisaRequired">Visa required</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Visa type</label>
+                    <input class="form-control" th:field="*{guardianVisaType}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Visa number</label>
+                    <input class="form-control" th:field="*{guardianVisaNumber}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Visa issue date</label>
+                    <input class="form-control" th:field="*{guardianVisaIssueDate}" type="date">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Visa expiration date</label>
+                    <input class="form-control" th:field="*{guardianVisaExpirationDate}" type="date">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
             <h3 class="h6 text-uppercase text-secondary mb-3">Marital Details</h3>
             <div class="row g-3">
                 <div class="col-md-4">
@@ -180,6 +217,43 @@
                 <div class="col-md-6">
                     <label class="form-label">Spouse ethnicity</label>
                     <input class="form-control" th:field="*{secondaryEthnicity}" type="text">
+                </div>
+                <div class="col-12 pt-2">
+                    <div class="border rounded-3 p-3 bg-light-subtle">
+                        <h4 class="h6 text-uppercase text-secondary mb-3">Secondary Guardian Immigration Status</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Spouse citizenship status</label>
+                                <input class="form-control" th:field="*{secondaryCitizenshipStatus}" type="text">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Spouse country of citizenship</label>
+                                <input class="form-control" th:field="*{secondaryCountryOfCitizenship}" type="text">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-check">
+                                    <input class="form-check-input" th:field="*{secondaryVisaRequired}" type="checkbox">
+                                    <label class="form-check-label" for="secondaryVisaRequired">Visa required</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Spouse visa type</label>
+                                <input class="form-control" th:field="*{secondaryVisaType}" type="text">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Spouse visa number</label>
+                                <input class="form-control" th:field="*{secondaryVisaNumber}" type="text">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Spouse visa issue date</label>
+                                <input class="form-control" th:field="*{secondaryVisaIssueDate}" type="date">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Spouse visa expiration date</label>
+                                <input class="form-control" th:field="*{secondaryVisaExpirationDate}" type="date">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <div class="form-check">

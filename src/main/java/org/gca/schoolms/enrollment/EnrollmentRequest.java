@@ -96,6 +96,21 @@ public class EnrollmentRequest {
 
     private String guardianEthnicity;
 
+    private String guardianCitizenshipStatus;
+
+    private String guardianCountryOfCitizenship;
+
+    @Column(nullable = false)
+    private boolean guardianVisaRequired;
+
+    private String guardianVisaType;
+
+    private String guardianVisaNumber;
+
+    private LocalDate guardianVisaIssueDate;
+
+    private LocalDate guardianVisaExpirationDate;
+
     @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
 
@@ -135,11 +150,46 @@ public class EnrollmentRequest {
 
     private String secondaryEthnicity;
 
+    private String secondaryCitizenshipStatus;
+
+    private String secondaryCountryOfCitizenship;
+
+    @Column(nullable = false)
+    private boolean secondaryVisaRequired;
+
+    private String secondaryVisaType;
+
+    private String secondaryVisaNumber;
+
+    private LocalDate secondaryVisaIssueDate;
+
+    private LocalDate secondaryVisaExpirationDate;
+
     @Column(nullable = false)
     private boolean secondaryGuardianPortalAccess;
 
     @Column(nullable = false)
     private boolean primaryGuardianBillingRecipient;
+
+    private String studentCitizenshipStatus;
+
+    private String studentCountryOfCitizenship;
+
+    @Column(nullable = false)
+    private boolean studentVisaRequired;
+
+    private String studentVisaType;
+
+    private String studentVisaNumber;
+
+    private LocalDate studentVisaIssueDate;
+
+    private LocalDate studentVisaExpirationDate;
+
+    @Column(nullable = false)
+    private boolean studentF1Required;
+
+    private String studentI20Status;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -159,7 +209,11 @@ public class EnrollmentRequest {
                              String guardianEmployerName, String guardianWorkPhone, String guardianWorkEmail,
                              String guardianWorkAddressLine1, String guardianWorkAddressLine2, String guardianWorkCity,
                              String guardianWorkState, String guardianWorkPostalCode, String guardianGender,
-                             String guardianEthnicity, MaritalStatus maritalStatus, String secondaryGuardianName,
+                             String guardianEthnicity, String guardianCitizenshipStatus,
+                             String guardianCountryOfCitizenship, boolean guardianVisaRequired,
+                             String guardianVisaType, String guardianVisaNumber,
+                             LocalDate guardianVisaIssueDate, LocalDate guardianVisaExpirationDate,
+                             MaritalStatus maritalStatus, String secondaryGuardianName,
                              String secondaryGuardianEmail, String secondaryGuardianPhone,
                              String secondaryMailingAddressLine1, String secondaryMailingAddressLine2,
                              String secondaryMailingCity, String secondaryMailingState, String secondaryMailingPostalCode,
@@ -167,7 +221,14 @@ public class EnrollmentRequest {
                              String secondaryWorkAddressLine1, String secondaryWorkAddressLine2,
                              String secondaryWorkCity, String secondaryWorkState, String secondaryWorkPostalCode,
                              String secondaryGender, String secondaryEthnicity,
+                             String secondaryCitizenshipStatus, String secondaryCountryOfCitizenship,
+                             boolean secondaryVisaRequired, String secondaryVisaType, String secondaryVisaNumber,
+                             LocalDate secondaryVisaIssueDate, LocalDate secondaryVisaExpirationDate,
                              boolean secondaryGuardianPortalAccess, boolean primaryGuardianBillingRecipient,
+                             String studentCitizenshipStatus, String studentCountryOfCitizenship,
+                             boolean studentVisaRequired, String studentVisaType, String studentVisaNumber,
+                             LocalDate studentVisaIssueDate, LocalDate studentVisaExpirationDate,
+                             boolean studentF1Required, String studentI20Status,
                              GradeLevel requestedGradeLevel, LocalDate submittedOn) {
         this.familyAccount = familyAccount;
         this.student = student;
@@ -195,6 +256,13 @@ public class EnrollmentRequest {
         this.guardianWorkPostalCode = guardianWorkPostalCode;
         this.guardianGender = guardianGender;
         this.guardianEthnicity = guardianEthnicity;
+        this.guardianCitizenshipStatus = guardianCitizenshipStatus;
+        this.guardianCountryOfCitizenship = guardianCountryOfCitizenship;
+        this.guardianVisaRequired = guardianVisaRequired;
+        this.guardianVisaType = guardianVisaType;
+        this.guardianVisaNumber = guardianVisaNumber;
+        this.guardianVisaIssueDate = guardianVisaIssueDate;
+        this.guardianVisaExpirationDate = guardianVisaExpirationDate;
         this.maritalStatus = maritalStatus;
         this.secondaryGuardianName = secondaryGuardianName;
         this.secondaryGuardianEmail = secondaryGuardianEmail;
@@ -214,8 +282,24 @@ public class EnrollmentRequest {
         this.secondaryWorkPostalCode = secondaryWorkPostalCode;
         this.secondaryGender = secondaryGender;
         this.secondaryEthnicity = secondaryEthnicity;
+        this.secondaryCitizenshipStatus = secondaryCitizenshipStatus;
+        this.secondaryCountryOfCitizenship = secondaryCountryOfCitizenship;
+        this.secondaryVisaRequired = secondaryVisaRequired;
+        this.secondaryVisaType = secondaryVisaType;
+        this.secondaryVisaNumber = secondaryVisaNumber;
+        this.secondaryVisaIssueDate = secondaryVisaIssueDate;
+        this.secondaryVisaExpirationDate = secondaryVisaExpirationDate;
         this.secondaryGuardianPortalAccess = secondaryGuardianPortalAccess;
         this.primaryGuardianBillingRecipient = primaryGuardianBillingRecipient;
+        this.studentCitizenshipStatus = studentCitizenshipStatus;
+        this.studentCountryOfCitizenship = studentCountryOfCitizenship;
+        this.studentVisaRequired = studentVisaRequired;
+        this.studentVisaType = studentVisaType;
+        this.studentVisaNumber = studentVisaNumber;
+        this.studentVisaIssueDate = studentVisaIssueDate;
+        this.studentVisaExpirationDate = studentVisaExpirationDate;
+        this.studentF1Required = studentF1Required;
+        this.studentI20Status = studentI20Status;
         this.requestedGradeLevel = requestedGradeLevel;
         this.submittedOn = submittedOn;
     }
@@ -328,6 +412,34 @@ public class EnrollmentRequest {
         return guardianEthnicity;
     }
 
+    public String getGuardianCitizenshipStatus() {
+        return guardianCitizenshipStatus;
+    }
+
+    public String getGuardianCountryOfCitizenship() {
+        return guardianCountryOfCitizenship;
+    }
+
+    public boolean isGuardianVisaRequired() {
+        return guardianVisaRequired;
+    }
+
+    public String getGuardianVisaType() {
+        return guardianVisaType;
+    }
+
+    public String getGuardianVisaNumber() {
+        return guardianVisaNumber;
+    }
+
+    public LocalDate getGuardianVisaIssueDate() {
+        return guardianVisaIssueDate;
+    }
+
+    public LocalDate getGuardianVisaExpirationDate() {
+        return guardianVisaExpirationDate;
+    }
+
     public MaritalStatus getMaritalStatus() {
         return maritalStatus;
     }
@@ -359,6 +471,13 @@ public class EnrollmentRequest {
     public String getSecondaryWorkPostalCode() { return secondaryWorkPostalCode; }
     public String getSecondaryGender() { return secondaryGender; }
     public String getSecondaryEthnicity() { return secondaryEthnicity; }
+    public String getSecondaryCitizenshipStatus() { return secondaryCitizenshipStatus; }
+    public String getSecondaryCountryOfCitizenship() { return secondaryCountryOfCitizenship; }
+    public boolean isSecondaryVisaRequired() { return secondaryVisaRequired; }
+    public String getSecondaryVisaType() { return secondaryVisaType; }
+    public String getSecondaryVisaNumber() { return secondaryVisaNumber; }
+    public LocalDate getSecondaryVisaIssueDate() { return secondaryVisaIssueDate; }
+    public LocalDate getSecondaryVisaExpirationDate() { return secondaryVisaExpirationDate; }
 
     public boolean isSecondaryGuardianPortalAccess() {
         return secondaryGuardianPortalAccess;
@@ -367,6 +486,16 @@ public class EnrollmentRequest {
     public boolean isPrimaryGuardianBillingRecipient() {
         return primaryGuardianBillingRecipient;
     }
+
+    public String getStudentCitizenshipStatus() { return studentCitizenshipStatus; }
+    public String getStudentCountryOfCitizenship() { return studentCountryOfCitizenship; }
+    public boolean isStudentVisaRequired() { return studentVisaRequired; }
+    public String getStudentVisaType() { return studentVisaType; }
+    public String getStudentVisaNumber() { return studentVisaNumber; }
+    public LocalDate getStudentVisaIssueDate() { return studentVisaIssueDate; }
+    public LocalDate getStudentVisaExpirationDate() { return studentVisaExpirationDate; }
+    public boolean isStudentF1Required() { return studentF1Required; }
+    public String getStudentI20Status() { return studentI20Status; }
 
     public GradeLevel getRequestedGradeLevel() {
         return requestedGradeLevel;

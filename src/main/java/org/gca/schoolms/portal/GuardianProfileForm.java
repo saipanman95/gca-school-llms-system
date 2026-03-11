@@ -1,6 +1,7 @@
 package org.gca.schoolms.portal;
 
 import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDate;
 import org.gca.schoolms.finance.MaritalStatus;
 
 public class GuardianProfileForm {
@@ -38,6 +39,13 @@ public class GuardianProfileForm {
     private String guardianWorkPostalCode;
     private String guardianGender;
     private String guardianEthnicity;
+    private String guardianCitizenshipStatus;
+    private String guardianCountryOfCitizenship;
+    private boolean guardianVisaRequired;
+    private String guardianVisaType;
+    private String guardianVisaNumber;
+    private LocalDate guardianVisaIssueDate;
+    private LocalDate guardianVisaExpirationDate;
     private MaritalStatus maritalStatus = MaritalStatus.MARRIED;
     private String secondaryGuardianName;
     private String secondaryGuardianEmail;
@@ -57,6 +65,13 @@ public class GuardianProfileForm {
     private String secondaryWorkPostalCode;
     private String secondaryGender;
     private String secondaryEthnicity;
+    private String secondaryCitizenshipStatus;
+    private String secondaryCountryOfCitizenship;
+    private boolean secondaryVisaRequired;
+    private String secondaryVisaType;
+    private String secondaryVisaNumber;
+    private LocalDate secondaryVisaIssueDate;
+    private LocalDate secondaryVisaExpirationDate;
     private boolean secondaryGuardianPortalAccess = true;
     private boolean primaryGuardianBillingRecipient = true;
 
@@ -96,6 +111,20 @@ public class GuardianProfileForm {
     public void setGuardianGender(String guardianGender) { this.guardianGender = guardianGender; }
     public String getGuardianEthnicity() { return guardianEthnicity; }
     public void setGuardianEthnicity(String guardianEthnicity) { this.guardianEthnicity = guardianEthnicity; }
+    public String getGuardianCitizenshipStatus() { return guardianCitizenshipStatus; }
+    public void setGuardianCitizenshipStatus(String guardianCitizenshipStatus) { this.guardianCitizenshipStatus = guardianCitizenshipStatus; }
+    public String getGuardianCountryOfCitizenship() { return guardianCountryOfCitizenship; }
+    public void setGuardianCountryOfCitizenship(String guardianCountryOfCitizenship) { this.guardianCountryOfCitizenship = guardianCountryOfCitizenship; }
+    public boolean isGuardianVisaRequired() { return guardianVisaRequired; }
+    public void setGuardianVisaRequired(boolean guardianVisaRequired) { this.guardianVisaRequired = guardianVisaRequired; }
+    public String getGuardianVisaType() { return guardianVisaType; }
+    public void setGuardianVisaType(String guardianVisaType) { this.guardianVisaType = guardianVisaType; }
+    public String getGuardianVisaNumber() { return guardianVisaNumber; }
+    public void setGuardianVisaNumber(String guardianVisaNumber) { this.guardianVisaNumber = guardianVisaNumber; }
+    public LocalDate getGuardianVisaIssueDate() { return guardianVisaIssueDate; }
+    public void setGuardianVisaIssueDate(LocalDate guardianVisaIssueDate) { this.guardianVisaIssueDate = guardianVisaIssueDate; }
+    public LocalDate getGuardianVisaExpirationDate() { return guardianVisaExpirationDate; }
+    public void setGuardianVisaExpirationDate(LocalDate guardianVisaExpirationDate) { this.guardianVisaExpirationDate = guardianVisaExpirationDate; }
     public MaritalStatus getMaritalStatus() { return maritalStatus; }
     public void setMaritalStatus(MaritalStatus maritalStatus) { this.maritalStatus = maritalStatus; }
     public String getSecondaryGuardianName() { return secondaryGuardianName; }
@@ -134,6 +163,20 @@ public class GuardianProfileForm {
     public void setSecondaryGender(String secondaryGender) { this.secondaryGender = secondaryGender; }
     public String getSecondaryEthnicity() { return secondaryEthnicity; }
     public void setSecondaryEthnicity(String secondaryEthnicity) { this.secondaryEthnicity = secondaryEthnicity; }
+    public String getSecondaryCitizenshipStatus() { return secondaryCitizenshipStatus; }
+    public void setSecondaryCitizenshipStatus(String secondaryCitizenshipStatus) { this.secondaryCitizenshipStatus = secondaryCitizenshipStatus; }
+    public String getSecondaryCountryOfCitizenship() { return secondaryCountryOfCitizenship; }
+    public void setSecondaryCountryOfCitizenship(String secondaryCountryOfCitizenship) { this.secondaryCountryOfCitizenship = secondaryCountryOfCitizenship; }
+    public boolean isSecondaryVisaRequired() { return secondaryVisaRequired; }
+    public void setSecondaryVisaRequired(boolean secondaryVisaRequired) { this.secondaryVisaRequired = secondaryVisaRequired; }
+    public String getSecondaryVisaType() { return secondaryVisaType; }
+    public void setSecondaryVisaType(String secondaryVisaType) { this.secondaryVisaType = secondaryVisaType; }
+    public String getSecondaryVisaNumber() { return secondaryVisaNumber; }
+    public void setSecondaryVisaNumber(String secondaryVisaNumber) { this.secondaryVisaNumber = secondaryVisaNumber; }
+    public LocalDate getSecondaryVisaIssueDate() { return secondaryVisaIssueDate; }
+    public void setSecondaryVisaIssueDate(LocalDate secondaryVisaIssueDate) { this.secondaryVisaIssueDate = secondaryVisaIssueDate; }
+    public LocalDate getSecondaryVisaExpirationDate() { return secondaryVisaExpirationDate; }
+    public void setSecondaryVisaExpirationDate(LocalDate secondaryVisaExpirationDate) { this.secondaryVisaExpirationDate = secondaryVisaExpirationDate; }
     public boolean isSecondaryGuardianPortalAccess() { return secondaryGuardianPortalAccess; }
     public void setSecondaryGuardianPortalAccess(boolean secondaryGuardianPortalAccess) { this.secondaryGuardianPortalAccess = secondaryGuardianPortalAccess; }
     public boolean isPrimaryGuardianBillingRecipient() { return primaryGuardianBillingRecipient; }

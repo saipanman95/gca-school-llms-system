@@ -32,6 +32,53 @@
         </select>
     </div>
     <div class="col-12 pt-3" th:replace="~{portal/fragments/profile-fields :: profileFields}"></div>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Student Immigration Status</h3>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Student citizenship status</label>
+                    <input class="form-control" th:field="*{studentCitizenshipStatus}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Country of citizenship</label>
+                    <input class="form-control" th:field="*{studentCountryOfCitizenship}" type="text">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{studentVisaRequired}" type="checkbox">
+                        <label class="form-check-label" for="studentVisaRequired">Visa required</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Visa type</label>
+                    <input class="form-control" th:field="*{studentVisaType}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Visa number</label>
+                    <input class="form-control" th:field="*{studentVisaNumber}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Visa issue date</label>
+                    <input class="form-control" th:field="*{studentVisaIssueDate}" type="date">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Visa expiration date</label>
+                    <input class="form-control" th:field="*{studentVisaExpirationDate}" type="date">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{studentF1Required}" type="checkbox">
+                        <label class="form-check-label" for="studentF1Required">F1 processing required</label>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">I-20 status</label>
+                    <input class="form-control" th:field="*{studentI20Status}" type="text">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>
