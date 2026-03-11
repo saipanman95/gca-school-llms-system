@@ -1,0 +1,49 @@
+:root {
+    --gca-navy: #10324a;
+    --gca-ocean: #1f6c7a;
+    --gca-sand: #f2e9dc;
+    --gca-ink: #1d2730;
+    --gca-mint: #dff3ee;
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(31, 108, 122, 0.18), transparent 32%),
+        linear-gradient(180deg, #f7fbfc 0%, #eef4f6 100%);
+    color: var(--gca-ink);
+}
+
+.login-shell {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero-panel {
+    background:
+        linear-gradient(135deg, rgba(16, 50, 74, 0.95), rgba(31, 108, 122, 0.88)),
+        var(--gca-navy);
+    color: #fff;
+    box-shadow: 0 1rem 3rem rgba(16, 50, 74, 0.18);
+}
+
+.metric-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    height: 100%;
+    box-shadow: 0 0.5rem 1.5rem rgba(16, 50, 74, 0.08);
+}
+
+.metric-label {
+    color: #4d5b66;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.metric-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--gca-navy);
+}
