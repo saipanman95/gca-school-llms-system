@@ -3,9 +3,12 @@ package org.gca.schoolms.portal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import org.gca.schoolms.enrollment.EnrollmentRequestType;
 import org.gca.schoolms.finance.MaritalStatus;
 import org.gca.schoolms.records.GradeLevel;
+import org.springframework.web.multipart.MultipartFile;
 
 public class GuardianEnrollmentForm {
 
@@ -15,8 +18,28 @@ public class GuardianEnrollmentForm {
     @NotBlank
     private String studentFirstName;
 
+    private String studentMiddleName;
+
     @NotBlank
     private String studentLastName;
+
+    private String studentSuffix;
+
+    private String studentAlias;
+
+    private LocalDate studentDateOfBirth;
+
+    private String studentReligiousAffiliation;
+
+    private String studentChurchAttending;
+
+    private List<String> studentEthnicBackgrounds = new ArrayList<>();
+
+    private String studentEthnicBackgroundOther;
+
+    private boolean childPottyTrained;
+
+    private String pottyAccidentFrequency;
 
     @NotBlank
     private String guardianName;
@@ -149,6 +172,22 @@ public class GuardianEnrollmentForm {
 
     private String studentI20Status;
 
+    private String previousSchoolName;
+
+    private String previousSchoolCity;
+
+    private String previousSchoolState;
+
+    private String previousSchoolCountry;
+
+    private String previousSchoolLastGradeCompleted;
+
+    private MultipartFile vaccinationRecordFile;
+
+    private MultipartFile healthCertificateFile;
+
+    private MultipartFile previousTranscriptFile;
+
     @NotNull
     private GradeLevel requestedGradeLevel;
 
@@ -178,12 +217,92 @@ public class GuardianEnrollmentForm {
         this.studentFirstName = studentFirstName;
     }
 
+    public String getStudentMiddleName() {
+        return studentMiddleName;
+    }
+
+    public void setStudentMiddleName(String studentMiddleName) {
+        this.studentMiddleName = studentMiddleName;
+    }
+
     public String getStudentLastName() {
         return studentLastName;
     }
 
     public void setStudentLastName(String studentLastName) {
         this.studentLastName = studentLastName;
+    }
+
+    public String getStudentSuffix() {
+        return studentSuffix;
+    }
+
+    public void setStudentSuffix(String studentSuffix) {
+        this.studentSuffix = studentSuffix;
+    }
+
+    public String getStudentAlias() {
+        return studentAlias;
+    }
+
+    public void setStudentAlias(String studentAlias) {
+        this.studentAlias = studentAlias;
+    }
+
+    public LocalDate getStudentDateOfBirth() {
+        return studentDateOfBirth;
+    }
+
+    public void setStudentDateOfBirth(LocalDate studentDateOfBirth) {
+        this.studentDateOfBirth = studentDateOfBirth;
+    }
+
+    public String getStudentReligiousAffiliation() {
+        return studentReligiousAffiliation;
+    }
+
+    public void setStudentReligiousAffiliation(String studentReligiousAffiliation) {
+        this.studentReligiousAffiliation = studentReligiousAffiliation;
+    }
+
+    public String getStudentChurchAttending() {
+        return studentChurchAttending;
+    }
+
+    public void setStudentChurchAttending(String studentChurchAttending) {
+        this.studentChurchAttending = studentChurchAttending;
+    }
+
+    public List<String> getStudentEthnicBackgrounds() {
+        return studentEthnicBackgrounds;
+    }
+
+    public void setStudentEthnicBackgrounds(List<String> studentEthnicBackgrounds) {
+        this.studentEthnicBackgrounds = studentEthnicBackgrounds;
+    }
+
+    public String getStudentEthnicBackgroundOther() {
+        return studentEthnicBackgroundOther;
+    }
+
+    public void setStudentEthnicBackgroundOther(String studentEthnicBackgroundOther) {
+        this.studentEthnicBackgroundOther = studentEthnicBackgroundOther;
+    }
+
+    public boolean isChildPottyTrained() {
+        return childPottyTrained;
+    }
+
+    public void setChildPottyTrained(boolean childPottyTrained) {
+        this.childPottyTrained = childPottyTrained;
+    }
+
+    public String getPottyAccidentFrequency() {
+        return pottyAccidentFrequency;
+    }
+
+    public void setPottyAccidentFrequency(String pottyAccidentFrequency) {
+        this.pottyAccidentFrequency = pottyAccidentFrequency;
     }
 
     public String getGuardianName() {
@@ -549,6 +668,70 @@ public class GuardianEnrollmentForm {
 
     public void setStudentI20Status(String studentI20Status) {
         this.studentI20Status = studentI20Status;
+    }
+
+    public String getPreviousSchoolName() {
+        return previousSchoolName;
+    }
+
+    public void setPreviousSchoolName(String previousSchoolName) {
+        this.previousSchoolName = previousSchoolName;
+    }
+
+    public String getPreviousSchoolCity() {
+        return previousSchoolCity;
+    }
+
+    public void setPreviousSchoolCity(String previousSchoolCity) {
+        this.previousSchoolCity = previousSchoolCity;
+    }
+
+    public String getPreviousSchoolState() {
+        return previousSchoolState;
+    }
+
+    public void setPreviousSchoolState(String previousSchoolState) {
+        this.previousSchoolState = previousSchoolState;
+    }
+
+    public String getPreviousSchoolCountry() {
+        return previousSchoolCountry;
+    }
+
+    public void setPreviousSchoolCountry(String previousSchoolCountry) {
+        this.previousSchoolCountry = previousSchoolCountry;
+    }
+
+    public String getPreviousSchoolLastGradeCompleted() {
+        return previousSchoolLastGradeCompleted;
+    }
+
+    public void setPreviousSchoolLastGradeCompleted(String previousSchoolLastGradeCompleted) {
+        this.previousSchoolLastGradeCompleted = previousSchoolLastGradeCompleted;
+    }
+
+    public MultipartFile getVaccinationRecordFile() {
+        return vaccinationRecordFile;
+    }
+
+    public void setVaccinationRecordFile(MultipartFile vaccinationRecordFile) {
+        this.vaccinationRecordFile = vaccinationRecordFile;
+    }
+
+    public MultipartFile getHealthCertificateFile() {
+        return healthCertificateFile;
+    }
+
+    public void setHealthCertificateFile(MultipartFile healthCertificateFile) {
+        this.healthCertificateFile = healthCertificateFile;
+    }
+
+    public MultipartFile getPreviousTranscriptFile() {
+        return previousTranscriptFile;
+    }
+
+    public void setPreviousTranscriptFile(MultipartFile previousTranscriptFile) {
+        this.previousTranscriptFile = previousTranscriptFile;
     }
 
     public GradeLevel getRequestedGradeLevel() {

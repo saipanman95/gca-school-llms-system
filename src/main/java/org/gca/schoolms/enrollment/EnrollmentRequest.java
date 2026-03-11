@@ -50,8 +50,29 @@ public class EnrollmentRequest {
     @Column(nullable = false)
     private String studentFirstName;
 
+    private String studentMiddleName;
+
     @Column(nullable = false)
     private String studentLastName;
+
+    private String studentSuffix;
+
+    private String studentAlias;
+
+    private LocalDate studentDateOfBirth;
+
+    private String studentReligiousAffiliation;
+
+    private String studentChurchAttending;
+
+    private String studentEthnicBackgrounds;
+
+    private String studentEthnicBackgroundOther;
+
+    @Column(nullable = false)
+    private boolean childPottyTrained;
+
+    private String pottyAccidentFrequency;
 
     @Column(nullable = false)
     private String guardianName;
@@ -191,6 +212,16 @@ public class EnrollmentRequest {
 
     private String studentI20Status;
 
+    private String previousSchoolName;
+
+    private String previousSchoolCity;
+
+    private String previousSchoolState;
+
+    private String previousSchoolCountry;
+
+    private String previousSchoolLastGradeCompleted;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private GradeLevel requestedGradeLevel;
@@ -203,7 +234,12 @@ public class EnrollmentRequest {
 
     public EnrollmentRequest(FamilyAccount familyAccount, Student student, Campus campus, EnrollmentRequestType requestType,
                              EnrollmentRequestStatus status, String schoolYear, String studentFirstName,
-                             String studentLastName, String guardianName, String guardianEmail, String guardianPhone,
+                             String studentMiddleName, String studentLastName, String studentSuffix, String studentAlias,
+                             LocalDate studentDateOfBirth,
+                             String studentReligiousAffiliation, String studentChurchAttending,
+                             String studentEthnicBackgrounds, String studentEthnicBackgroundOther,
+                             boolean childPottyTrained, String pottyAccidentFrequency,
+                             String guardianName, String guardianEmail, String guardianPhone,
                              String guardianMailingAddressLine1, String guardianMailingAddressLine2,
                              String guardianMailingCity, String guardianMailingState, String guardianMailingPostalCode,
                              String guardianEmployerName, String guardianWorkPhone, String guardianWorkEmail,
@@ -229,6 +265,8 @@ public class EnrollmentRequest {
                              boolean studentVisaRequired, String studentVisaType, String studentVisaNumber,
                              LocalDate studentVisaIssueDate, LocalDate studentVisaExpirationDate,
                              boolean studentF1Required, String studentI20Status,
+                             String previousSchoolName, String previousSchoolCity, String previousSchoolState,
+                             String previousSchoolCountry, String previousSchoolLastGradeCompleted,
                              GradeLevel requestedGradeLevel, LocalDate submittedOn) {
         this.familyAccount = familyAccount;
         this.student = student;
@@ -237,7 +275,17 @@ public class EnrollmentRequest {
         this.status = status;
         this.schoolYear = schoolYear;
         this.studentFirstName = studentFirstName;
+        this.studentMiddleName = studentMiddleName;
         this.studentLastName = studentLastName;
+        this.studentSuffix = studentSuffix;
+        this.studentAlias = studentAlias;
+        this.studentDateOfBirth = studentDateOfBirth;
+        this.studentReligiousAffiliation = studentReligiousAffiliation;
+        this.studentChurchAttending = studentChurchAttending;
+        this.studentEthnicBackgrounds = studentEthnicBackgrounds;
+        this.studentEthnicBackgroundOther = studentEthnicBackgroundOther;
+        this.childPottyTrained = childPottyTrained;
+        this.pottyAccidentFrequency = pottyAccidentFrequency;
         this.guardianName = guardianName;
         this.guardianEmail = guardianEmail;
         this.guardianPhone = guardianPhone;
@@ -300,6 +348,11 @@ public class EnrollmentRequest {
         this.studentVisaExpirationDate = studentVisaExpirationDate;
         this.studentF1Required = studentF1Required;
         this.studentI20Status = studentI20Status;
+        this.previousSchoolName = previousSchoolName;
+        this.previousSchoolCity = previousSchoolCity;
+        this.previousSchoolState = previousSchoolState;
+        this.previousSchoolCountry = previousSchoolCountry;
+        this.previousSchoolLastGradeCompleted = previousSchoolLastGradeCompleted;
         this.requestedGradeLevel = requestedGradeLevel;
         this.submittedOn = submittedOn;
     }
@@ -336,8 +389,48 @@ public class EnrollmentRequest {
         return studentFirstName;
     }
 
+    public String getStudentMiddleName() {
+        return studentMiddleName;
+    }
+
     public String getStudentLastName() {
         return studentLastName;
+    }
+
+    public String getStudentSuffix() {
+        return studentSuffix;
+    }
+
+    public String getStudentAlias() {
+        return studentAlias;
+    }
+
+    public LocalDate getStudentDateOfBirth() {
+        return studentDateOfBirth;
+    }
+
+    public String getStudentReligiousAffiliation() {
+        return studentReligiousAffiliation;
+    }
+
+    public String getStudentChurchAttending() {
+        return studentChurchAttending;
+    }
+
+    public String getStudentEthnicBackgrounds() {
+        return studentEthnicBackgrounds;
+    }
+
+    public String getStudentEthnicBackgroundOther() {
+        return studentEthnicBackgroundOther;
+    }
+
+    public boolean isChildPottyTrained() {
+        return childPottyTrained;
+    }
+
+    public String getPottyAccidentFrequency() {
+        return pottyAccidentFrequency;
     }
 
     public String getGuardianName() {
@@ -496,6 +589,11 @@ public class EnrollmentRequest {
     public LocalDate getStudentVisaExpirationDate() { return studentVisaExpirationDate; }
     public boolean isStudentF1Required() { return studentF1Required; }
     public String getStudentI20Status() { return studentI20Status; }
+    public String getPreviousSchoolName() { return previousSchoolName; }
+    public String getPreviousSchoolCity() { return previousSchoolCity; }
+    public String getPreviousSchoolState() { return previousSchoolState; }
+    public String getPreviousSchoolCountry() { return previousSchoolCountry; }
+    public String getPreviousSchoolLastGradeCompleted() { return previousSchoolLastGradeCompleted; }
 
     public GradeLevel getRequestedGradeLevel() {
         return requestedGradeLevel;
@@ -506,6 +604,11 @@ public class EnrollmentRequest {
     }
 
     public String getStudentDisplayName() {
-        return studentFirstName + " " + studentLastName;
+        String givenName = studentAlias != null && !studentAlias.isBlank() ? studentAlias : studentFirstName;
+        StringBuilder name = new StringBuilder(givenName).append(" ").append(studentLastName);
+        if (studentSuffix != null && !studentSuffix.isBlank()) {
+            name.append(" ").append(studentSuffix);
+        }
+        return name.toString();
     }
 }

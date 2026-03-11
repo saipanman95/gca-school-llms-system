@@ -96,9 +96,9 @@ public class SeedDataConfig {
             Student micah = null;
             Student leah = null;
             if (studentRepository.count() == 0) {
-                ava = studentRepository.save(new Student("2026-001", "Ava", "Cruz", LocalDate.of(2010, 5, 12), GradeLevel.GRADE_10, saipan, cruzFamily, StudentStatus.ACTIVE));
-                micah = studentRepository.save(new Student("2026-002", "Micah", "Santos", LocalDate.of(2011, 9, 3), GradeLevel.GRADE_9, tinian, santosFamily, StudentStatus.ACTIVE));
-                leah = studentRepository.save(new Student("2025-031", "Leah", "Palomo", LocalDate.of(2008, 12, 14), GradeLevel.GRADE_12, rota, manglonaFamily, StudentStatus.GRADUATED));
+                ava = studentRepository.save(new Student("2026-001", "Ava", "Marie", "Cruz", "", "Ava", LocalDate.of(2010, 5, 12), GradeLevel.GRADE_10, saipan, cruzFamily, StudentStatus.ACTIVE));
+                micah = studentRepository.save(new Student("2026-002", "Micah", "", "Santos", "", "Micah", LocalDate.of(2011, 9, 3), GradeLevel.GRADE_9, tinian, santosFamily, StudentStatus.ACTIVE));
+                leah = studentRepository.save(new Student("2025-031", "Leah", "", "Palomo", "", "", LocalDate.of(2008, 12, 14), GradeLevel.GRADE_12, rota, manglonaFamily, StudentStatus.GRADUATED));
             } else {
                 var students = studentRepository.findTop10ByOrderByLastNameAscFirstNameAsc();
                 ava = students.stream().filter(student -> "2026-001".equals(student.getStudentNumber())).findFirst().orElseThrow();
@@ -134,7 +134,7 @@ public class SeedDataConfig {
             if (enrollmentRequestRepository.count() == 0) {
                 enrollmentRequestRepository.save(new EnrollmentRequest(
                     cruzFamily, ava, saipan, EnrollmentRequestType.REENROLLMENT, EnrollmentRequestStatus.SUBMITTED,
-                    "2026-2027", "Ava", "Cruz",
+                    "2026-2027", "Ava", "Marie", "Cruz", "", "Ava", LocalDate.of(2010, 5, 12), "Christian", "Grace Christian Academy Chapel", "Chamorro, American", "", true, "Rarely",
                     cruzFamily.getPrimaryGuardianName(), cruzFamily.getPrimaryGuardianEmail(), cruzFamily.getPrimaryGuardianPhone(),
                     cruzFamily.getMailingAddressLine1(), cruzFamily.getMailingAddressLine2(), cruzFamily.getMailingCity(),
                     cruzFamily.getMailingState(), cruzFamily.getMailingPostalCode(), cruzFamily.getEmployerName(),
@@ -159,6 +159,7 @@ public class SeedDataConfig {
                     cruzFamily.getSecondaryVisaIssueDate(), cruzFamily.getSecondaryVisaExpirationDate(),
                     cruzFamily.isSecondaryGuardianPortalAccess(), cruzFamily.isPrimaryGuardianBillingRecipient(),
                     "US Citizen", "United States", false, "", "", null, null, false, "",
+                    "Saipan Community School", "Saipan", "MP", "United States", "Grade 10",
                     GradeLevel.GRADE_11, LocalDate.now().minusDays(3)));
             }
         };

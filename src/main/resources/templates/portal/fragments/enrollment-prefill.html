@@ -16,12 +16,55 @@
         <input class="form-control" th:field="*{studentFirstName}" type="text">
     </div>
     <div class="col-md-6">
+        <label class="form-label">Student middle name</label>
+        <input class="form-control" th:field="*{studentMiddleName}" type="text">
+    </div>
+    <div class="col-md-6">
         <label class="form-label">Student last name</label>
         <input class="form-control" th:field="*{studentLastName}" type="text">
     </div>
     <div class="col-md-6">
+        <label class="form-label">Suffix</label>
+        <input class="form-control" th:field="*{studentSuffix}" type="text" placeholder="Jr., III, etc.">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Preferred / alias name</label>
+        <input class="form-control" th:field="*{studentAlias}" type="text" placeholder="American or preferred name">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Date of birth</label>
+        <input class="form-control" th:field="*{studentDateOfBirth}" type="date">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Religious affiliation</label>
+        <input class="form-control" th:field="*{studentReligiousAffiliation}" type="text">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Church attending</label>
+        <input class="form-control" th:field="*{studentChurchAttending}" type="text">
+    </div>
+    <div class="col-12">
+        <label class="form-label d-block">Student ethnic background</label>
+        <div class="row g-2">
+            <div class="col-md-4" th:each="option : ${studentEthnicityOptions}">
+                <div class="form-check">
+                    <input class="form-check-input" th:field="*{studentEthnicBackgrounds}" th:value="${option}" type="checkbox">
+                    <label class="form-check-label" th:for="${#ids.prev('studentEthnicBackgrounds')}" th:text="${option}">Chamorro</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Other ethnic background</label>
+        <input class="form-control" th:field="*{studentEthnicBackgroundOther}" type="text" placeholder="Fill in if Other applies">
+    </div>
+    <div class="col-md-6">
         <label class="form-label">Requested grade level</label>
-        <select class="form-select" th:field="*{requestedGradeLevel}">
+        <select class="form-select" th:field="*{requestedGradeLevel}"
+                hx-get="/portal/guardian/enrollment/kindergarten"
+                hx-target="#kindergarten-readiness"
+                hx-trigger="change"
+                hx-include="[name='requestedGradeLevel'],[name='childPottyTrained'],[name='pottyAccidentFrequency']">
             <option th:each="gradeLevel : ${gradeLevels}" th:value="${gradeLevel}" th:text="${gradeLevel.label}"></option>
         </select>
     </div>
@@ -31,7 +74,93 @@
             <option th:each="campus : ${campuses}" th:value="${campus.id}" th:text="${campus.displayName}"></option>
         </select>
     </div>
-    <div class="col-12 pt-3" th:replace="~{portal/fragments/profile-fields :: profileFields}"></div>
+    <div id="kindergarten-readiness" class="col-12"
+         th:insert="~{portal/fragments/enrollment-prefill :: kindergartenReadinessSection}"></div>
+    <div class="col-12 pt-3">
+        <div class="alert alert-secondary mb-0">
+            Parent and guardian information comes from the family profile and is not edited on this page.
+        </div>
+        <input th:field="*{guardianName}" type="hidden">
+        <input th:field="*{guardianEmail}" type="hidden">
+        <input th:field="*{guardianPhone}" type="hidden">
+        <input th:field="*{guardianMailingAddressLine1}" type="hidden">
+        <input th:field="*{guardianMailingAddressLine2}" type="hidden">
+        <input th:field="*{guardianMailingCity}" type="hidden">
+        <input th:field="*{guardianMailingState}" type="hidden">
+        <input th:field="*{guardianMailingPostalCode}" type="hidden">
+        <input th:field="*{guardianEmployerName}" type="hidden">
+        <input th:field="*{guardianWorkPhone}" type="hidden">
+        <input th:field="*{guardianWorkEmail}" type="hidden">
+        <input th:field="*{guardianWorkAddressLine1}" type="hidden">
+        <input th:field="*{guardianWorkAddressLine2}" type="hidden">
+        <input th:field="*{guardianWorkCity}" type="hidden">
+        <input th:field="*{guardianWorkState}" type="hidden">
+        <input th:field="*{guardianWorkPostalCode}" type="hidden">
+        <input th:field="*{guardianGender}" type="hidden">
+        <input th:field="*{guardianEthnicity}" type="hidden">
+        <input th:field="*{guardianCitizenshipStatus}" type="hidden">
+        <input th:field="*{guardianCountryOfCitizenship}" type="hidden">
+        <input th:field="*{guardianVisaRequired}" type="hidden">
+        <input th:field="*{guardianVisaType}" type="hidden">
+        <input th:field="*{guardianVisaNumber}" type="hidden">
+        <input th:field="*{guardianVisaIssueDate}" type="hidden">
+        <input th:field="*{guardianVisaExpirationDate}" type="hidden">
+        <input th:field="*{maritalStatus}" type="hidden">
+        <input th:field="*{secondaryGuardianName}" type="hidden">
+        <input th:field="*{secondaryGuardianEmail}" type="hidden">
+        <input th:field="*{secondaryGuardianPhone}" type="hidden">
+        <input th:field="*{secondaryMailingAddressLine1}" type="hidden">
+        <input th:field="*{secondaryMailingAddressLine2}" type="hidden">
+        <input th:field="*{secondaryMailingCity}" type="hidden">
+        <input th:field="*{secondaryMailingState}" type="hidden">
+        <input th:field="*{secondaryMailingPostalCode}" type="hidden">
+        <input th:field="*{secondaryEmployerName}" type="hidden">
+        <input th:field="*{secondaryWorkPhone}" type="hidden">
+        <input th:field="*{secondaryWorkEmail}" type="hidden">
+        <input th:field="*{secondaryWorkAddressLine1}" type="hidden">
+        <input th:field="*{secondaryWorkAddressLine2}" type="hidden">
+        <input th:field="*{secondaryWorkCity}" type="hidden">
+        <input th:field="*{secondaryWorkState}" type="hidden">
+        <input th:field="*{secondaryWorkPostalCode}" type="hidden">
+        <input th:field="*{secondaryGender}" type="hidden">
+        <input th:field="*{secondaryEthnicity}" type="hidden">
+        <input th:field="*{secondaryCitizenshipStatus}" type="hidden">
+        <input th:field="*{secondaryCountryOfCitizenship}" type="hidden">
+        <input th:field="*{secondaryVisaRequired}" type="hidden">
+        <input th:field="*{secondaryVisaType}" type="hidden">
+        <input th:field="*{secondaryVisaNumber}" type="hidden">
+        <input th:field="*{secondaryVisaIssueDate}" type="hidden">
+        <input th:field="*{secondaryVisaExpirationDate}" type="hidden">
+        <input th:field="*{secondaryGuardianPortalAccess}" type="hidden">
+        <input th:field="*{primaryGuardianBillingRecipient}" type="hidden">
+    </div>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Previous School Attended</h3>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">School name</label>
+                    <input class="form-control" th:field="*{previousSchoolName}" type="text">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last grade completed</label>
+                    <input class="form-control" th:field="*{previousSchoolLastGradeCompleted}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">City</label>
+                    <input class="form-control" th:field="*{previousSchoolCity}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">State / province</label>
+                    <input class="form-control" th:field="*{previousSchoolState}" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Country</label>
+                    <input class="form-control" th:field="*{previousSchoolCountry}" type="text">
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="col-12 pt-3">
         <div class="border rounded-3 p-3 border-secondary-subtle">
             <h3 class="h6 text-uppercase text-secondary mb-3">Student Immigration Status</h3>
@@ -75,6 +204,47 @@
                 <div class="col-md-8">
                     <label class="form-label">I-20 status</label>
                     <input class="form-control" th:field="*{studentI20Status}" type="text">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 pt-3">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Student Records Uploads</h3>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Vaccination record</label>
+                    <input class="form-control" th:field="*{vaccinationRecordFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Health certificate</label>
+                    <input class="form-control" th:field="*{healthCertificateFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Transcript from previous school</label>
+                    <input class="form-control" th:field="*{previousTranscriptFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="col-12">
+                    <div class="small text-secondary">Stored filename convention: `studentlastname_firstname_studentid_schoolyear_recordtype`. New students use `pending` until a student ID is assigned.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:fragment="kindergartenReadinessSection" th:object="${form}">
+    <div th:if="${form.requestedGradeLevel != null and (form.requestedGradeLevel.name() == 'K4' or form.requestedGradeLevel.name() == 'K5')}">
+        <div class="border rounded-3 p-3 border-secondary-subtle">
+            <h3 class="h6 text-uppercase text-secondary mb-3">Kindergarten Readiness</h3>
+            <div class="row g-3">
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" th:field="*{childPottyTrained}" type="checkbox">
+                        <label class="form-check-label" for="childPottyTrained">Child is potty trained</label>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Frequency of accidents</label>
+                    <input class="form-control" th:field="*{pottyAccidentFrequency}" type="text" placeholder="Rarely, weekly, daily, etc.">
                 </div>
             </div>
         </div>

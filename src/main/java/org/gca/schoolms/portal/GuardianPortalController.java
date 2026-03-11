@@ -21,6 +21,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @PreAuthorize("hasRole('PARENT_GUARDIAN')")
 public class GuardianPortalController {
 
+    private static final String[] STUDENT_ETHNICITY_OPTIONS = {
+        "Chamorro", "Carolinian", "Micronesian", "American", "Japanese",
+        "Filipino", "Korean", "Chinese", "Other"
+    };
+
     private final GuardianPortalService guardianPortalService;
     private final CampusRepository campusRepository;
 
@@ -76,6 +81,7 @@ public class GuardianPortalController {
         model.addAttribute("gradeLevels", GradeLevel.values());
         model.addAttribute("maritalStatuses", MaritalStatus.values());
         model.addAttribute("requestTypes", EnrollmentRequestType.values());
+        model.addAttribute("studentEthnicityOptions", STUDENT_ETHNICITY_OPTIONS);
         model.addAttribute("prefill", guardianPortalService.buildEnrollmentPrefill(userDetails.getUsername(), studentId));
         return "portal/guardian-enrollment";
     }
@@ -89,7 +95,14 @@ public class GuardianPortalController {
         model.addAttribute("campuses", campusRepository.findAllByOrderByNameAsc());
         model.addAttribute("gradeLevels", GradeLevel.values());
         model.addAttribute("maritalStatuses", MaritalStatus.values());
+        model.addAttribute("studentEthnicityOptions", STUDENT_ETHNICITY_OPTIONS);
         return "portal/fragments/enrollment-prefill";
+    }
+
+    @GetMapping("/portal/guardian/enrollment/kindergarten")
+    public String kindergartenReadinessSection(@ModelAttribute("form") GuardianEnrollmentForm form, Model model) {
+        model.addAttribute("form", form);
+        return "portal/fragments/enrollment-prefill :: kindergartenReadinessSection";
     }
 
     @PostMapping("/portal/guardian/enrollment")
@@ -103,12 +116,13 @@ public class GuardianPortalController {
             model.addAttribute("gradeLevels", GradeLevel.values());
             model.addAttribute("maritalStatuses", MaritalStatus.values());
             model.addAttribute("requestTypes", EnrollmentRequestType.values());
+            model.addAttribute("studentEthnicityOptions", STUDENT_ETHNICITY_OPTIONS);
             model.addAttribute("prefill",
                 guardianPortalService.buildEnrollmentPrefill(userDetails.getUsername(), form.getExistingStudentId()));
             return "portal/guardian-enrollment";
         }
         guardianPortalService.submitEnrollmentRequest(userDetails.getUsername(), form);
-        redirectAttributes.addFlashAttribute("message", "Enrollment request submitted.");
+        redirectAttributes.addFlashAttribute("message", "Enrollment request submitted with student details and uploaded documents.");
         return "redirect:/portal/guardian";
     }
 }

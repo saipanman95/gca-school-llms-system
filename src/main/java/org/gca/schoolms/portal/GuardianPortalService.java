@@ -2,6 +2,11 @@ package org.gca.schoolms.portal;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.gca.schoolms.enrollment.EnrollmentDocument;
+import org.gca.schoolms.enrollment.EnrollmentDocumentRepository;
+import org.gca.schoolms.enrollment.EnrollmentDocumentStorageService;
+import org.gca.schoolms.enrollment.EnrollmentDocumentType;
 import org.gca.schoolms.enrollment.EnrollmentRequest;
 import org.gca.schoolms.enrollment.EnrollmentRequestRepository;
 import org.gca.schoolms.enrollment.EnrollmentRequestStatus;
@@ -22,15 +27,21 @@ public class GuardianPortalService {
     private final StudentRepository studentRepository;
     private final InvoiceRepository invoiceRepository;
     private final EnrollmentRequestRepository enrollmentRequestRepository;
+    private final EnrollmentDocumentRepository enrollmentDocumentRepository;
+    private final EnrollmentDocumentStorageService enrollmentDocumentStorageService;
     private final CampusRepository campusRepository;
 
     public GuardianPortalService(FamilyAccountRepository familyAccountRepository, StudentRepository studentRepository,
                                  InvoiceRepository invoiceRepository, EnrollmentRequestRepository enrollmentRequestRepository,
+                                 EnrollmentDocumentRepository enrollmentDocumentRepository,
+                                 EnrollmentDocumentStorageService enrollmentDocumentStorageService,
                                  CampusRepository campusRepository) {
         this.familyAccountRepository = familyAccountRepository;
         this.studentRepository = studentRepository;
         this.invoiceRepository = invoiceRepository;
         this.enrollmentRequestRepository = enrollmentRequestRepository;
+        this.enrollmentDocumentRepository = enrollmentDocumentRepository;
+        this.enrollmentDocumentStorageService = enrollmentDocumentStorageService;
         this.campusRepository = campusRepository;
     }
 
@@ -82,7 +93,11 @@ public class GuardianPortalService {
         form.setExistingStudentId(student.getId());
         form.setRequestType(EnrollmentRequestType.REENROLLMENT);
         form.setStudentFirstName(student.getFirstName());
+        form.setStudentMiddleName(student.getMiddleName());
         form.setStudentLastName(student.getLastName());
+        form.setStudentSuffix(student.getSuffix());
+        form.setStudentAlias(student.getPreferredName());
+        form.setStudentDateOfBirth(student.getDateOfBirth());
         form.setCampusId(student.getCampus().getId());
         form.setRequestedGradeLevel(student.getGradeLevel().nextGradeLevel());
         form.setReenrollmentPrefill(true);
@@ -191,7 +206,19 @@ public class GuardianPortalService {
             EnrollmentRequestStatus.SUBMITTED,
             form.getSchoolYear(),
             form.getStudentFirstName(),
+            form.getStudentMiddleName(),
             form.getStudentLastName(),
+            form.getStudentSuffix(),
+            form.getStudentAlias(),
+            form.getStudentDateOfBirth(),
+            form.getStudentReligiousAffiliation(),
+            form.getStudentChurchAttending(),
+            form.getStudentEthnicBackgrounds() == null ? "" : form.getStudentEthnicBackgrounds().stream()
+                .filter(value -> value != null && !value.isBlank())
+                .collect(Collectors.joining(", ")),
+            form.getStudentEthnicBackgroundOther(),
+            form.isChildPottyTrained(),
+            form.getPottyAccidentFrequency(),
             form.getGuardianName(),
             form.getGuardianEmail(),
             form.getGuardianPhone(),
@@ -254,6 +281,11 @@ public class GuardianPortalService {
             form.getStudentVisaExpirationDate(),
             form.isStudentF1Required(),
             form.getStudentI20Status(),
+            form.getPreviousSchoolName(),
+            form.getPreviousSchoolCity(),
+            form.getPreviousSchoolState(),
+            form.getPreviousSchoolCountry(),
+            form.getPreviousSchoolLastGradeCompleted(),
             form.getRequestedGradeLevel(),
             LocalDate.now()
         );
@@ -312,7 +344,10 @@ public class GuardianPortalService {
             form.isSecondaryGuardianPortalAccess(),
             form.isPrimaryGuardianBillingRecipient()
         );
-        enrollmentRequestRepository.save(request);
+        EnrollmentRequest savedRequest = enrollmentRequestRepository.save(request);
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.VACCINATION_CARD, form.getVaccinationRecordFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.HEALTH_CERTIFICATE, form.getHealthCertificateFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT, form.getPreviousTranscriptFile());
     }
 
     private void applyGuardianProfile(GuardianEnrollmentForm form, FamilyAccount familyAccount) {
@@ -432,5 +467,23 @@ public class GuardianPortalService {
         return studentRepository.findById(studentId)
             .filter(student -> student.getFamilyAccount().getId().equals(familyAccount.getId()))
             .orElseThrow();
+    }
+
+    private void storeEnrollmentDocument(EnrollmentRequest enrollmentRequest, EnrollmentDocumentType documentType,
+                                         org.springframework.web.multipart.MultipartFile file) {
+        var storedDocument = enrollmentDocumentStorageService.store(enrollmentRequest, documentType, file);
+        if (storedDocument == null) {
+            return;
+        }
+        enrollmentDocumentRepository.save(new EnrollmentDocument(
+            enrollmentRequest,
+            enrollmentRequest.getStudent(),
+            documentType,
+            storedDocument.storedFilename(),
+            storedDocument.storedFilename(),
+            storedDocument.contentType(),
+            storedDocument.storagePath(),
+            java.time.LocalDateTime.now()
+        ));
     }
 }
