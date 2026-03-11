@@ -25,4 +25,12 @@ public enum GradeLevel {
     public String getLabel() {
         return label;
     }
+
+    public GradeLevel nextGradeLevel() {
+        int nextOrdinal = ordinal() + 1;
+        if (nextOrdinal >= values().length) {
+            return this;
+        }
+        return values()[nextOrdinal];
+    }
 }

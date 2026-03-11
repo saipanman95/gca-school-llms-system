@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="prefillPanel" class="row g-3">
+    <div class="col-12">
+        <div class="alert alert-info mb-0">
+            <div class="fw-semibold" th:text="${prefill.currentStudentLabel()}">Student prefill</div>
+            <div class="small">
+                Recommended next grade:
+                <span th:text="${prefill.recommendedGradeLabel()}">10</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Student first name</label>
+        <input class="form-control" th:field="*{studentFirstName}" type="text">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Student last name</label>
+        <input class="form-control" th:field="*{studentLastName}" type="text">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Requested grade level</label>
+        <select class="form-select" th:field="*{requestedGradeLevel}">
+            <option th:each="gradeLevel : ${gradeLevels}" th:value="${gradeLevel}" th:text="${gradeLevel.label}"></option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Campus</label>
+        <select class="form-select" th:field="*{campusId}">
+            <option th:each="campus : ${campuses}" th:value="${campus.id}" th:text="${campus.displayName}"></option>
+        </select>
+    </div>
+</div>
+</body>
+</html>

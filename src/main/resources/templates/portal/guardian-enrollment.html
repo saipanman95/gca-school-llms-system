@@ -6,6 +6,7 @@
     <title>Enrollment Request | GCA School MS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
 </head>
 <body>
 <div th:replace="~{fragments/layout :: navbar}"></div>
@@ -35,34 +36,20 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Existing student</label>
-                                <select class="form-select" th:field="*{existingStudentId}">
+                                <select class="form-select" th:field="*{existingStudentId}"
+                                        hx-get="/portal/guardian/enrollment/prefill"
+                                        hx-target="#enrollment-prefill"
+                                        hx-trigger="change"
+                                        hx-include="[name='existingStudentId']">
                                     <option value="">New student / not applicable</option>
                                     <option th:each="student : ${students}" th:value="${student.id}" th:text="${student.displayName + ' - Grade ' + student.gradeLevel.label}"></option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Student first name</label>
-                                <input class="form-control" th:field="*{studentFirstName}" type="text">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Student last name</label>
-                                <input class="form-control" th:field="*{studentLastName}" type="text">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Requested grade level</label>
-                                <select class="form-select" th:field="*{requestedGradeLevel}">
-                                    <option th:each="gradeLevel : ${gradeLevels}" th:value="${gradeLevel}" th:text="${gradeLevel.label}"></option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Campus</label>
-                                <select class="form-select" th:field="*{campusId}">
-                                    <option th:each="campus : ${campuses}" th:value="${campus.id}" th:text="${campus.displayName}"></option>
-                                </select>
-                            </div>
+                            <div id="enrollment-prefill" class="col-12"
+                                 th:replace="~{portal/fragments/enrollment-prefill :: prefillPanel}"></div>
                         </div>
                         <div class="mt-4 d-flex justify-content-between align-items-center">
-                            <div class="text-secondary small">Existing students can be preselected for faster reenrollment next year.</div>
+                            <div class="text-secondary small">Existing students can be preselected so names, campus, and next grade carry forward into reenrollment.</div>
                             <button class="btn btn-primary" type="submit">Submit request</button>
                         </div>
                     </form>

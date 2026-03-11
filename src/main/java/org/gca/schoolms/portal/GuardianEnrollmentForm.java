@@ -27,6 +27,8 @@ public class GuardianEnrollmentForm {
 
     private Long existingStudentId;
 
+    private boolean reenrollmentPrefill;
+
     public String getSchoolYear() {
         return schoolYear;
     }
@@ -81,5 +83,13 @@ public class GuardianEnrollmentForm {
 
     public void setExistingStudentId(Long existingStudentId) {
         this.existingStudentId = existingStudentId;
+    }
+
+    public boolean isReenrollmentPrefill() {
+        return reenrollmentPrefill;
+    }
+
+    public void setReenrollmentPrefill(boolean reenrollmentPrefill) {
+        this.reenrollmentPrefill = reenrollmentPrefill;
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.gca.schoolms.enrollment.EnrollmentRequest;
 import org.gca.schoolms.enrollment.EnrollmentRequestRepository;
 import org.gca.schoolms.enrollment.EnrollmentRequestStatus;
+import org.gca.schoolms.enrollment.EnrollmentRequestType;
 import org.gca.schoolms.finance.FamilyAccount;
 import org.gca.schoolms.finance.FamilyAccountRepository;
 import org.gca.schoolms.finance.InvoiceRepository;
@@ -38,6 +39,7 @@ public class GuardianPortalService {
         List<Student> students = studentRepository.findByFamilyAccountOrderByLastNameAscFirstNameAsc(familyAccount);
         List<GuardianDashboardStudent> dashboardStudents = students.stream()
             .map(student -> new GuardianDashboardStudent(
+                student.getId(),
                 student.getDisplayName(),
                 student.getGradeLevel().getLabel(),
                 student.getCampus().getCode(),
@@ -65,16 +67,43 @@ public class GuardianPortalService {
         return studentRepository.findByFamilyAccountOrderByLastNameAscFirstNameAsc(resolveFamilyAccount(username));
     }
 
+    public GuardianEnrollmentForm buildEnrollmentForm(String username, Long studentId) {
+        GuardianEnrollmentForm form = new GuardianEnrollmentForm();
+        if (studentId == null) {
+            return form;
+        }
+        Student student = findGuardianStudent(username, studentId);
+        form.setExistingStudentId(student.getId());
+        form.setRequestType(EnrollmentRequestType.REENROLLMENT);
+        form.setStudentFirstName(student.getFirstName());
+        form.setStudentLastName(student.getLastName());
+        form.setCampusId(student.getCampus().getId());
+        form.setRequestedGradeLevel(student.getGradeLevel().nextGradeLevel());
+        form.setReenrollmentPrefill(true);
+        return form;
+    }
+
+    public GuardianEnrollmentPrefillView buildEnrollmentPrefill(String username, Long studentId) {
+        if (studentId == null) {
+            return new GuardianEnrollmentPrefillView("New student application", "Select a grade level");
+        }
+        Student student = findGuardianStudent(username, studentId);
+        return new GuardianEnrollmentPrefillView(
+            student.getDisplayName() + " / current grade " + student.getGradeLevel().getLabel(),
+            student.getGradeLevel().nextGradeLevel().getLabel()
+        );
+    }
+
     @Transactional
     public void submitEnrollmentRequest(String username, GuardianEnrollmentForm form) {
         FamilyAccount familyAccount = resolveFamilyAccount(username);
         Student existingStudent = form.getExistingStudentId() == null ? null :
-            studentRepository.findById(form.getExistingStudentId()).orElse(null);
+            findGuardianStudent(username, form.getExistingStudentId());
         EnrollmentRequest request = new EnrollmentRequest(
             familyAccount,
             existingStudent,
             campusRepository.findById(form.getCampusId()).orElseThrow(),
-            form.getRequestType(),
+            existingStudent == null ? form.getRequestType() : EnrollmentRequestType.REENROLLMENT,
             EnrollmentRequestStatus.SUBMITTED,
             form.getSchoolYear(),
             form.getStudentFirstName(),
@@ -83,5 +112,12 @@ public class GuardianPortalService {
             LocalDate.now()
         );
         enrollmentRequestRepository.save(request);
+    }
+
+    private Student findGuardianStudent(String username, Long studentId) {
+        FamilyAccount familyAccount = resolveFamilyAccount(username);
+        return studentRepository.findById(studentId)
+            .filter(student -> student.getFamilyAccount().getId().equals(familyAccount.getId()))
+            .orElseThrow();
     }
 }
