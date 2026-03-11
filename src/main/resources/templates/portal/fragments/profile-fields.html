@@ -6,6 +6,9 @@
         <h2 class="h5 mb-1">Parent information</h2>
         <p class="text-secondary small mb-0">Contact, employment, demographic, and spouse access settings.</p>
     </div>
+    <div class="col-12 pt-2">
+        <h3 class="h6 text-uppercase text-secondary mb-1">Contact Information</h3>
+    </div>
     <div class="col-md-4">
         <label class="form-label">Parent/guardian name</label>
         <input class="form-control" th:field="*{guardianName}" type="text">
@@ -37,6 +40,9 @@
     <div class="col-md-4">
         <label class="form-label">Mailing postal code</label>
         <input class="form-control" th:field="*{guardianMailingPostalCode}" type="text">
+    </div>
+    <div class="col-12 pt-3">
+        <h3 class="h6 text-uppercase text-secondary mb-1">Employer Details</h3>
     </div>
     <div class="col-md-4">
         <label class="form-label">Employer</label>
@@ -70,6 +76,9 @@
         <label class="form-label">Work postal code</label>
         <input class="form-control" th:field="*{guardianWorkPostalCode}" type="text">
     </div>
+    <div class="col-12 pt-3">
+        <h3 class="h6 text-uppercase text-secondary mb-1">Demographics</h3>
+    </div>
     <div class="col-md-6">
         <label class="form-label">Gender</label>
         <input class="form-control" th:field="*{guardianGender}" type="text">
@@ -77,6 +86,9 @@
     <div class="col-md-6">
         <label class="form-label">Ethnicity</label>
         <input class="form-control" th:field="*{guardianEthnicity}" type="text">
+    </div>
+    <div class="col-12 pt-3">
+        <h3 class="h6 text-uppercase text-secondary mb-1">Marital Details</h3>
     </div>
     <div class="col-md-4">
         <label class="form-label">Marital status</label>
