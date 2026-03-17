@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.gca.schoolms.records.Student;
 
 @Entity
 public class Payment {
@@ -27,6 +28,18 @@ public class Payment {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "family_account_id", nullable = false)
     private FamilyAccount familyAccount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentPurpose paymentPurpose;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "target_student_id")
+    private Student targetStudent;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "school_project_type_id")
+    private SchoolProjectType schoolProjectType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -50,7 +63,17 @@ public class Payment {
 
     public Payment(FamilyAccount familyAccount, PaymentMethod paymentMethod, BigDecimal totalAmount,
                    LocalDateTime paymentDate, String referenceNumber, String notes) {
+        this(familyAccount, PaymentPurpose.STUDENT_ACCOUNT, null, null, paymentMethod, totalAmount, paymentDate, referenceNumber, notes);
+    }
+
+    public Payment(FamilyAccount familyAccount, PaymentPurpose paymentPurpose, Student targetStudent,
+                   SchoolProjectType schoolProjectType,
+                   PaymentMethod paymentMethod, BigDecimal totalAmount,
+                   LocalDateTime paymentDate, String referenceNumber, String notes) {
         this.familyAccount = familyAccount;
+        this.paymentPurpose = paymentPurpose;
+        this.targetStudent = targetStudent;
+        this.schoolProjectType = schoolProjectType;
         this.paymentMethod = paymentMethod;
         this.totalAmount = totalAmount;
         this.paymentDate = paymentDate;
@@ -64,6 +87,39 @@ public class Payment {
 
     public FamilyAccount getFamilyAccount() {
         return familyAccount;
+    }
+
+    public PaymentPurpose getPaymentPurpose() {
+        return paymentPurpose;
+    }
+
+    public Student getTargetStudent() {
+        return targetStudent;
+    }
+
+    public SchoolProjectType getSchoolProjectType() {
+        return schoolProjectType;
+    }
+
+    public String getTargetDisplayName() {
+        if (targetStudent != null) {
+            return targetStudent.getDisplayName();
+        }
+        return allocations.stream()
+            .map(PaymentAllocation::getStudentFee)
+            .map(StudentFee::getStudentDisplayName)
+            .findFirst()
+            .orElse("School-wide");
+    }
+
+    public BigDecimal getAllocatedAmount() {
+        return allocations.stream()
+            .map(PaymentAllocation::getAmountApplied)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getUnappliedAmount() {
+        return totalAmount.subtract(getAllocatedAmount());
     }
 
     public PaymentMethod getPaymentMethod() {

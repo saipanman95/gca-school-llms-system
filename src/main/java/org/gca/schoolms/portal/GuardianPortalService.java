@@ -304,7 +304,7 @@ public class GuardianPortalService {
             financeLedgerService.outstandingBalanceForFamily(familyAccount),
             billingRecipient,
             financeLedgerService.feesForFamily(familyAccount),
-            financeLedgerService.paymentsForFamily(familyAccount)
+            financeLedgerService.paymentRowsForFamily(familyAccount)
         );
     }
 

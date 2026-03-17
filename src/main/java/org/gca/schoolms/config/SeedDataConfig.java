@@ -2,6 +2,7 @@ package org.gca.schoolms.config;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import org.gca.schoolms.academics.AttendanceRecord;
 import org.gca.schoolms.academics.AttendanceRecordRepository;
 import org.gca.schoolms.academics.AttendanceStatus;
@@ -20,6 +21,7 @@ import org.gca.schoolms.finance.Payment;
 import org.gca.schoolms.finance.PaymentAllocation;
 import org.gca.schoolms.finance.PaymentMethod;
 import org.gca.schoolms.finance.PaymentRepository;
+import org.gca.schoolms.finance.SchoolProjectTypeRepository;
 import org.gca.schoolms.finance.StudentFee;
 import org.gca.schoolms.finance.StudentFeeRepository;
 import org.gca.schoolms.organization.Campus;
@@ -35,10 +37,25 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SeedDataConfig {
 
+    private static Student findStudentByNumber(List<Student> students, String studentNumber) {
+        return students.stream()
+            .filter(student -> studentNumber.equals(student.getStudentNumber()))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private static boolean hasEnrollmentRequestForStudentAndYear(EnrollmentRequestRepository repository, Student student,
+                                                                 String schoolYear) {
+        return repository.findTopByStudentOrderBySubmittedOnDesc(student)
+            .map(request -> schoolYear.equals(request.getSchoolYear()))
+            .orElse(false);
+    }
+
     @Bean
     CommandLineRunner seedData(CampusRepository campusRepository, FamilyAccountRepository familyAccountRepository,
                                StudentRepository studentRepository, FeeTypeRepository feeTypeRepository,
                                StudentFeeRepository studentFeeRepository, PaymentRepository paymentRepository,
+                               SchoolProjectTypeRepository schoolProjectTypeRepository,
                                SectionRepository sectionRepository, AttendanceRecordRepository attendanceRecordRepository,
                                EnrollmentRequestRepository enrollmentRequestRepository) {
         return args -> {
@@ -99,17 +116,38 @@ public class SeedDataConfig {
             }
 
             Student ava = null;
+            Student isaac = null;
+            Student noelle = null;
             Student micah = null;
             Student leah = null;
             if (studentRepository.count() == 0) {
                 ava = studentRepository.save(new Student("2026-001", "Ava", "Marie", "Cruz", "", "Ava", LocalDate.of(2010, 5, 12), GradeLevel.GRADE_10, saipan, cruzFamily, StudentStatus.ACTIVE));
+                isaac = studentRepository.save(new Student("2026-003", "Isaac", "Daniel", "Cruz", "", "Isaac", LocalDate.of(2015, 8, 21), GradeLevel.GRADE_5, saipan, cruzFamily, StudentStatus.ACTIVE));
+                noelle = studentRepository.save(new Student("2026-004", "Noelle", "Grace", "Cruz", "", "Ellie", LocalDate.of(2018, 2, 9), GradeLevel.GRADE_2, saipan, cruzFamily, StudentStatus.ACTIVE));
                 micah = studentRepository.save(new Student("2026-002", "Micah", "", "Santos", "", "Micah", LocalDate.of(2011, 9, 3), GradeLevel.GRADE_9, tinian, santosFamily, StudentStatus.ACTIVE));
                 leah = studentRepository.save(new Student("2025-031", "Leah", "", "Palomo", "", "", LocalDate.of(2008, 12, 14), GradeLevel.GRADE_12, rota, manglonaFamily, StudentStatus.GRADUATED));
             } else {
-                var students = studentRepository.findTop10ByOrderByLastNameAscFirstNameAsc();
-                ava = students.stream().filter(student -> "2026-001".equals(student.getStudentNumber())).findFirst().orElseThrow();
-                micah = students.stream().filter(student -> "2026-002".equals(student.getStudentNumber())).findFirst().orElseThrow();
-                leah = students.stream().filter(student -> "2025-031".equals(student.getStudentNumber())).findFirst().orElseThrow();
+                var students = studentRepository.findAll();
+                ava = findStudentByNumber(students, "2026-001");
+                if (ava == null) {
+                    ava = studentRepository.save(new Student("2026-001", "Ava", "Marie", "Cruz", "", "Ava", LocalDate.of(2010, 5, 12), GradeLevel.GRADE_10, saipan, cruzFamily, StudentStatus.ACTIVE));
+                }
+                isaac = findStudentByNumber(students, "2026-003");
+                if (isaac == null) {
+                    isaac = studentRepository.save(new Student("2026-003", "Isaac", "Daniel", "Cruz", "", "Isaac", LocalDate.of(2015, 8, 21), GradeLevel.GRADE_5, saipan, cruzFamily, StudentStatus.ACTIVE));
+                }
+                noelle = findStudentByNumber(students, "2026-004");
+                if (noelle == null) {
+                    noelle = studentRepository.save(new Student("2026-004", "Noelle", "Grace", "Cruz", "", "Ellie", LocalDate.of(2018, 2, 9), GradeLevel.GRADE_2, saipan, cruzFamily, StudentStatus.ACTIVE));
+                }
+                micah = findStudentByNumber(students, "2026-002");
+                if (micah == null) {
+                    micah = studentRepository.save(new Student("2026-002", "Micah", "", "Santos", "", "Micah", LocalDate.of(2011, 9, 3), GradeLevel.GRADE_9, tinian, santosFamily, StudentStatus.ACTIVE));
+                }
+                leah = findStudentByNumber(students, "2025-031");
+                if (leah == null) {
+                    leah = studentRepository.save(new Student("2025-031", "Leah", "", "Palomo", "", "", LocalDate.of(2008, 12, 14), GradeLevel.GRADE_12, rota, manglonaFamily, StudentStatus.GRADUATED));
+                }
             }
             Section english = null;
             Section algebra = null;
@@ -130,6 +168,14 @@ public class SeedDataConfig {
                 .orElseGet(() -> feeTypeRepository.save(new FeeType("LUNCH_FEE", "Lunch fee", null, true)));
             feeTypeRepository.findByCode("AFTERSCHOOL_FEE")
                 .orElseGet(() -> feeTypeRepository.save(new FeeType("AFTERSCHOOL_FEE", "Afterschool fee", null, true)));
+            schoolProjectTypeRepository.findByCode("GENERAL")
+                .orElseGet(() -> schoolProjectTypeRepository.save(new org.gca.schoolms.finance.SchoolProjectType("GENERAL", "General", true)));
+            schoolProjectTypeRepository.findByCode("BUILDING")
+                .orElseGet(() -> schoolProjectTypeRepository.save(new org.gca.schoolms.finance.SchoolProjectType("BUILDING", "Building", true)));
+            schoolProjectTypeRepository.findByCode("SENIOR_TRIP")
+                .orElseGet(() -> schoolProjectTypeRepository.save(new org.gca.schoolms.finance.SchoolProjectType("SENIOR_TRIP", "Senior Trip", true)));
+            schoolProjectTypeRepository.findByCode("TEACHER_LUNCHEONS")
+                .orElseGet(() -> schoolProjectTypeRepository.save(new org.gca.schoolms.finance.SchoolProjectType("TEACHER_LUNCHEONS", "Teacher Luncheons", true)));
             if (studentFeeRepository.count() == 0) {
                 StudentFee avaTuition = studentFeeRepository.save(new StudentFee(
                     ava, cruzFamily, saipan, tuitionFeeType, new BigDecimal("2400.00"),
@@ -211,6 +257,72 @@ public class SeedDataConfig {
                     "US Citizen", "United States", false, "", "", null, null, false, "",
                     "Saipan Community School", "Saipan", "MP", "United States", "Grade 10",
                     GradeLevel.GRADE_11, LocalDate.now().minusDays(3)));
+            }
+            if (!hasEnrollmentRequestForStudentAndYear(enrollmentRequestRepository, isaac, "2026-2027")) {
+                enrollmentRequestRepository.save(new EnrollmentRequest(
+                    cruzFamily, isaac, saipan, EnrollmentRequestType.REENROLLMENT, EnrollmentRequestStatus.READY_FOR_FINANCE,
+                    "2026-2027", "Isaac", "Daniel", "Cruz", "", "Isaac", LocalDate.of(2015, 8, 21), "Christian", "Grace Christian Academy Chapel", "Chamorro, American", "", false, "",
+                    cruzFamily.getPrimaryGuardianName(), cruzFamily.getPrimaryGuardianEmail(), cruzFamily.getPrimaryGuardianPhone(),
+                    cruzFamily.getMailingAddressLine1(), cruzFamily.getMailingAddressLine2(), cruzFamily.getMailingCity(),
+                    cruzFamily.getMailingState(), cruzFamily.getMailingPostalCode(), cruzFamily.getEmployerName(),
+                    cruzFamily.getWorkPhone(), cruzFamily.getWorkEmail(), cruzFamily.getWorkAddressLine1(),
+                    cruzFamily.getWorkAddressLine2(), cruzFamily.getWorkCity(), cruzFamily.getWorkState(),
+                    cruzFamily.getWorkPostalCode(), cruzFamily.getGender(), cruzFamily.getEthnicity(),
+                    cruzFamily.getCitizenshipStatus(), cruzFamily.getCountryOfCitizenship(),
+                    cruzFamily.isVisaRequired(), cruzFamily.getVisaType(), cruzFamily.getVisaNumber(),
+                    cruzFamily.getVisaIssueDate(), cruzFamily.getVisaExpirationDate(),
+                    cruzFamily.getMaritalStatus(), cruzFamily.getSecondaryGuardianName(),
+                    cruzFamily.getSecondaryGuardianEmail(), cruzFamily.getSecondaryGuardianPhone(),
+                    cruzFamily.getSecondaryMailingAddressLine1(), cruzFamily.getSecondaryMailingAddressLine2(),
+                    cruzFamily.getSecondaryMailingCity(), cruzFamily.getSecondaryMailingState(),
+                    cruzFamily.getSecondaryMailingPostalCode(), cruzFamily.getSecondaryEmployerName(),
+                    cruzFamily.getSecondaryWorkPhone(), cruzFamily.getSecondaryWorkEmail(),
+                    cruzFamily.getSecondaryWorkAddressLine1(), cruzFamily.getSecondaryWorkAddressLine2(),
+                    cruzFamily.getSecondaryWorkCity(), cruzFamily.getSecondaryWorkState(),
+                    cruzFamily.getSecondaryWorkPostalCode(), cruzFamily.getSecondaryGender(),
+                    cruzFamily.getSecondaryEthnicity(), cruzFamily.getSecondaryCitizenshipStatus(),
+                    cruzFamily.getSecondaryCountryOfCitizenship(), cruzFamily.isSecondaryVisaRequired(),
+                    cruzFamily.getSecondaryVisaType(), cruzFamily.getSecondaryVisaNumber(),
+                    cruzFamily.getSecondaryVisaIssueDate(), cruzFamily.getSecondaryVisaExpirationDate(),
+                    cruzFamily.isSecondaryGuardianPortalAccess(), cruzFamily.isPrimaryGuardianBillingRecipient(),
+                    "US Citizen", "United States", false, "", "", null, null, false, "",
+                    "", "", "", "", "",
+                    GradeLevel.GRADE_6, LocalDate.now().minusDays(2)));
+            }
+            if (enrollmentRequestRepository.findByFamilyAccountOrderBySubmittedOnDesc(cruzFamily).stream()
+                .noneMatch(request -> request.getStudent() == null
+                    && request.getFamilyAccount().getAccountNumber().equals("FA-1001")
+                    && "Caleb".equals(request.getStudentFirstName())
+                    && "2026-2027".equals(request.getSchoolYear()))) {
+                enrollmentRequestRepository.save(new EnrollmentRequest(
+                    cruzFamily, null, saipan, EnrollmentRequestType.NEW_STUDENT, EnrollmentRequestStatus.DRAFT,
+                    "2026-2027", "Caleb", "Joseph", "Cruz", "", "Caleb", LocalDate.of(2021, 11, 4), "Christian", "Grace Christian Academy Chapel", "Chamorro", "", true, "Occasional",
+                    cruzFamily.getPrimaryGuardianName(), cruzFamily.getPrimaryGuardianEmail(), cruzFamily.getPrimaryGuardianPhone(),
+                    cruzFamily.getMailingAddressLine1(), cruzFamily.getMailingAddressLine2(), cruzFamily.getMailingCity(),
+                    cruzFamily.getMailingState(), cruzFamily.getMailingPostalCode(), cruzFamily.getEmployerName(),
+                    cruzFamily.getWorkPhone(), cruzFamily.getWorkEmail(), cruzFamily.getWorkAddressLine1(),
+                    cruzFamily.getWorkAddressLine2(), cruzFamily.getWorkCity(), cruzFamily.getWorkState(),
+                    cruzFamily.getWorkPostalCode(), cruzFamily.getGender(), cruzFamily.getEthnicity(),
+                    cruzFamily.getCitizenshipStatus(), cruzFamily.getCountryOfCitizenship(),
+                    cruzFamily.isVisaRequired(), cruzFamily.getVisaType(), cruzFamily.getVisaNumber(),
+                    cruzFamily.getVisaIssueDate(), cruzFamily.getVisaExpirationDate(),
+                    cruzFamily.getMaritalStatus(), cruzFamily.getSecondaryGuardianName(),
+                    cruzFamily.getSecondaryGuardianEmail(), cruzFamily.getSecondaryGuardianPhone(),
+                    cruzFamily.getSecondaryMailingAddressLine1(), cruzFamily.getSecondaryMailingAddressLine2(),
+                    cruzFamily.getSecondaryMailingCity(), cruzFamily.getSecondaryMailingState(),
+                    cruzFamily.getSecondaryMailingPostalCode(), cruzFamily.getSecondaryEmployerName(),
+                    cruzFamily.getSecondaryWorkPhone(), cruzFamily.getSecondaryWorkEmail(),
+                    cruzFamily.getSecondaryWorkAddressLine1(), cruzFamily.getSecondaryWorkAddressLine2(),
+                    cruzFamily.getSecondaryWorkCity(), cruzFamily.getSecondaryWorkState(),
+                    cruzFamily.getSecondaryWorkPostalCode(), cruzFamily.getSecondaryGender(),
+                    cruzFamily.getSecondaryEthnicity(), cruzFamily.getSecondaryCitizenshipStatus(),
+                    cruzFamily.getSecondaryCountryOfCitizenship(), cruzFamily.isSecondaryVisaRequired(),
+                    cruzFamily.getSecondaryVisaType(), cruzFamily.getSecondaryVisaNumber(),
+                    cruzFamily.getSecondaryVisaIssueDate(), cruzFamily.getSecondaryVisaExpirationDate(),
+                    cruzFamily.isSecondaryGuardianPortalAccess(), cruzFamily.isPrimaryGuardianBillingRecipient(),
+                    "US Citizen", "United States", false, "", "", null, null, false, "",
+                    "Bright Start Preschool", "Saipan", "MP", "United States", "Pre-K",
+                    GradeLevel.K5, LocalDate.now().minusDays(1)));
             }
         };
     }

@@ -31,10 +31,15 @@ public class FinanceController {
         model.addAttribute("outstandingBalance", financeLedgerService.totalOutstandingBalance());
         model.addAttribute("familyAccounts", financeLedgerService.familyAccounts());
         model.addAttribute("feeTypes", financeLedgerService.feeTypes());
+        model.addAttribute("schoolProjectTypes", financeLedgerService.schoolProjectTypes());
         model.addAttribute("students", financeLedgerService.students());
         model.addAttribute("studentFees", financeLedgerService.recentFees());
-        model.addAttribute("payments", financeLedgerService.recentPayments());
+        model.addAttribute("paymentOpenFees", financeLedgerService.openFeesForPaymentPosting());
+        model.addAttribute("paymentStudentOptions", financeLedgerService.paymentStudentOptions());
+        model.addAttribute("paymentFamilyOptions", financeLedgerService.paymentFamilyOptions());
+        model.addAttribute("payments", financeLedgerService.recentPaymentRows());
         model.addAttribute("paymentMethods", PaymentMethod.values());
+        model.addAttribute("paymentPurposes", PaymentPurpose.values());
         model.addAttribute("enrollmentQueue", enrollmentReviewService.loadFinanceQueue());
         model.addAttribute("financeStatuses", FinanceReviewStatus.values());
         model.addAttribute("financeAuthorizationTypes", EnrollmentFinanceAuthorizationType.values());
@@ -51,6 +56,15 @@ public class FinanceController {
         return "redirect:/finance";
     }
 
+    @PostMapping("/finance/school-project-types")
+    public String createSchoolProjectType(@RequestParam String code,
+                                          @RequestParam String name,
+                                          RedirectAttributes redirectAttributes) {
+        financeLedgerService.createSchoolProjectType(code, name);
+        redirectAttributes.addFlashAttribute("message", "School project type added.");
+        return "redirect:/finance";
+    }
+
     @PostMapping("/finance/fees")
     public String assessFee(@RequestParam Long studentId,
                             @RequestParam Long feeTypeId,
@@ -64,14 +78,32 @@ public class FinanceController {
     }
 
     @PostMapping("/finance/payments")
-    public String recordPayment(@RequestParam Long studentFeeId,
+    public String recordPayment(@RequestParam PaymentPurpose paymentPurpose,
+                                @RequestParam(required = false) Long studentId,
+                                @RequestParam(required = false) Long payerFamilyAccountId,
+                                @RequestParam(required = false) Long schoolProjectTypeId,
+                                @RequestParam(defaultValue = "false") boolean crossFamilyConfirmed,
                                 @RequestParam PaymentMethod paymentMethod,
                                 @RequestParam BigDecimal amount,
                                 @RequestParam(required = false) String referenceNumber,
                                 @RequestParam(required = false) String notes,
                                 RedirectAttributes redirectAttributes) {
-        financeLedgerService.recordPayment(studentFeeId, paymentMethod, amount, referenceNumber, notes);
-        redirectAttributes.addFlashAttribute("message", "Payment recorded.");
+        try {
+            financeLedgerService.recordPayment(
+                paymentPurpose,
+                studentId,
+                payerFamilyAccountId,
+                schoolProjectTypeId,
+                crossFamilyConfirmed,
+                paymentMethod,
+                amount,
+                referenceNumber,
+                notes
+            );
+            redirectAttributes.addFlashAttribute("message", "Payment recorded.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("message", ex.getMessage());
+        }
         return "redirect:/finance";
     }
 

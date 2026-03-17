@@ -8,5 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface StudentFeeRepository extends JpaRepository<StudentFee, Long> {
     List<StudentFee> findTop20ByOrderByAssessedAtDescIdDesc();
     List<StudentFee> findByFamilyAccountOrderByAssessedAtDescIdDesc(FamilyAccount familyAccount);
+    List<StudentFee> findByStudentOrderByAssessedAtAscIdAsc(org.gca.schoolms.records.Student student);
+    List<StudentFee> findAllByOrderByAssessedAtAscIdAsc();
     Optional<StudentFee> findByEnrollmentRequest(EnrollmentRequest enrollmentRequest);
 }
