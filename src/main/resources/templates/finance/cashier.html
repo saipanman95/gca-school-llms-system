@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cashier | GCA School MS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<main class="container py-4">
+    <div th:if="${message}" class="alert alert-info" th:text="${message}"></div>
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="h3 mb-1">Cashier</h1>
+            <p class="text-secondary mb-0">Post payments and print receipts without exposing finance override tools.</p>
+        </div>
+        <a class="btn btn-outline-secondary" th:href="@{/finance}">Back to finance center</a>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Record payment</h2>
+                    <form id="recordPaymentForm" method="post" target="_blank" th:action="@{/finance/payments}">
+                        <div class="mb-3">
+                            <label class="form-label" for="paymentPurpose">Payment purpose</label>
+                            <select class="form-select" id="paymentPurpose" name="paymentPurpose" required>
+                                <option th:each="paymentPurpose : ${paymentPurposes}" th:text="${paymentPurpose.label}" th:value="${paymentPurpose}">Pay toward student</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 payment-student-only">
+                            <label class="form-label" for="studentLookup">Student</label>
+                            <input class="form-control" id="studentLookup" list="paymentStudentOptions" placeholder="Type student last name" type="text">
+                            <datalist id="paymentStudentOptions">
+                                <option th:each="studentOption : ${paymentStudentOptions}"
+                                        th:attr="data-id=${studentOption.id},data-family-id=${studentOption.familyAccountId},data-billing-payer-id=${studentOption.billingPayerProfileId},data-billing-payer-label=${studentOption.billingPayerLabel}"
+                                        th:value="${studentOption.label}"></option>
+                            </datalist>
+                            <input id="paymentStudentId" name="studentId" type="hidden">
+                            <div class="form-text">Search by last name, then choose the matching student record.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="payerFamilyLookup">Guardian / payer</label>
+                            <input class="form-control" id="payerFamilyLookup" list="payerOptions" placeholder="Type payer last name" th:value="${selectedPayerOption != null ? selectedPayerOption.label() : ''}" type="text">
+                            <datalist id="payerOptions">
+                                <option th:each="payerOption : ${payerOptions}" th:attr="data-id=${payerOption.id},data-family-id=${payerOption.familyAccountId}" th:value="${payerOption.label}"></option>
+                            </datalist>
+                            <input id="payerProfileId" name="payerProfileId" th:value="${selectedPayerOption != null ? selectedPayerOption.id() : ''}" type="hidden">
+                            <div class="form-text">Use the payer record of the person making the payment.</div>
+                            <button class="btn btn-link px-0 pt-2" data-bs-target="#addPayerModal" data-bs-toggle="modal" id="addPayerTrigger" type="button">Payer not found? Add payer</button>
+                        </div>
+                        <div class="mb-3 d-none" id="schoolProjectTypeGroup">
+                            <label class="form-label" for="schoolProjectTypeId">School project type</label>
+                            <select class="form-select" id="schoolProjectTypeId" name="schoolProjectTypeId">
+                                <option value="">Select project type</option>
+                                <option th:each="projectType : ${schoolProjectTypes}" th:text="${projectType.name}" th:value="${projectType.id}">General</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 payment-student-only">
+                            <label class="form-label">Open charges for selected student</label>
+                            <div class="border rounded p-3 bg-light-subtle" id="studentOpenChargesPanel">
+                                <div class="text-secondary small">Select a student to see current open charges and the auto-allocation preview.</div>
+                            </div>
+                            <div class="form-text">Payments are auto-applied to the student's oldest open charges first. Any remaining amount becomes unapplied family credit.</div>
+                            <div class="d-none" id="paymentOpenFeesData">
+                                <div th:each="fee : ${paymentOpenFees}"
+                                     th:attr="data-student-id=${fee.student != null ? fee.student.id : ''},
+                                              data-student-label=${fee.studentDisplayName},
+                                              data-fee-type=${fee.feeType.name},
+                                              data-description=${fee.description},
+                                              data-outstanding-amount=${fee.outstandingAmount}"></div>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning d-none" id="crossFamilyNotice">
+                            This payment is being applied to a student outside the payer's family account. Confirm before saving.
+                        </div>
+                        <div class="mb-3 form-check d-none" id="crossFamilyConfirmationGroup">
+                            <input class="form-check-input" id="crossFamilyConfirmed" name="crossFamilyConfirmed" type="checkbox" value="true">
+                            <label class="form-check-label" for="crossFamilyConfirmed">I confirm this cross-family payment.</label>
+                        </div>
+                        <div class="mb-3 form-check payment-student-only">
+                            <input class="form-check-input" id="anonymousToFamily" name="anonymousToFamily" type="checkbox" value="true">
+                            <label class="form-check-label" for="anonymousToFamily">
+                                Keep this payer anonymous to the student's family
+                            </label>
+                            <div class="form-text">The school will still retain the payer identity for receipt and tax purposes.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="paymentMethod">Payment type</label>
+                            <select class="form-select" id="paymentMethod" name="paymentMethod" required>
+                                <option th:each="paymentMethod : ${paymentMethods}" th:text="${paymentMethod.label}" th:value="${paymentMethod}">Cash</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="paymentAmount">Amount</label>
+                            <input class="form-control" id="paymentAmount" min="0.01" name="amount" required step="0.01" type="number">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="referenceNumber">Reference number</label>
+                            <input class="form-control" id="referenceNumber" name="referenceNumber" placeholder="Check # or transaction id" type="text">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="paymentNotes">Notes</label>
+                            <input class="form-control" id="paymentNotes" name="notes" placeholder="Optional notes" type="text">
+                        </div>
+                        <button class="btn btn-primary" type="submit">Record payment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Recent payments</h2>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                            <tr>
+                                <th>Family</th>
+                                <th>Payer</th>
+                                <th>Purpose</th>
+                                <th>Target</th>
+                                <th>Project</th>
+                                <th>Payment type</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Unapplied</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="payment : ${payments}">
+                                <td th:text="${payment.familyAccountName ?: 'External payer'}"></td>
+                                <td th:text="${payment.payerDisplayName}"></td>
+                                <td th:text="${payment.paymentPurposeLabel}"></td>
+                                <td th:text="${payment.targetDisplayName}"></td>
+                                <td th:text="${payment.schoolProjectTypeName}"></td>
+                                <td th:text="${payment.paymentMethodLabel}"></td>
+                                <td th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td th:text="${@moneyFormatter.format(payment.totalAmount)}"></td>
+                                <td th:text="${@moneyFormatter.format(payment.unappliedAmount)}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div aria-hidden="true" aria-labelledby="addPayerModalLabel" class="modal fade" id="addPayerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form method="post" th:action="@{/finance/payers}" th:object="${payerProfileForm}">
+                <div class="modal-header">
+                    <h2 class="modal-title h5 mb-0" id="addPayerModalLabel">Add payer</h2>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="payerFirstName">First name</label>
+                            <input class="form-control" id="payerFirstName" required th:field="*{firstName}" type="text">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="payerMiddleName">Middle name</label>
+                            <input class="form-control" id="payerMiddleName" th:field="*{middleName}" type="text">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="payerLastName">Last name</label>
+                            <input class="form-control" id="payerLastName" required th:field="*{lastName}" type="text">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="payerBusinessName">Business name</label>
+                            <input class="form-control" id="payerBusinessName" th:field="*{businessName}" type="text">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="payerEmailAddress">Email</label>
+                            <input class="form-control" id="payerEmailAddress" th:field="*{emailAddress}" type="email">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="payerPhoneNumber">Phone</label>
+                            <input class="form-control" id="payerPhoneNumber" th:field="*{phoneNumber}" type="text">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="payerMailingAddressLine1">Mailing address line 1</label>
+                            <input class="form-control" id="payerMailingAddressLine1" th:field="*{mailingAddressLine1}" type="text">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="payerMailingAddressLine2">Mailing address line 2</label>
+                            <input class="form-control" id="payerMailingAddressLine2" th:field="*{mailingAddressLine2}" type="text">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label" for="payerMailingCity">City</label>
+                            <input class="form-control" id="payerMailingCity" th:field="*{mailingCity}" type="text">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="payerMailingState">State</label>
+                            <input class="form-control" id="payerMailingState" th:field="*{mailingState}" type="text">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="payerMailingPostalCode">Postal code</label>
+                            <input class="form-control" id="payerMailingPostalCode" th:field="*{mailingPostalCode}" type="text">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Add payer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    (() => {
+        const paymentForm = document.getElementById('recordPaymentForm');
+        const purposeSelect = document.getElementById('paymentPurpose');
+        const studentLookup = document.getElementById('studentLookup');
+        const studentIdInput = document.getElementById('paymentStudentId');
+        const payerLookup = document.getElementById('payerFamilyLookup');
+        const payerProfileInput = document.getElementById('payerProfileId');
+        const chargesPanel = document.getElementById('studentOpenChargesPanel');
+        const studentSections = document.querySelectorAll('.payment-student-only');
+        const schoolProjectTypeGroup = document.getElementById('schoolProjectTypeGroup');
+        const schoolProjectTypeId = document.getElementById('schoolProjectTypeId');
+        const crossFamilyNotice = document.getElementById('crossFamilyNotice');
+        const crossFamilyConfirmationGroup = document.getElementById('crossFamilyConfirmationGroup');
+        const crossFamilyConfirmed = document.getElementById('crossFamilyConfirmed');
+        const paymentAmountInput = document.getElementById('paymentAmount');
+        const addPayerTrigger = document.getElementById('addPayerTrigger');
+        const moneyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+        const openFees = Array.from(document.querySelectorAll('#paymentOpenFeesData > div')).map((node) => ({
+            studentId: node.dataset.studentId,
+            studentLabel: node.dataset.studentLabel,
+            feeType: node.dataset.feeType,
+            description: node.dataset.description,
+            outstandingAmount: node.dataset.outstandingAmount
+        }));
+
+        function datalistOptionByValue(listId, value) {
+            return Array.from(document.querySelectorAll(`#${listId} option`)).find(option => option.value === value);
+        }
+
+        function syncLookup(input, listId, hiddenInput, dataAttribute) {
+            const option = datalistOptionByValue(listId, input.value);
+            hiddenInput.value = option ? option.dataset[dataAttribute] : '';
+            return option;
+        }
+
+        function syncPayerFromSelectedStudent(studentOption) {
+            if (!studentOption) {
+                return;
+            }
+            if (!studentOption.dataset.billingPayerId || !studentOption.dataset.billingPayerLabel) {
+                return;
+            }
+            payerLookup.value = studentOption.dataset.billingPayerLabel;
+            payerProfileInput.value = studentOption.dataset.billingPayerId;
+        }
+
+        function feesForSelectedStudent() {
+            return openFees.filter(fee => String(fee.studentId) === studentIdInput.value);
+        }
+
+        function buildAllocationPreview() {
+            const studentPurpose = purposeSelect.value === 'STUDENT_ACCOUNT';
+            if (!studentPurpose) {
+                chargesPanel.innerHTML = '<div class="text-secondary small">Student charge allocation is not required for this payment purpose.</div>';
+                return;
+            }
+            if (!studentIdInput.value) {
+                chargesPanel.innerHTML = '<div class="text-secondary small">Select a student to see current open charges and the auto-allocation preview.</div>';
+                return;
+            }
+            const selectedFees = feesForSelectedStudent();
+            if (selectedFees.length === 0) {
+                chargesPanel.innerHTML = '<div class="text-secondary small">No open charges for this student. Any posted amount will remain as unapplied family credit.</div>';
+                return;
+            }
+            let remaining = Number(paymentAmountInput.value || 0);
+            const rows = selectedFees.map(fee => {
+                const outstanding = Number(fee.outstandingAmount || 0);
+                const applied = remaining > 0 ? Math.min(remaining, outstanding) : 0;
+                remaining -= applied;
+                return `<tr><td>${fee.feeType}</td><td>${fee.description ?? ''}</td><td>${moneyFormatter.format(outstanding)}</td><td>${moneyFormatter.format(applied)}</td></tr>`;
+            }).join('');
+            const unappliedCredit = remaining > 0 ? `<div class="small text-secondary mt-2">Unapplied family credit after auto-allocation: <strong>${moneyFormatter.format(remaining)}</strong></div>` : '';
+            chargesPanel.innerHTML = `<div class="small fw-semibold mb-2">Auto-allocation preview</div><div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>Fee type</th><th>Description</th><th>Outstanding</th><th>This payment</th></tr></thead><tbody>${rows}</tbody></table></div>${unappliedCredit}`;
+        }
+
+        function syncCrossFamilyConfirmation() {
+            const studentOption = datalistOptionByValue('paymentStudentOptions', studentLookup.value);
+            const payerOption = datalistOptionByValue('payerOptions', payerLookup.value);
+            const studentPurpose = purposeSelect.value === 'STUDENT_ACCOUNT';
+            const crossFamily = studentPurpose && studentOption && payerOption
+                && (!payerOption.dataset.familyId || studentOption.dataset.familyId !== payerOption.dataset.familyId);
+            crossFamilyNotice.classList.toggle('d-none', !crossFamily);
+            crossFamilyConfirmationGroup.classList.toggle('d-none', !crossFamily);
+            crossFamilyConfirmed.required = crossFamily;
+            if (!crossFamily) {
+                crossFamilyConfirmed.checked = false;
+            }
+        }
+
+        function syncPurposeVisibility() {
+            const studentPurpose = purposeSelect.value === 'STUDENT_ACCOUNT';
+            const giftPurpose = purposeSelect.value === 'GIFT_TO_SCHOOL';
+            studentSections.forEach(section => section.classList.toggle('d-none', !studentPurpose));
+            studentLookup.required = studentPurpose;
+            schoolProjectTypeGroup.classList.toggle('d-none', !giftPurpose);
+            schoolProjectTypeId.required = giftPurpose;
+            if (!giftPurpose) {
+                schoolProjectTypeId.value = '';
+            }
+            buildAllocationPreview();
+            syncCrossFamilyConfirmation();
+        }
+
+        function syncAllLookups() {
+            const studentOption = syncLookup(studentLookup, 'paymentStudentOptions', studentIdInput, 'id');
+            syncLookup(payerLookup, 'payerOptions', payerProfileInput, 'id');
+            buildAllocationPreview();
+            syncCrossFamilyConfirmation();
+            return studentOption;
+        }
+
+        studentLookup.addEventListener('input', () => {
+            const studentOption = syncAllLookups();
+            syncPayerFromSelectedStudent(studentOption);
+            syncCrossFamilyConfirmation();
+        });
+        studentLookup.addEventListener('change', () => {
+            const studentOption = syncAllLookups();
+            syncPayerFromSelectedStudent(studentOption);
+            syncCrossFamilyConfirmation();
+        });
+        payerLookup.addEventListener('input', syncAllLookups);
+        payerLookup.addEventListener('change', syncAllLookups);
+        purposeSelect.addEventListener('change', syncPurposeVisibility);
+        paymentAmountInput.addEventListener('input', buildAllocationPreview);
+        paymentForm.addEventListener('submit', (event) => {
+            syncAllLookups();
+            const studentPurpose = purposeSelect.value === 'STUDENT_ACCOUNT';
+            if (!payerProfileInput.value) {
+                event.preventDefault();
+                payerLookup.focus();
+                alert('Select the payer from the lookup list before recording the payment.');
+                return;
+            }
+            if (studentPurpose && !studentIdInput.value) {
+                event.preventDefault();
+                studentLookup.focus();
+                alert('Select the student from the lookup list before recording the payment.');
+            }
+        });
+        addPayerTrigger.addEventListener('click', () => {
+            const typedName = payerLookup.value.trim();
+            if (!typedName) {
+                return;
+            }
+            const nameParts = typedName.split(/\s+/);
+            document.getElementById('payerFirstName').value = nameParts[0] ?? '';
+            document.getElementById('payerLastName').value = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+            document.getElementById('payerMiddleName').value = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '';
+        });
+
+        syncPurposeVisibility();
+        buildAllocationPreview();
+    })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

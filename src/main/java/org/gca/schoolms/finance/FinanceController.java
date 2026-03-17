@@ -6,8 +6,8 @@ import org.gca.schoolms.enrollment.EnrollmentFinanceAuthorizationType;
 import org.gca.schoolms.enrollment.FinanceReviewStatus;
 import org.gca.schoolms.enrollment.EnrollmentReviewService;
 import org.gca.schoolms.settings.SchoolYearService;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
+@PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE','SCHOOL_CASHIER')")
 public class FinanceController {
 
     private final EnrollmentReviewService enrollmentReviewService;
@@ -33,35 +33,48 @@ public class FinanceController {
     }
 
     @GetMapping("/finance")
-    public String financeHome(@RequestParam(required = false) Long editFeeTypeId, Model model) {
-        model.addAttribute("outstandingBalance", financeLedgerService.totalOutstandingBalance());
-        model.addAttribute("familyAccounts", financeLedgerService.familyAccounts());
-        model.addAttribute("feeTypes", financeLedgerService.feeTypes());
-        model.addAttribute("feeTypeForm", financeLedgerService.buildFeeTypeForm(editFeeTypeId));
-        model.addAttribute("schoolProjectTypes", financeLedgerService.schoolProjectTypes());
-        model.addAttribute("schoolYears", schoolYearService.schoolYears());
-        model.addAttribute("currentSchoolYear", schoolYearService.currentSchoolYearLabel());
-        model.addAttribute("students", financeLedgerService.students());
-        model.addAttribute("studentFees", financeLedgerService.recentFees());
-        model.addAttribute("paymentOpenFees", financeLedgerService.openFeesForPaymentPosting());
-        model.addAttribute("paymentStudentOptions", financeLedgerService.paymentStudentOptions());
-        model.addAttribute("paymentFamilyOptions", financeLedgerService.paymentFamilyOptions());
-        model.addAttribute("payments", financeLedgerService.recentPaymentRows());
-        model.addAttribute("paymentMethods", PaymentMethod.values());
-        model.addAttribute("paymentPurposes", PaymentPurpose.values());
-        model.addAttribute("enrollmentQueue", enrollmentReviewService.loadFinanceQueue());
-        model.addAttribute("financeStatuses", FinanceReviewStatus.values());
-        model.addAttribute("financeAuthorizationTypes", EnrollmentFinanceAuthorizationType.values());
-        return "finance/index";
+    public String financeHome(Model model) {
+        var financeQueue = enrollmentReviewService.loadFinanceQueue();
+        model.addAttribute("home", financeLedgerService.loadFinanceHome(financeQueue.size()));
+        return "finance/home";
+    }
+
+    @GetMapping("/finance/cashier")
+    public String cashierHome(@RequestParam(required = false) Long selectedPayerId, Model model) {
+        populateCashierModel(model, selectedPayerId);
+        return "finance/cashier";
+    }
+
+    @GetMapping("/finance/clearance")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
+    public String clearanceHome(Model model) {
+        populateClearanceModel(model);
+        return "finance/clearance";
+    }
+
+    @GetMapping("/finance/accounts")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
+    public String accountsHome(Model model) {
+        populateAccountsModel(model);
+        return "finance/accounts";
+    }
+
+    @GetMapping("/finance/fees")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
+    public String feeMaintenanceHome(@RequestParam(required = false) Long editFeeTypeId, Model model) {
+        populateFeeMaintenanceModel(editFeeTypeId, model);
+        return "finance/fees";
     }
 
     @GetMapping("/finance/payments/{paymentId}/receipt")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE','SCHOOL_CASHIER')")
     public String paymentReceipt(@PathVariable Long paymentId, Model model) {
         model.addAttribute("receipt", financeLedgerService.loadReceipt(paymentId));
         return "finance/payment-receipt";
     }
 
     @PostMapping("/finance/fee-types")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
     public String createFeeType(FeeTypeForm feeTypeForm,
                                 RedirectAttributes redirectAttributes) {
         try {
@@ -87,19 +100,21 @@ public class FinanceController {
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("message", ex.getMessage());
         }
-        return "redirect:/finance";
+        return "redirect:/finance/fees";
     }
 
     @PostMapping("/finance/school-project-types")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
     public String createSchoolProjectType(@RequestParam String code,
                                           @RequestParam String name,
                                           RedirectAttributes redirectAttributes) {
         financeLedgerService.createSchoolProjectType(code, name);
         redirectAttributes.addFlashAttribute("message", "School project type added.");
-        return "redirect:/finance";
+        return "redirect:/finance/fees";
     }
 
     @PostMapping("/finance/fees")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
     public String assessFee(@RequestParam Long studentId,
                             @RequestParam Long feeTypeId,
                             @RequestParam BigDecimal amount,
@@ -112,10 +127,11 @@ public class FinanceController {
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("message", ex.getMessage());
         }
-        return "redirect:/finance";
+        return "redirect:/finance/accounts";
     }
 
     @PostMapping("/finance/fees/{studentFeeId}/cancel")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
     public String cancelFee(@PathVariable Long studentFeeId,
                             @RequestParam String cancellationReason,
                             Authentication authentication,
@@ -126,15 +142,17 @@ public class FinanceController {
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("message", ex.getMessage());
         }
-        return "redirect:/finance";
+        return "redirect:/finance/accounts";
     }
 
     @PostMapping("/finance/payments")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE','SCHOOL_CASHIER')")
     public String recordPayment(@RequestParam PaymentPurpose paymentPurpose,
                                 @RequestParam(required = false) Long studentId,
-                                @RequestParam(required = false) Long payerFamilyAccountId,
+                                @RequestParam(required = false) Long payerProfileId,
                                 @RequestParam(required = false) Long schoolProjectTypeId,
                                 @RequestParam(defaultValue = "false") boolean crossFamilyConfirmed,
+                                @RequestParam(defaultValue = "false") boolean anonymousToFamily,
                                 @RequestParam PaymentMethod paymentMethod,
                                 @RequestParam BigDecimal amount,
                                 @RequestParam(required = false) String referenceNumber,
@@ -145,23 +163,34 @@ public class FinanceController {
             Long paymentId = financeLedgerService.recordPayment(
                 paymentPurpose,
                 studentId,
-                payerFamilyAccountId,
+                payerProfileId,
                 schoolProjectTypeId,
                 crossFamilyConfirmed,
                 paymentMethod,
                 amount,
                 referenceNumber,
                 notes,
+                anonymousToFamily,
                 authentication.getName()
             );
             return "redirect:/finance/payments/" + paymentId + "/receipt";
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("message", ex.getMessage());
         }
-        return "redirect:/finance";
+        return "redirect:/finance/cashier";
+    }
+
+    @PostMapping("/finance/payers")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE','SCHOOL_CASHIER')")
+    public String createPayer(PayerProfileForm payerProfileForm,
+                              RedirectAttributes redirectAttributes) {
+        Long payerId = financeLedgerService.createPayerProfile(payerProfileForm);
+        redirectAttributes.addFlashAttribute("message", "Payer added.");
+        return "redirect:/finance/cashier?selectedPayerId=" + payerId;
     }
 
     @PostMapping("/finance/enrollment-clearance")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
     public String updateEnrollmentClearance(@RequestParam Long requestId,
                                             @RequestParam FinanceReviewStatus financeReviewStatus,
                                             @RequestParam(required = false) String financeComment,
@@ -176,6 +205,39 @@ public class FinanceController {
             authorizationNote
         );
         redirectAttributes.addFlashAttribute("message", "Finance clearance updated.");
-        return "redirect:/finance";
+        return "redirect:/finance/clearance";
+    }
+
+    private void populateCashierModel(Model model, Long selectedPayerId) {
+        model.addAttribute("paymentOpenFees", financeLedgerService.openFeesForPaymentPosting());
+        model.addAttribute("paymentStudentOptions", financeLedgerService.paymentStudentOptions());
+        model.addAttribute("payerOptions", financeLedgerService.payerOptions());
+        model.addAttribute("selectedPayerOption", selectedPayerId != null ? financeLedgerService.loadPayerOption(selectedPayerId) : null);
+        model.addAttribute("payerProfileForm", new PayerProfileForm());
+        model.addAttribute("payments", financeLedgerService.recentPaymentRows());
+        model.addAttribute("paymentMethods", PaymentMethod.values());
+        model.addAttribute("paymentPurposes", PaymentPurpose.values());
+        model.addAttribute("schoolProjectTypes", financeLedgerService.schoolProjectTypes());
+    }
+
+    private void populateClearanceModel(Model model) {
+        model.addAttribute("enrollmentQueue", enrollmentReviewService.loadFinanceQueue());
+        model.addAttribute("financeStatuses", FinanceReviewStatus.values());
+        model.addAttribute("financeAuthorizationTypes", EnrollmentFinanceAuthorizationType.values());
+    }
+
+    private void populateAccountsModel(Model model) {
+        model.addAttribute("paymentStudentOptions", financeLedgerService.paymentStudentOptions());
+        model.addAttribute("feeTypes", financeLedgerService.feeTypes());
+        model.addAttribute("schoolYears", schoolYearService.schoolYears());
+        model.addAttribute("currentSchoolYear", schoolYearService.currentSchoolYearLabel());
+        model.addAttribute("studentFees", financeLedgerService.recentFees());
+        model.addAttribute("outstandingAccounts", financeLedgerService.outstandingAccounts());
+    }
+
+    private void populateFeeMaintenanceModel(Long editFeeTypeId, Model model) {
+        model.addAttribute("feeTypes", financeLedgerService.feeTypes());
+        model.addAttribute("feeTypeForm", financeLedgerService.buildFeeTypeForm(editFeeTypeId));
+        model.addAttribute("schoolProjectTypes", financeLedgerService.schoolProjectTypes());
     }
 }

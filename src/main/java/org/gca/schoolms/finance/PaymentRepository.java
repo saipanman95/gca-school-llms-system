@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @EntityGraph(attributePaths = {
+        "payerProfile",
         "familyAccount",
         "targetStudent",
         "schoolProjectType",
@@ -17,6 +18,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findTop20ByOrderByPaymentDateDescIdDesc();
 
     @EntityGraph(attributePaths = {
+        "payerProfile",
         "familyAccount",
         "targetStudent",
         "schoolProjectType",
@@ -27,6 +29,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByFamilyAccountOrderByPaymentDateDescIdDesc(FamilyAccount familyAccount);
 
     @EntityGraph(attributePaths = {
+        "payerProfile",
         "familyAccount",
         "targetStudent",
         "schoolProjectType",

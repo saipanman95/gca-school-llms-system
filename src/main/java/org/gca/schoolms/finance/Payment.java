@@ -26,7 +26,11 @@ public class Payment {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "family_account_id", nullable = false)
+    @JoinColumn(name = "payer_profile_id", nullable = false)
+    private PayerProfile payerProfile;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "family_account_id")
     private FamilyAccount familyAccount;
 
     @Enumerated(EnumType.STRING)
@@ -58,26 +62,36 @@ public class Payment {
 
     private String notes;
 
+    @Column(nullable = false)
+    private boolean anonymousToFamily = false;
+
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PaymentAllocation> allocations = new ArrayList<>();
 
     protected Payment() {
     }
 
+    public Payment(PayerProfile payerProfile, FamilyAccount familyAccount, PaymentMethod paymentMethod, BigDecimal totalAmount,
+                   LocalDateTime paymentDate, String receivedByUserId, String referenceNumber, String notes) {
+        this(payerProfile, familyAccount, PaymentPurpose.STUDENT_ACCOUNT, null, null, paymentMethod, totalAmount, paymentDate, receivedByUserId, referenceNumber, notes, false);
+    }
+
     public Payment(FamilyAccount familyAccount, PaymentMethod paymentMethod, BigDecimal totalAmount,
                    LocalDateTime paymentDate, String referenceNumber, String notes) {
-        this(familyAccount, PaymentPurpose.STUDENT_ACCOUNT, null, null, paymentMethod, totalAmount, paymentDate, "system", referenceNumber, notes);
+        this(null, familyAccount, PaymentPurpose.STUDENT_ACCOUNT, null, null, paymentMethod, totalAmount, paymentDate, "system", referenceNumber, notes, false);
     }
 
     public Payment(FamilyAccount familyAccount, PaymentMethod paymentMethod, BigDecimal totalAmount,
                    LocalDateTime paymentDate, String receivedByUserId, String referenceNumber, String notes) {
-        this(familyAccount, PaymentPurpose.STUDENT_ACCOUNT, null, null, paymentMethod, totalAmount, paymentDate, receivedByUserId, referenceNumber, notes);
+        this(null, familyAccount, PaymentPurpose.STUDENT_ACCOUNT, null, null, paymentMethod, totalAmount, paymentDate, receivedByUserId, referenceNumber, notes, false);
     }
 
-    public Payment(FamilyAccount familyAccount, PaymentPurpose paymentPurpose, Student targetStudent,
+    public Payment(PayerProfile payerProfile, FamilyAccount familyAccount, PaymentPurpose paymentPurpose, Student targetStudent,
                    SchoolProjectType schoolProjectType,
                    PaymentMethod paymentMethod, BigDecimal totalAmount,
-                   LocalDateTime paymentDate, String receivedByUserId, String referenceNumber, String notes) {
+                   LocalDateTime paymentDate, String receivedByUserId, String referenceNumber, String notes,
+                   boolean anonymousToFamily) {
+        this.payerProfile = payerProfile;
         this.familyAccount = familyAccount;
         this.paymentPurpose = paymentPurpose;
         this.targetStudent = targetStudent;
@@ -88,6 +102,11 @@ public class Payment {
         this.receivedByUserId = receivedByUserId;
         this.referenceNumber = referenceNumber;
         this.notes = notes;
+        this.anonymousToFamily = anonymousToFamily;
+    }
+
+    public PayerProfile getPayerProfile() {
+        return payerProfile;
     }
 
     public Long getId() {
@@ -128,6 +147,9 @@ public class Payment {
     }
 
     public BigDecimal getUnappliedAmount() {
+        if (paymentPurpose != PaymentPurpose.STUDENT_ACCOUNT) {
+            return BigDecimal.ZERO;
+        }
         return totalAmount.subtract(getAllocatedAmount());
     }
 
@@ -153,6 +175,10 @@ public class Payment {
 
     public String getNotes() {
         return notes;
+    }
+
+    public boolean isAnonymousToFamily() {
+        return anonymousToFamily;
     }
 
     public List<PaymentAllocation> getAllocations() {

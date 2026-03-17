@@ -66,10 +66,18 @@
                         <dd class="col-sm-8" th:text="${receipt.payerMiddleName}">Marie</dd>
                         <dt class="col-sm-4">Last</dt>
                         <dd class="col-sm-8" th:text="${receipt.payerLastName}">Cruz</dd>
+                        <dt class="col-sm-4">Business</dt>
+                        <dd class="col-sm-8" th:text="${receipt.payerBusinessName ?: 'N/A'}">ABC Corp</dd>
                         <dt class="col-sm-4">Record ID</dt>
                         <dd class="col-sm-8" th:text="${receipt.payerRecordId}">FA-1001</dd>
-                        <dt class="col-sm-4">Family</dt>
-                        <dd class="col-sm-8" th:text="${receipt.payerAccountName}">Cruz Family</dd>
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8" th:text="${receipt.payerEmailAddress ?: 'N/A'}">payer@example.org</dd>
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8" th:text="${receipt.payerPhoneNumber ?: 'N/A'}">670-555-1000</dd>
+                        <dt class="col-sm-4">Linked family</dt>
+                        <dd class="col-sm-8" th:text="${receipt.payerAccountName ?: 'None'}">Cruz Family</dd>
+                        <dt class="col-sm-4">Anonymous to family</dt>
+                        <dd class="col-sm-8" th:text="${receipt.anonymousToFamily ? 'Yes' : 'No'}">Yes</dd>
                     </dl>
                 </div>
                 <div class="col-md-6">

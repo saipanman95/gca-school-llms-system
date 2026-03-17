@@ -453,6 +453,13 @@ public class FamilyAccount {
         return primaryGuardianBillingRecipient;
     }
 
+    public String getBillingRecipientName() {
+        if (!primaryGuardianBillingRecipient && secondaryGuardianName != null && !secondaryGuardianName.isBlank()) {
+            return secondaryGuardianName;
+        }
+        return primaryGuardianName;
+    }
+
     public Campus getCampus() {
         return campus;
     }

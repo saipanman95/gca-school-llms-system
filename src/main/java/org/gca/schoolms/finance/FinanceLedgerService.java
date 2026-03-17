@@ -20,6 +20,7 @@ public class FinanceLedgerService {
     private final FeeTypeRepository feeTypeRepository;
     private final StudentFeeRepository studentFeeRepository;
     private final PaymentRepository paymentRepository;
+    private final PayerProfileRepository payerProfileRepository;
     private final SchoolProjectTypeRepository schoolProjectTypeRepository;
     private final FamilyAccountRepository familyAccountRepository;
     private final StudentRepository studentRepository;
@@ -27,12 +28,14 @@ public class FinanceLedgerService {
     private final SchoolProfileService schoolProfileService;
 
     public FinanceLedgerService(FeeTypeRepository feeTypeRepository, StudentFeeRepository studentFeeRepository,
-                                PaymentRepository paymentRepository, SchoolProjectTypeRepository schoolProjectTypeRepository,
+                                PaymentRepository paymentRepository, PayerProfileRepository payerProfileRepository,
+                                SchoolProjectTypeRepository schoolProjectTypeRepository,
                                 FamilyAccountRepository familyAccountRepository, StudentRepository studentRepository,
                                 CampusRepository campusRepository, SchoolProfileService schoolProfileService) {
         this.feeTypeRepository = feeTypeRepository;
         this.studentFeeRepository = studentFeeRepository;
         this.paymentRepository = paymentRepository;
+        this.payerProfileRepository = payerProfileRepository;
         this.schoolProjectTypeRepository = schoolProjectTypeRepository;
         this.familyAccountRepository = familyAccountRepository;
         this.studentRepository = studentRepository;
@@ -119,24 +122,34 @@ public class FinanceLedgerService {
             .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<FinanceStudentPaymentOption> paymentStudentOptions() {
         return studentRepository.findAllByOrderByLastNameAscFirstNameAsc().stream()
-            .map(student -> new FinanceStudentPaymentOption(
-                student.getId(),
-                student.getFamilyAccount().getId(),
-                student.getLastName() + ", " + student.getFirstName()
-                    + " (" + student.getStudentNumber() + " / "
-                    + student.getFamilyAccount().getAccountName() + ")"))
+            .map(student -> {
+                PayerProfile billingPayer = ensureBillingPayerProfile(student.getFamilyAccount());
+                return new FinanceStudentPaymentOption(
+                    student.getId(),
+                    student.getFamilyAccount().getId(),
+                    billingPayer.getId(),
+                    billingPayer.getLookupLabel(),
+                    student.getLastName() + ", " + student.getFirstName()
+                        + " (" + student.getStudentNumber() + " / "
+                        + student.getFamilyAccount().getAccountName() + ")"
+                );
+            })
             .toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<FinanceFamilyLookupOption> paymentFamilyOptions() {
-        return familyAccountRepository.findAllByOrderByPrimaryGuardianNameAsc().stream()
-            .map(account -> new FinanceFamilyLookupOption(
-                account.getId(),
-                account.getPrimaryGuardianName() + " (" + account.getAccountName() + ")"))
+    @Transactional
+    public List<PayerLookupOption> payerOptions() {
+        familyAccountRepository.findAllByOrderByPrimaryGuardianNameAsc()
+            .forEach(this::ensureBillingPayerProfile);
+        return payerProfileRepository.findAllByOrderByLastNameAscFirstNameAsc().stream()
+            .map(profile -> new PayerLookupOption(
+                profile.getId(),
+                profile.getFamilyAccount() != null ? profile.getFamilyAccount().getId() : null,
+                profile.getLookupLabel()
+            ))
             .toList();
     }
 
@@ -288,25 +301,29 @@ public class FinanceLedgerService {
     }
 
     @Transactional
-    public Long recordPayment(PaymentPurpose paymentPurpose, Long studentId, Long payerFamilyAccountId,
+    public Long recordPayment(PaymentPurpose paymentPurpose, Long studentId, Long payerProfileId,
                               Long schoolProjectTypeId, boolean crossFamilyConfirmed, PaymentMethod paymentMethod,
-                              BigDecimal amount, String referenceNumber, String notes, String receivedByUserId) {
-        if (payerFamilyAccountId == null) {
-            throw new IllegalArgumentException("A guardian / payer must be selected from the lookup list.");
+                              BigDecimal amount, String referenceNumber, String notes, boolean anonymousToFamily,
+                              String receivedByUserId) {
+        if (payerProfileId == null) {
+            throw new IllegalArgumentException("A payer must be selected from the lookup list.");
         }
-        var payerFamilyAccount = familyAccountRepository.findById(payerFamilyAccountId).orElseThrow();
+        PayerProfile payerProfile = payerProfileRepository.findById(payerProfileId).orElseThrow();
+        FamilyAccount payerFamilyAccount = payerProfile.getFamilyAccount();
         Student targetStudent = studentId == null ? null : studentRepository.findById(studentId).orElseThrow();
         SchoolProjectType schoolProjectType = schoolProjectTypeId == null ? null : schoolProjectTypeRepository.findById(schoolProjectTypeId).orElseThrow();
         if (paymentPurpose == PaymentPurpose.STUDENT_ACCOUNT) {
             if (targetStudent == null) {
                 throw new IllegalArgumentException("A student must be selected for student payments.");
             }
-            boolean sameFamily = targetStudent.getFamilyAccount().getId().equals(payerFamilyAccount.getId());
+            boolean sameFamily = payerFamilyAccount != null && targetStudent.getFamilyAccount().getId().equals(payerFamilyAccount.getId());
             if (!sameFamily && !crossFamilyConfirmed) {
                 throw new IllegalArgumentException("Cross-family student payments require confirmation.");
             }
+            FamilyAccount creditedFamilyAccount = targetStudent.getFamilyAccount();
             var payment = paymentRepository.save(new Payment(
-                payerFamilyAccount,
+                payerProfile,
+                creditedFamilyAccount,
                 paymentPurpose,
                 targetStudent,
                 null,
@@ -315,7 +332,8 @@ public class FinanceLedgerService {
                 LocalDateTime.now(),
                 normalizeReceiverId(receivedByUserId),
                 referenceNumber == null || referenceNumber.isBlank() ? null : referenceNumber.trim(),
-                notes == null || notes.isBlank() ? null : notes.trim()
+                notes == null || notes.isBlank() ? null : notes.trim(),
+                anonymousToFamily
             ));
             BigDecimal remainingAmount = amount;
             for (StudentFee studentFee : studentFeeRepository.findByStudentOrderByAssessedAtAscIdAsc(targetStudent)) {
@@ -337,6 +355,7 @@ public class FinanceLedgerService {
             throw new IllegalArgumentException("Select a school project type for gifts to the school.");
         }
         Payment payment = paymentRepository.save(new Payment(
+            payerProfile,
             payerFamilyAccount,
             paymentPurpose,
             targetStudent,
@@ -346,14 +365,85 @@ public class FinanceLedgerService {
             LocalDateTime.now(),
             normalizeReceiverId(receivedByUserId),
             referenceNumber == null || referenceNumber.isBlank() ? null : referenceNumber.trim(),
-            notes == null || notes.isBlank() ? null : notes.trim()
+            notes == null || notes.isBlank() ? null : notes.trim(),
+            anonymousToFamily
         ));
         return payment.getId();
+    }
+
+    @Transactional
+    public Long createPayerProfile(PayerProfileForm form) {
+        PayerProfile payerProfile = payerProfileRepository.save(new PayerProfile(
+            form.getFirstName().trim(),
+            blankToNull(form.getMiddleName()),
+            form.getLastName().trim(),
+            blankToNull(form.getBusinessName()),
+            blankToNull(form.getEmailAddress()),
+            blankToNull(form.getPhoneNumber()),
+            blankToNull(form.getMailingAddressLine1()),
+            blankToNull(form.getMailingAddressLine2()),
+            blankToNull(form.getMailingCity()),
+            blankToNull(form.getMailingState()),
+            blankToNull(form.getMailingPostalCode()),
+            null
+        ));
+        return payerProfile.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public PayerLookupOption loadPayerOption(Long payerProfileId) {
+        return payerProfileRepository.findById(payerProfileId)
+            .map(profile -> new PayerLookupOption(
+                profile.getId(),
+                profile.getFamilyAccount() != null ? profile.getFamilyAccount().getId() : null,
+                profile.getLookupLabel()
+            ))
+            .orElse(null);
     }
 
     @Transactional(readOnly = true)
     public List<FamilyAccount> familyAccounts() {
         return familyAccountRepository.findTop10ByOrderByAccountNameAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public FinanceHomeView loadFinanceHome(long pendingClearanceCount) {
+        long openChargeCount = openChargeCount();
+        long outstandingFamilyCount = familyAccountRepository.findAllByOrderByPrimaryGuardianNameAsc().stream()
+            .filter(account -> outstandingBalanceForFamily(account).compareTo(BigDecimal.ZERO) > 0)
+            .count();
+        return new FinanceHomeView(
+            totalOutstandingBalance(),
+            openChargeCount,
+            paymentRepository.count(),
+            pendingClearanceCount,
+            outstandingFamilyCount,
+            feeTypeRepository.count()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<FinanceOutstandingAccountRow> outstandingAccounts() {
+        return familyAccountRepository.findAllByOrderByPrimaryGuardianNameAsc().stream()
+            .map(account -> {
+                BigDecimal outstandingBalance = outstandingBalanceForFamily(account);
+                long openChargeCount = feesForFamily(account).stream()
+                    .filter(fee -> fee.getOutstandingAmount().compareTo(BigDecimal.ZERO) > 0)
+                    .count();
+                return new FinanceOutstandingAccountRow(
+                    account.getId(),
+                    account.getAccountNumber(),
+                    account.getAccountName(),
+                    account.getPrimaryGuardianName(),
+                    account.getPrimaryGuardianPhone(),
+                    account.getPrimaryGuardianEmail(),
+                    account.getCampus().getCode(),
+                    outstandingBalance,
+                    openChargeCount
+                );
+            })
+            .filter(account -> account.outstandingBalance().compareTo(BigDecimal.ZERO) > 0)
+            .toList();
     }
 
     @Transactional(readOnly = true)
@@ -364,8 +454,7 @@ public class FinanceLedgerService {
     @Transactional(readOnly = true)
     public PaymentReceiptView loadReceipt(Long paymentId) {
         Payment payment = paymentRepository.findWithDetailsById(paymentId).orElseThrow();
-        FamilyAccount payer = payment.getFamilyAccount();
-        ParsedName payerName = parseName(payer.getPrimaryGuardianName());
+        PayerProfile payer = payment.getPayerProfile();
         SchoolProfileView schoolProfile = schoolProfileService.loadView();
         BigDecimal remainingBalance = payment.getPaymentPurpose() == PaymentPurpose.STUDENT_ACCOUNT
             ? outstandingBalanceForFamily(payment.getTargetStudent().getFamilyAccount())
@@ -379,11 +468,15 @@ public class FinanceLedgerService {
             schoolProfile.phoneNumber(),
             schoolProfile.mailingAddress(),
             payment.getReceivedByUserId(),
-            payerName.firstName(),
-            payerName.middleName(),
-            payerName.lastName(),
-            payer.getAccountNumber(),
-            payer.getAccountName(),
+            payer.getFirstName(),
+            payer.getMiddleName(),
+            payer.getLastName(),
+            payer.getBusinessName(),
+            "PYR-%06d".formatted(payer.getId()),
+            payer.getEmailAddress(),
+            payer.getPhoneNumber(),
+            payment.getFamilyAccount() != null ? payment.getFamilyAccount().getAccountName() : null,
+            payment.isAnonymousToFamily(),
             payment.getPaymentPurpose().getLabel(),
             payment.getTargetDisplayName(),
             payment.getSchoolProjectType() != null ? payment.getSchoolProjectType().getName() : null,
@@ -405,7 +498,8 @@ public class FinanceLedgerService {
 
     private PaymentRowView toPaymentRowView(Payment payment) {
         return new PaymentRowView(
-            payment.getFamilyAccount().getAccountName(),
+            payment.getPayerProfile().getDisplayName(),
+            payment.getFamilyAccount() != null ? payment.getFamilyAccount().getAccountName() : null,
             payment.getPaymentPurpose().getLabel(),
             payment.getTargetDisplayName(),
             payment.getSchoolProjectType() != null ? payment.getSchoolProjectType().getName() : null,
@@ -440,6 +534,30 @@ public class FinanceLedgerService {
         String last = parts[parts.length - 1];
         String middle = String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length - 1));
         return new ParsedName(first, middle, last);
+    }
+
+    private PayerProfile ensureBillingPayerProfile(FamilyAccount familyAccount) {
+        String billingName = familyAccount.getBillingRecipientName();
+        ParsedName parsedName = parseName(billingName);
+        return payerProfileRepository.findByFamilyAccountAndFirstNameAndLastName(familyAccount, parsedName.firstName(), parsedName.lastName())
+            .orElseGet(() -> payerProfileRepository.save(new PayerProfile(
+                parsedName.firstName(),
+                blankToNull(parsedName.middleName()),
+                parsedName.lastName(),
+                null,
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getPrimaryGuardianEmail() : familyAccount.getSecondaryGuardianEmail(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getPrimaryGuardianPhone() : familyAccount.getSecondaryGuardianPhone(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingAddressLine1() : familyAccount.getSecondaryMailingAddressLine1(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingAddressLine2() : familyAccount.getSecondaryMailingAddressLine2(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingCity() : familyAccount.getSecondaryMailingCity(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingState() : familyAccount.getSecondaryMailingState(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingPostalCode() : familyAccount.getSecondaryMailingPostalCode(),
+                familyAccount
+            )));
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     private record ParsedName(String firstName, String middleName, String lastName) {

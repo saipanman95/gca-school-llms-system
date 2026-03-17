@@ -20,6 +20,8 @@ import org.gca.schoolms.finance.MaritalStatus;
 import org.gca.schoolms.finance.Payment;
 import org.gca.schoolms.finance.PaymentAllocation;
 import org.gca.schoolms.finance.PaymentMethod;
+import org.gca.schoolms.finance.PayerProfile;
+import org.gca.schoolms.finance.PayerProfileRepository;
 import org.gca.schoolms.finance.PaymentRepository;
 import org.gca.schoolms.finance.SchoolProjectTypeRepository;
 import org.gca.schoolms.finance.StudentFee;
@@ -69,6 +71,29 @@ public class SeedDataConfig {
             )));
     }
 
+    private static PayerProfile ensureBillingPayerProfile(PayerProfileRepository repository, FamilyAccount familyAccount) {
+        String billingName = familyAccount.getBillingRecipientName();
+        String[] parts = billingName.trim().split("\\s+");
+        String firstName = parts[0];
+        String lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+        String middleName = parts.length > 2 ? String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length - 1)) : null;
+        return repository.findByFamilyAccountAndFirstNameAndLastName(familyAccount, firstName, lastName)
+            .orElseGet(() -> repository.save(new PayerProfile(
+                firstName,
+                middleName,
+                lastName,
+                null,
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getPrimaryGuardianEmail() : familyAccount.getSecondaryGuardianEmail(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getPrimaryGuardianPhone() : familyAccount.getSecondaryGuardianPhone(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingAddressLine1() : familyAccount.getSecondaryMailingAddressLine1(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingAddressLine2() : familyAccount.getSecondaryMailingAddressLine2(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingCity() : familyAccount.getSecondaryMailingCity(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingState() : familyAccount.getSecondaryMailingState(),
+                familyAccount.isPrimaryGuardianBillingRecipient() ? familyAccount.getMailingPostalCode() : familyAccount.getSecondaryMailingPostalCode(),
+                familyAccount
+            )));
+    }
+
     private static Student findStudentByNumber(List<Student> students, String studentNumber) {
         return students.stream()
             .filter(student -> studentNumber.equals(student.getStudentNumber()))
@@ -87,6 +112,7 @@ public class SeedDataConfig {
     CommandLineRunner seedData(CampusRepository campusRepository, FamilyAccountRepository familyAccountRepository,
                                StudentRepository studentRepository, FeeTypeRepository feeTypeRepository,
                                StudentFeeRepository studentFeeRepository, PaymentRepository paymentRepository,
+                               PayerProfileRepository payerProfileRepository,
                                SchoolProjectTypeRepository schoolProjectTypeRepository,
                                SchoolYearRepository schoolYearRepository,
                                SchoolProfileService schoolProfileService,
@@ -160,6 +186,9 @@ public class SeedDataConfig {
                 manglonaFamily = familyAccountRepository.findTop10ByOrderByAccountNameAsc().stream()
                     .filter(account -> "FA-1003".equals(account.getAccountNumber())).findFirst().orElseThrow();
             }
+            PayerProfile cruzPayer = ensureBillingPayerProfile(payerProfileRepository, cruzFamily);
+            PayerProfile santosPayer = ensureBillingPayerProfile(payerProfileRepository, santosFamily);
+            PayerProfile manglonaPayer = ensureBillingPayerProfile(payerProfileRepository, manglonaFamily);
 
             Student ava = null;
             Student isaac = null;
@@ -234,6 +263,7 @@ public class SeedDataConfig {
                     "Technology fee"));
 
                 Payment cruzPayment = paymentRepository.save(new Payment(
+                    cruzPayer,
                     cruzFamily, PaymentMethod.CASH, new BigDecimal("1800.00"),
                     LocalDate.now().minusDays(10).atStartOfDay(), "SYSTEM", "RCPT-1001", "Partial tuition payment"));
                 cruzPayment.getAllocations().add(new PaymentAllocation(
@@ -241,6 +271,7 @@ public class SeedDataConfig {
                 paymentRepository.save(cruzPayment);
 
                 Payment santosScholarship = paymentRepository.save(new Payment(
+                    santosPayer,
                     santosFamily, PaymentMethod.SCHOLARSHIP_APPLIED, new BigDecimal("100.00"),
                     LocalDate.now().minusDays(4).atStartOfDay(), "SYSTEM", "SCH-2026-1", "Scholarship applied to application fee"));
                 santosScholarship.getAllocations().add(new PaymentAllocation(
@@ -248,6 +279,7 @@ public class SeedDataConfig {
                 paymentRepository.save(santosScholarship);
 
                 Payment leahGrant = paymentRepository.save(new Payment(
+                    manglonaPayer,
                     manglonaFamily, PaymentMethod.CCDF_INHOUSE_GRANT, new BigDecimal("75.00"),
                     LocalDate.now().minusDays(5).atStartOfDay(), "SYSTEM", "CCDF-55", "CCDF in-house grant"));
                 leahGrant.getAllocations().add(new PaymentAllocation(

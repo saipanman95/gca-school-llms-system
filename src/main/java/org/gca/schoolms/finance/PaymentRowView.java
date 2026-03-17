@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record PaymentRowView(
+    String payerDisplayName,
     String familyAccountName,
     String paymentPurposeLabel,
     String targetDisplayName,
