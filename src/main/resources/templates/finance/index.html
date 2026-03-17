@@ -93,13 +93,12 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h2 class="h5 mb-3">Assess fee to student</h2>
-                    <form method="post" th:action="@{/finance/fees}">
+                    <form id="assessFeeForm" method="post" th:action="@{/finance/fees}">
                         <div class="mb-3">
-                            <label class="form-label" for="feeStudentId">Student</label>
-                            <select class="form-select" id="feeStudentId" name="studentId" required>
-                                <option value="">Select student</option>
-                                <option th:each="student : ${students}" th:text="${student.displayName + ' (' + student.studentNumber + ')'}" th:value="${student.id}">Ava Cruz</option>
-                            </select>
+                            <label class="form-label" for="feeStudentLookup">Student</label>
+                            <input class="form-control" id="feeStudentLookup" list="paymentStudentOptions" placeholder="Type student last name" required type="text">
+                            <input id="feeStudentId" name="studentId" type="hidden">
+                            <div class="form-text">Search by last name, then choose the matching student record.</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="feeTypeId">Fee type</label>
@@ -445,6 +444,9 @@
     (() => {
         const feeTypeSelect = document.getElementById('feeTypeId');
         const feeAmountInput = document.getElementById('feeAmount');
+        const assessFeeForm = document.getElementById('assessFeeForm');
+        const feeStudentLookup = document.getElementById('feeStudentLookup');
+        const feeStudentIdInput = document.getElementById('feeStudentId');
         const paymentForm = document.getElementById('recordPaymentForm');
         const purposeSelect = document.getElementById('paymentPurpose');
         const studentLookup = document.getElementById('studentLookup');
@@ -583,6 +585,12 @@
             buildAllocationPreview();
             syncCrossFamilyConfirmation();
         });
+        feeStudentLookup.addEventListener('input', () => {
+            syncLookup(feeStudentLookup, 'paymentStudentOptions', feeStudentIdInput, 'id');
+        });
+        feeStudentLookup.addEventListener('change', () => {
+            syncLookup(feeStudentLookup, 'paymentStudentOptions', feeStudentIdInput, 'id');
+        });
         studentLookup.addEventListener('change', syncAllLookups);
         payerLookup.addEventListener('input', () => {
             syncLookup(payerLookup, 'paymentFamilyOptions', payerFamilyInput, 'id');
@@ -604,6 +612,14 @@
                 event.preventDefault();
                 studentLookup.focus();
                 alert('Select the student from the lookup list before recording the payment.');
+            }
+        });
+        assessFeeForm.addEventListener('submit', (event) => {
+            syncLookup(feeStudentLookup, 'paymentStudentOptions', feeStudentIdInput, 'id');
+            if (!feeStudentIdInput.value) {
+                event.preventDefault();
+                feeStudentLookup.focus();
+                alert('Select the student from the lookup list before assessing the fee.');
             }
         });
 
