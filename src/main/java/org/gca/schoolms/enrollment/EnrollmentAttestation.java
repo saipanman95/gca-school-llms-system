@@ -52,4 +52,10 @@ public class EnrollmentAttestation {
     public LocalDateTime getAttestedOn() {
         return attestedOn;
     }
+
+    public void update(boolean confirmedTrueAndCorrect, String parentInitials, LocalDateTime attestedOn) {
+        this.confirmedTrueAndCorrect = confirmedTrueAndCorrect;
+        this.parentInitials = parentInitials;
+        this.attestedOn = attestedOn;
+    }
 }

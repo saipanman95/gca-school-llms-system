@@ -27,8 +27,14 @@ public class Student {
     @Column(nullable = false)
     private String firstName;
 
+    private String middleName;
+
     @Column(nullable = false)
     private String lastName;
+
+    private String suffix;
+
+    private String preferredName;
 
     private LocalDate dateOfBirth;
 
@@ -51,11 +57,15 @@ public class Student {
     protected Student() {
     }
 
-    public Student(String studentNumber, String firstName, String lastName, LocalDate dateOfBirth, GradeLevel gradeLevel,
+    public Student(String studentNumber, String firstName, String middleName, String lastName, String suffix,
+                   String preferredName, LocalDate dateOfBirth, GradeLevel gradeLevel,
                    Campus campus, FamilyAccount familyAccount, StudentStatus status) {
         this.studentNumber = studentNumber;
         this.firstName = firstName;
+        this.middleName = middleName;
         this.lastName = lastName;
+        this.suffix = suffix;
+        this.preferredName = preferredName;
         this.dateOfBirth = dateOfBirth;
         this.gradeLevel = gradeLevel;
         this.campus = campus;
@@ -75,8 +85,20 @@ public class Student {
         return firstName;
     }
 
+    public String getMiddleName() {
+        return middleName;
+    }
+
     public String getLastName() {
         return lastName;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public String getPreferredName() {
+        return preferredName;
     }
 
     public LocalDate getDateOfBirth() {
@@ -99,7 +121,30 @@ public class Student {
         return status;
     }
 
+    public String getLegalDisplayName() {
+        StringBuilder name = new StringBuilder(firstName);
+        if (middleName != null && !middleName.isBlank()) {
+            name.append(" ").append(middleName);
+        }
+        name.append(" ").append(lastName);
+        if (suffix != null && !suffix.isBlank()) {
+            name.append(" ").append(suffix);
+        }
+        return name.toString();
+    }
+
     public String getDisplayName() {
-        return firstName + " " + lastName;
+        String givenName = preferredName != null && !preferredName.isBlank() ? preferredName : firstName;
+        StringBuilder name = new StringBuilder(givenName).append(" ").append(lastName);
+        if (suffix != null && !suffix.isBlank()) {
+            name.append(" ").append(suffix);
+        }
+        return name.toString();
+    }
+
+    public void applyEnrollment(Campus campus, GradeLevel gradeLevel) {
+        this.campus = campus;
+        this.gradeLevel = gradeLevel;
+        this.status = StudentStatus.ACTIVE;
     }
 }

@@ -12,6 +12,7 @@ public record GuardianEnrollmentActivityView(
     GradeLevel requestedGradeLevel,
     EnrollmentRequestStatus status,
     String parentStatusLabel,
+    String registrarComment,
     int completionPercentage,
     boolean editable,
     boolean deletable

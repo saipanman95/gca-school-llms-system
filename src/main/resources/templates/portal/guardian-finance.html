@@ -25,23 +25,54 @@
     </div>
     <div class="card border-0 shadow-sm">
         <div class="card-body">
-            <h2 class="h5 mb-3">Open and recent charges</h2>
+            <h2 class="h5 mb-3">Assessed fees</h2>
             <div class="table-responsive">
                 <table class="table align-middle">
                     <thead>
                     <tr>
+                        <th>Student</th>
+                        <th>Fee type</th>
                         <th>Description</th>
-                        <th>Due</th>
-                        <th>Status</th>
+                        <th>Assessed</th>
+                        <th>Total</th>
                         <th>Outstanding</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="invoice : ${financeView.invoices()}">
-                        <td th:text="${invoice.description}"></td>
-                        <td th:text="${invoice.dueDate}"></td>
-                        <td><span class="badge text-bg-warning" th:text="${invoice.status}"></span></td>
-                        <td th:text="${@moneyFormatter.format(invoice.outstandingAmount)}"></td>
+                    <tr th:each="fee : ${financeView.fees()}">
+                        <td th:text="${fee.studentDisplayName}"></td>
+                        <td th:text="${fee.feeType.name}"></td>
+                        <td th:text="${fee.description}"></td>
+                        <td th:text="${#temporals.format(fee.assessedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${@moneyFormatter.format(fee.amount)}"></td>
+                        <td th:text="${@moneyFormatter.format(fee.outstandingAmount)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Payments and credits</h2>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Reference</th>
+                        <th>Amount</th>
+                        <th>Notes</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="payment : ${financeView.payments()}">
+                        <td th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${payment.paymentMethod.label}"></td>
+                        <td th:text="${payment.referenceNumber}"></td>
+                        <td th:text="${@moneyFormatter.format(payment.totalAmount)}"></td>
+                        <td th:text="${payment.notes}"></td>
                     </tr>
                     </tbody>
                 </table>

@@ -23,3 +23,7 @@ spring:
 server:
   error:
     include-message: always
+
+app:
+  storage:
+    enrollment-root: ./data/uploads/enrollment

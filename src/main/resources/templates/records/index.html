@@ -10,12 +10,95 @@
 <body>
 <div th:replace="~{fragments/layout :: navbar}"></div>
 <main class="container py-4">
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-1">Records Management</h1>
             <p class="text-secondary mb-0">Foundation for transcripts, awards, report cards, admissions files, student medical records, and multi-campus record custody.</p>
         </div>
         <button class="btn btn-primary" disabled>New Record Workflow</button>
+    </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h5 mb-1">Registrar enrollment queue</h2>
+                    <p class="text-secondary mb-0">Review drafts and submitted applications, note missing items, and make the registrar completeness decision.</p>
+                </div>
+                <span class="badge text-bg-primary" th:text="${#lists.size(enrollmentQueue)} + ' requests'">0 requests</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Request</th>
+                        <th>Progress</th>
+                        <th>Finance</th>
+                        <th>Registrar review</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="request : ${enrollmentQueue}">
+                        <td class="align-top">
+                            <div class="fw-semibold" th:text="${request.studentDisplayName}">Student</div>
+                            <div class="text-secondary small" th:text="${request.familyAccountName}">Family</div>
+                            <div class="text-secondary small">
+                                <span th:text="${request.campusCode}"></span>
+                                <span> / </span>
+                                <span th:text="${request.requestedGradeLevel.label}"></span>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div th:text="${request.requestType}">REENROLLMENT</div>
+                            <div class="text-secondary small" th:text="${request.schoolYear}">2026-2027</div>
+                            <div class="mt-1 d-flex gap-2 flex-wrap">
+                                <span class="badge text-bg-info" th:text="${request.status}">SUBMITTED</span>
+                                <span class="badge text-bg-secondary" th:text="${request.parentStatusLabel}">Submitted</span>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div class="fw-semibold" th:text="${request.completionPercentage} + '%'">0%</div>
+                            <div class="progress mt-2" style="height: 0.5rem;">
+                                <div class="progress-bar" role="progressbar"
+                                     th:style="'width:' + ${request.completionPercentage} + '%;'"
+                                     th:attr="aria-valuenow=${request.completionPercentage},aria-valuemin=0,aria-valuemax=100"></div>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div class="small fw-semibold" th:text="${request.financeStatusLabel}">Pending</div>
+                            <div class="text-secondary small" th:text="${request.financeReviewStatus.label}">Pending</div>
+                            <div class="text-secondary small"
+                                 th:if="${request.financeAuthorizationSummary != null and !#strings.isEmpty(request.financeAuthorizationSummary)}">
+                                Authorizations:
+                                <span th:text="${request.financeAuthorizationSummary}">Enrollment fee paid</span>
+                            </div>
+                        </td>
+                        <td class="align-top" style="min-width: 24rem;">
+                            <form method="post" th:action="@{/records/enrollment-review}">
+                                <input type="hidden" name="requestId" th:value="${request.id}">
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Registrar decision</label>
+                                    <select class="form-select form-select-sm" name="reviewStatus">
+                                        <option th:each="statusOption : ${registrarStatuses}"
+                                                th:selected="${statusOption == request.registrarReviewStatus}"
+                                                th:text="${statusOption}" th:value="${statusOption}">PENDING</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Comment for family</label>
+                                    <textarea class="form-control form-control-sm" name="comment" rows="3"
+                                              th:text="${request.registrarComment}"></textarea>
+                                </div>
+                                <button class="btn btn-sm btn-primary" type="submit">Save review</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">

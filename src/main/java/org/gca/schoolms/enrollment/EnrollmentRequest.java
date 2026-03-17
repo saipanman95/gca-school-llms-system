@@ -50,6 +50,24 @@ public class EnrollmentRequest {
     @Column(nullable = false)
     private EnrollmentRequestStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RegistrarReviewStatus registrarReviewStatus;
+
+    @Column(length = 2000)
+    private String registrarComment;
+
+    private LocalDate registrarReviewedOn;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private FinanceReviewStatus financeReviewStatus;
+
+    @Column(length = 2000)
+    private String financeComment;
+
+    private LocalDate financeReviewedOn;
+
     @Column(nullable = false)
     private String schoolYear;
 
@@ -297,6 +315,9 @@ public class EnrollmentRequest {
     @OneToOne(mappedBy = "enrollmentRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private EnrollmentAttestation attestation;
 
+    @OneToMany(mappedBy = "enrollmentRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EnrollmentFinanceAuthorization> financeAuthorizations = new ArrayList<>();
+
     protected EnrollmentRequest() {
     }
 
@@ -341,6 +362,8 @@ public class EnrollmentRequest {
         this.campus = campus;
         this.requestType = requestType;
         this.status = status;
+        this.registrarReviewStatus = RegistrarReviewStatus.PENDING;
+        this.financeReviewStatus = FinanceReviewStatus.PENDING;
         this.schoolYear = schoolYear;
         this.studentFirstName = studentFirstName;
         this.studentMiddleName = studentMiddleName;
@@ -453,6 +476,30 @@ public class EnrollmentRequest {
         return schoolYear;
     }
 
+    public RegistrarReviewStatus getRegistrarReviewStatus() {
+        return registrarReviewStatus;
+    }
+
+    public String getRegistrarComment() {
+        return registrarComment;
+    }
+
+    public LocalDate getRegistrarReviewedOn() {
+        return registrarReviewedOn;
+    }
+
+    public FinanceReviewStatus getFinanceReviewStatus() {
+        return financeReviewStatus;
+    }
+
+    public String getFinanceComment() {
+        return financeComment;
+    }
+
+    public LocalDate getFinanceReviewedOn() {
+        return financeReviewedOn;
+    }
+
     public String getStudentFirstName() {
         return studentFirstName;
     }
@@ -520,6 +567,15 @@ public class EnrollmentRequest {
 
     public void replaceAttestation(EnrollmentAttestation attestation) {
         this.attestation = attestation;
+    }
+
+    public List<EnrollmentFinanceAuthorization> getFinanceAuthorizations() {
+        return financeAuthorizations;
+    }
+
+    public void replaceFinanceAuthorizations(List<EnrollmentFinanceAuthorization> financeAuthorizations) {
+        this.financeAuthorizations.clear();
+        this.financeAuthorizations.addAll(financeAuthorizations);
     }
 
     public boolean isChildPottyTrained() {
@@ -731,6 +787,49 @@ public class EnrollmentRequest {
         return name.toString();
     }
 
+    public boolean isFinanceSatisfied() {
+        return switch (requestType) {
+            case NEW_STUDENT -> hasFinanceAuthorization(EnrollmentFinanceAuthorizationType.ENROLLMENT_FEE_PAID)
+                && financeReviewStatus != FinanceReviewStatus.PENDING
+                && financeReviewStatus != FinanceReviewStatus.BLOCKED;
+            case REENROLLMENT -> financeReviewStatus == FinanceReviewStatus.CLEARED
+                || (financeReviewStatus == FinanceReviewStatus.CONDITIONALLY_CLEARED
+                && !financeAuthorizations.isEmpty());
+        };
+    }
+
+    public String getFinanceStatusLabel() {
+        if (requestType == EnrollmentRequestType.NEW_STUDENT
+            && !hasFinanceAuthorization(EnrollmentFinanceAuthorizationType.ENROLLMENT_FEE_PAID)) {
+            return "Enrollment fee pending";
+        }
+        return switch (financeReviewStatus) {
+            case PENDING -> "Finance review pending";
+            case BLOCKED -> "Finance hold";
+            case CONDITIONALLY_CLEARED -> "Conditionally cleared";
+            case CLEARED -> "Finance cleared";
+        };
+    }
+
+    public boolean hasFinanceAuthorization(EnrollmentFinanceAuthorizationType authorizationType) {
+        return financeAuthorizations.stream()
+            .anyMatch(authorization -> authorization.getAuthorizationType() == authorizationType);
+    }
+
+    public void updateRegistrarReview(RegistrarReviewStatus reviewStatus, String comment, LocalDate reviewedOn) {
+        this.registrarReviewStatus = reviewStatus;
+        this.registrarComment = comment == null || comment.isBlank() ? null : comment.trim();
+        this.registrarReviewedOn = reviewedOn;
+        syncWorkflowStatus();
+    }
+
+    public void updateFinanceReview(FinanceReviewStatus financeReviewStatus, String financeComment, LocalDate reviewedOn) {
+        this.financeReviewStatus = financeReviewStatus;
+        this.financeComment = financeComment == null || financeComment.isBlank() ? null : financeComment.trim();
+        this.financeReviewedOn = reviewedOn;
+        syncWorkflowStatus();
+    }
+
     public void updateMedicalAndEmergency(String primaryPhysicianName, String physicianClinicName,
                                           String physicianPhone, String preferredHospital,
                                           String insuranceProvider, String insurancePolicyNumber,
@@ -813,6 +912,12 @@ public class EnrollmentRequest {
         this.student = student;
         this.requestType = requestType;
         this.status = status;
+        this.registrarReviewStatus = RegistrarReviewStatus.PENDING;
+        this.registrarComment = null;
+        this.registrarReviewedOn = null;
+        this.financeReviewStatus = FinanceReviewStatus.PENDING;
+        this.financeComment = null;
+        this.financeReviewedOn = null;
         this.schoolYear = schoolYear;
         this.studentFirstName = studentFirstName;
         this.studentMiddleName = studentMiddleName;
@@ -895,5 +1000,33 @@ public class EnrollmentRequest {
         this.previousSchoolLastGradeCompleted = previousSchoolLastGradeCompleted;
         this.requestedGradeLevel = requestedGradeLevel;
         this.submittedOn = submittedOn;
+    }
+
+    private void syncWorkflowStatus() {
+        if (status == EnrollmentRequestStatus.DRAFT) {
+            return;
+        }
+        if (registrarReviewStatus == RegistrarReviewStatus.MISSING_DETAILS || registrarReviewStatus == RegistrarReviewStatus.PENDING) {
+            status = EnrollmentRequestStatus.SUBMITTED;
+            return;
+        }
+        if (financeReviewStatus == FinanceReviewStatus.PENDING) {
+            status = EnrollmentRequestStatus.READY_FOR_FINANCE;
+            return;
+        }
+        if (financeReviewStatus == FinanceReviewStatus.BLOCKED) {
+            status = EnrollmentRequestStatus.FINANCE_HOLD;
+            return;
+        }
+        if (!isFinanceSatisfied()) {
+            status = requestType == EnrollmentRequestType.NEW_STUDENT
+                ? EnrollmentRequestStatus.READY_FOR_FINANCE
+                : EnrollmentRequestStatus.READY_TO_ENROLL;
+            return;
+        }
+        status = EnrollmentRequestStatus.ENROLLED;
+        if (status == EnrollmentRequestStatus.ENROLLED && student != null) {
+            student.applyEnrollment(campus, requestedGradeLevel);
+        }
     }
 }

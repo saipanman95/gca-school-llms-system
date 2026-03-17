@@ -143,8 +143,8 @@ public class GuardianPortalController {
     public String deleteDraft(@AuthenticationPrincipal UserDetails userDetails,
                               @RequestParam("requestId") Long requestId,
                               RedirectAttributes redirectAttributes) {
-        guardianPortalService.deleteEnrollmentDraft(userDetails.getUsername(), requestId);
-        redirectAttributes.addFlashAttribute("message", "Enrollment draft deleted.");
+        guardianPortalService.deleteEnrollmentRequest(userDetails.getUsername(), requestId);
+        redirectAttributes.addFlashAttribute("message", "Enrollment request deleted.");
         return "redirect:/portal/guardian";
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -20,13 +21,14 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/css/**", "/webjars/**", "/login").permitAll()
+                .requestMatchers("/css/**", "/webjars/**", "/login", "/error", "/favicon.ico").permitAll()
                 .requestMatchers("/", "/dashboard").authenticated()
                 .requestMatchers("/portal/guardian/**").hasRole("PARENT_GUARDIAN")
                 .requestMatchers("/records/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
                 .requestMatchers("/finance/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_FINANCE")
                 .requestMatchers("/academics/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
                 .anyRequest().authenticated())
+            .httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(login -> login.loginPage("/login").defaultSuccessUrl("/dashboard", true).permitAll())
             .logout(Customizer.withDefaults())
             .build();

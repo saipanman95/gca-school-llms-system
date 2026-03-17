@@ -8,6 +8,7 @@ import java.util.List;
 import org.gca.schoolms.enrollment.EnrollmentRequestType;
 import org.gca.schoolms.finance.MaritalStatus;
 import org.gca.schoolms.records.GradeLevel;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 public class GuardianEnrollmentForm {
@@ -41,6 +42,7 @@ public class GuardianEnrollmentForm {
 
     private String studentAlias;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate studentDateOfBirth;
 
     private String studentReligiousAffiliation;
@@ -110,8 +112,10 @@ public class GuardianEnrollmentForm {
 
     private String guardianVisaNumber;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate guardianVisaIssueDate;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate guardianVisaExpirationDate;
 
     private MaritalStatus maritalStatus = MaritalStatus.MARRIED;
@@ -162,8 +166,10 @@ public class GuardianEnrollmentForm {
 
     private String secondaryVisaNumber;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate secondaryVisaIssueDate;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate secondaryVisaExpirationDate;
 
     private boolean secondaryGuardianPortalAccess = true;
@@ -180,8 +186,10 @@ public class GuardianEnrollmentForm {
 
     private String studentVisaNumber;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate studentVisaIssueDate;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate studentVisaExpirationDate;
 
     private boolean studentF1Required;

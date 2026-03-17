@@ -18,9 +18,10 @@ import org.gca.schoolms.enrollment.EnrollmentRequestLanguage;
 import org.gca.schoolms.enrollment.EnrollmentRequestRepository;
 import org.gca.schoolms.enrollment.EnrollmentRequestStatus;
 import org.gca.schoolms.enrollment.EnrollmentRequestType;
+import org.gca.schoolms.enrollment.RegistrarReviewStatus;
 import org.gca.schoolms.finance.FamilyAccount;
 import org.gca.schoolms.finance.FamilyAccountRepository;
-import org.gca.schoolms.finance.InvoiceRepository;
+import org.gca.schoolms.finance.FinanceLedgerService;
 import org.gca.schoolms.organization.CampusRepository;
 import org.gca.schoolms.records.Student;
 import org.gca.schoolms.records.StudentRepository;
@@ -30,22 +31,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GuardianPortalService {
 
+    private static final EnumSet<EnrollmentRequestStatus> PARENT_MANAGEABLE_STATUSES =
+        EnumSet.of(EnrollmentRequestStatus.DRAFT, EnrollmentRequestStatus.SUBMITTED);
+
     private final FamilyAccountRepository familyAccountRepository;
     private final StudentRepository studentRepository;
-    private final InvoiceRepository invoiceRepository;
+    private final FinanceLedgerService financeLedgerService;
     private final EnrollmentRequestRepository enrollmentRequestRepository;
     private final EnrollmentDocumentRepository enrollmentDocumentRepository;
     private final EnrollmentDocumentStorageService enrollmentDocumentStorageService;
     private final CampusRepository campusRepository;
 
     public GuardianPortalService(FamilyAccountRepository familyAccountRepository, StudentRepository studentRepository,
-                                 InvoiceRepository invoiceRepository, EnrollmentRequestRepository enrollmentRequestRepository,
+                                 FinanceLedgerService financeLedgerService, EnrollmentRequestRepository enrollmentRequestRepository,
                                  EnrollmentDocumentRepository enrollmentDocumentRepository,
                                  EnrollmentDocumentStorageService enrollmentDocumentStorageService,
                                  CampusRepository campusRepository) {
         this.familyAccountRepository = familyAccountRepository;
         this.studentRepository = studentRepository;
-        this.invoiceRepository = invoiceRepository;
+        this.financeLedgerService = financeLedgerService;
         this.enrollmentRequestRepository = enrollmentRequestRepository;
         this.enrollmentDocumentRepository = enrollmentDocumentRepository;
         this.enrollmentDocumentStorageService = enrollmentDocumentStorageService;
@@ -60,7 +64,7 @@ public class GuardianPortalService {
             .findByFamilyAccountOrderBySubmittedOnDesc(familyAccount).stream()
             .map(request -> {
                 EnrollmentCompletionView completion = calculateCompletion(request);
-                boolean editable = request.getStatus() == EnrollmentRequestStatus.DRAFT;
+                boolean editable = PARENT_MANAGEABLE_STATUSES.contains(request.getStatus());
                 return new GuardianEnrollmentActivityView(
                     request.getId(),
                     request.getStudentDisplayName(),
@@ -69,6 +73,7 @@ public class GuardianPortalService {
                     request.getRequestedGradeLevel(),
                     request.getStatus(),
                     buildParentStatusLabel(request, completion),
+                    request.getRegistrarComment(),
                     completion.completionPercentage(),
                     editable,
                     editable
@@ -91,7 +96,7 @@ public class GuardianPortalService {
                 ? familyAccount.getPrimaryGuardianName()
                 : familyAccount.getSecondaryGuardianName(),
             students.size(),
-            invoiceRepository.sumOutstandingBalanceByFamilyAccount(familyAccount).orElse(java.math.BigDecimal.ZERO),
+            financeLedgerService.outstandingBalanceForFamily(familyAccount),
             dashboardStudents,
             enrollmentRequests
         );
@@ -115,7 +120,7 @@ public class GuardianPortalService {
         FamilyAccount familyAccount = resolveFamilyAccount(username);
         applyGuardianProfile(form, familyAccount);
         if (requestId != null) {
-            EnrollmentRequest request = findEditableEnrollmentRequest(username, requestId);
+            EnrollmentRequest request = findManageableEnrollmentRequest(username, requestId);
             applyDocumentFlags(form, request);
             form.setEnrollmentRequestId(request.getId());
             form.setExistingStudentId(request.getStudent() == null ? null : request.getStudent().getId());
@@ -296,9 +301,10 @@ public class GuardianPortalService {
             ? familyAccount.getPrimaryGuardianName()
             : familyAccount.getSecondaryGuardianName();
         return new GuardianFinanceView(
-            invoiceRepository.sumOutstandingBalanceByFamilyAccount(familyAccount).orElse(java.math.BigDecimal.ZERO),
+            financeLedgerService.outstandingBalanceForFamily(familyAccount),
             billingRecipient,
-            invoiceRepository.findByFamilyAccountOrderByDueDateAsc(familyAccount)
+            financeLedgerService.feesForFamily(familyAccount),
+            financeLedgerService.paymentsForFamily(familyAccount)
         );
     }
 
@@ -393,8 +399,8 @@ public class GuardianPortalService {
     }
 
     @Transactional
-    public void deleteEnrollmentDraft(String username, Long requestId) {
-        EnrollmentRequest request = findEditableEnrollmentRequest(username, requestId);
+    public void deleteEnrollmentRequest(String username, Long requestId) {
+        EnrollmentRequest request = findManageableEnrollmentRequest(username, requestId);
         enrollmentDocumentRepository.deleteByEnrollmentRequest(request);
         enrollmentRequestRepository.delete(request);
     }
@@ -495,7 +501,7 @@ public class GuardianPortalService {
                 form.getRequestedGradeLevel(),
                 LocalDate.now()
             )
-            : findEditableEnrollmentRequest(username, form.getEnrollmentRequestId());
+            : findManageableEnrollmentRequest(username, form.getEnrollmentRequestId());
         if (form.getEnrollmentRequestId() != null) {
             request.updateDraftOrSubmission(
                 campusRepository.findById(form.getCampusId()).orElseThrow(),
@@ -696,26 +702,37 @@ public class GuardianPortalService {
         );
         if (form.isParentAttestationConfirmed() && form.getParentAttestationInitials() != null
             && !form.getParentAttestationInitials().isBlank()) {
-            savedRequest.replaceAttestation(new EnrollmentAttestation(
-                savedRequest,
-                true,
-                form.getParentAttestationInitials().trim().toUpperCase(),
-                LocalDateTime.now()
-            ));
+            if (savedRequest.getAttestation() == null) {
+                savedRequest.replaceAttestation(new EnrollmentAttestation(
+                    savedRequest,
+                    true,
+                    form.getParentAttestationInitials().trim().toUpperCase(),
+                    LocalDateTime.now()
+                ));
+            } else {
+                savedRequest.getAttestation().update(
+                    true,
+                    form.getParentAttestationInitials().trim().toUpperCase(),
+                    LocalDateTime.now()
+                );
+            }
         } else {
             savedRequest.replaceAttestation(null);
         }
         enrollmentRequestRepository.save(savedRequest);
+        if (targetStatus != EnrollmentRequestStatus.DRAFT) {
+            financeLedgerService.ensureEnrollmentRequestFee(savedRequest);
+        }
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.VACCINATION_CARD, form.getVaccinationRecordFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.HEALTH_CERTIFICATE, form.getHealthCertificateFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT, form.getPreviousTranscriptFile());
     }
 
-    private EnrollmentRequest findEditableEnrollmentRequest(String username, Long requestId) {
+    private EnrollmentRequest findManageableEnrollmentRequest(String username, Long requestId) {
         FamilyAccount familyAccount = resolveFamilyAccount(username);
         return enrollmentRequestRepository.findById(requestId)
             .filter(request -> request.getFamilyAccount().getId().equals(familyAccount.getId()))
-            .filter(request -> request.getStatus() == EnrollmentRequestStatus.DRAFT)
+            .filter(request -> PARENT_MANAGEABLE_STATUSES.contains(request.getStatus()))
             .orElseThrow();
     }
 
@@ -735,7 +752,22 @@ public class GuardianPortalService {
         }
     }
 
-    private String buildParentStatusLabel(EnrollmentRequest request, EnrollmentCompletionView completion) {
+    public String buildParentStatusLabel(EnrollmentRequest request, EnrollmentCompletionView completion) {
+        if (request.getRegistrarReviewStatus() == RegistrarReviewStatus.MISSING_DETAILS) {
+            return "Registrar requested updates";
+        }
+        if (request.getStatus() == EnrollmentRequestStatus.FINANCE_HOLD) {
+            return "Finance hold";
+        }
+        if (request.getStatus() == EnrollmentRequestStatus.READY_FOR_FINANCE) {
+            return "Awaiting finance clearance";
+        }
+        if (request.getStatus() == EnrollmentRequestStatus.READY_TO_ENROLL) {
+            return "Ready to enroll";
+        }
+        if (request.getStatus() == EnrollmentRequestStatus.ENROLLED) {
+            return "Enrolled";
+        }
         if (!completion.documentsComplete()) {
             return "Needs documents";
         }
@@ -747,8 +779,10 @@ public class GuardianPortalService {
         }
         return switch (request.getStatus()) {
             case SUBMITTED -> "Submitted";
-            case UNDER_REVIEW -> "Under review";
-            case APPROVED -> "Approved";
+            case READY_FOR_FINANCE -> "Awaiting finance clearance";
+            case FINANCE_HOLD -> "Finance hold";
+            case READY_TO_ENROLL -> "Ready to enroll";
+            case ENROLLED -> "Enrolled";
             case DRAFT -> "Draft";
         };
     }

@@ -10,15 +10,212 @@
 <body>
 <div th:replace="~{fragments/layout :: navbar}"></div>
 <main class="container py-4">
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
     <div class="row g-4 mb-4">
         <div class="col-lg-8">
             <h1 class="h3 mb-1">Finance Operations</h1>
-            <p class="text-secondary mb-0">Accounts receivable for families, tuition billing, balances, and statements across Saipan, Tinian, and Rota.</p>
+            <p class="text-secondary mb-0">Fee assessment, payment posting, balances, and statements across Saipan, Tinian, and Rota.</p>
         </div>
         <div class="col-lg-4">
             <div class="metric-card h-100">
                 <div class="metric-label">Total outstanding</div>
                 <div class="metric-value" th:text="${@moneyFormatter.format(outstandingBalance)}">$0</div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Add fee type</h2>
+                    <form method="post" th:action="@{/finance/fee-types}">
+                        <div class="mb-3">
+                            <label class="form-label" for="feeTypeCode">Code</label>
+                            <input class="form-control" id="feeTypeCode" name="code" placeholder="ENROLLMENT_FEE" required type="text">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="feeTypeName">Name</label>
+                            <input class="form-control" id="feeTypeName" name="name" placeholder="Enrollment fee" required type="text">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="feeTypeDefaultAmount">Default amount</label>
+                            <input class="form-control" id="feeTypeDefaultAmount" min="0.00" name="defaultAmount" placeholder="300.00" step="0.01" type="number">
+                        </div>
+                        <button class="btn btn-primary" type="submit">Add fee type</button>
+                    </form>
+                    <hr>
+                    <div class="small text-secondary mb-2">Current fee types</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge text-bg-light border" th:each="feeType : ${feeTypes}" th:text="${feeType.name}">Enrollment fee</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Assess fee to student</h2>
+                    <form method="post" th:action="@{/finance/fees}">
+                        <div class="mb-3">
+                            <label class="form-label" for="feeStudentId">Student</label>
+                            <select class="form-select" id="feeStudentId" name="studentId" required>
+                                <option value="">Select student</option>
+                                <option th:each="student : ${students}" th:text="${student.displayName + ' (' + student.studentNumber + ')'}" th:value="${student.id}">Ava Cruz</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="feeTypeId">Fee type</label>
+                            <select class="form-select" id="feeTypeId" name="feeTypeId" required>
+                                <option value="">Select fee type</option>
+                                <option th:each="feeType : ${feeTypes}" th:text="${feeType.name}" th:value="${feeType.id}">Tuition fee</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="feeAmount">Amount</label>
+                            <input class="form-control" id="feeAmount" min="0.01" name="amount" required step="0.01" type="number">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="feeSchoolYear">School year</label>
+                            <input class="form-control" id="feeSchoolYear" name="schoolYear" placeholder="2026-2027" required type="text">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="feeDescription">Description</label>
+                            <input class="form-control" id="feeDescription" name="description" placeholder="Optional description" type="text">
+                        </div>
+                        <button class="btn btn-primary" type="submit">Assess fee</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Record payment</h2>
+                    <form method="post" th:action="@{/finance/payments}">
+                        <div class="mb-3">
+                            <label class="form-label" for="studentFeeId">Apply against fee</label>
+                            <select class="form-select" id="studentFeeId" name="studentFeeId" required>
+                                <option value="">Select fee</option>
+                                <option th:each="fee : ${studentFees}"
+                                        th:text="${fee.studentDisplayName + ' / ' + fee.feeType.name + ' / outstanding ' + @moneyFormatter.format(fee.outstandingAmount)}"
+                                        th:value="${fee.id}">Ava / Tuition / $600</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="paymentMethod">Payment type</label>
+                            <select class="form-select" id="paymentMethod" name="paymentMethod" required>
+                                <option th:each="paymentMethod : ${paymentMethods}" th:text="${paymentMethod.label}" th:value="${paymentMethod}">Cash</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="paymentAmount">Amount</label>
+                            <input class="form-control" id="paymentAmount" min="0.01" name="amount" required step="0.01" type="number">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="referenceNumber">Reference number</label>
+                            <input class="form-control" id="referenceNumber" name="referenceNumber" placeholder="Check # or transaction id" type="text">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="paymentNotes">Notes</label>
+                            <input class="form-control" id="paymentNotes" name="notes" placeholder="Optional notes" type="text">
+                        </div>
+                        <button class="btn btn-primary" type="submit">Record payment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h5 mb-1">Enrollment finance clearance</h2>
+                    <p class="text-secondary mb-0">Mark new applications as paid and clear reenrollment financial holds so registrar-approved requests can move forward.</p>
+                </div>
+                <span class="badge text-bg-primary" th:text="${#lists.size(enrollmentQueue)} + ' active requests'">0 active requests</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Request</th>
+                        <th>Registrar</th>
+                        <th>Finance clearance</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="request : ${enrollmentQueue}">
+                        <td class="align-top">
+                            <div class="fw-semibold" th:text="${request.studentDisplayName}">Student</div>
+                            <div class="text-secondary small" th:text="${request.familyAccountName}">Family</div>
+                            <div class="text-secondary small">
+                                <span th:text="${request.campusCode}"></span>
+                                <span> / </span>
+                                <span th:text="${request.requestedGradeLevel.label}"></span>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div th:text="${request.requestType}">REENROLLMENT</div>
+                            <div class="text-secondary small" th:text="${request.schoolYear}">2026-2027</div>
+                            <div class="mt-1 d-flex gap-2 flex-wrap">
+                                <span class="badge text-bg-info" th:text="${request.status}">SUBMITTED</span>
+                                <span class="badge text-bg-secondary" th:text="${request.parentStatusLabel}">Under review</span>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div class="fw-semibold" th:text="${request.registrarReviewStatus}">PENDING</div>
+                            <div class="text-secondary small" th:if="${request.registrarComment != null and !#strings.isEmpty(request.registrarComment)}"
+                                 th:text="${request.registrarComment}">Comment</div>
+                        </td>
+                        <td class="align-top" style="min-width: 26rem;">
+                            <form method="post" th:action="@{/finance/enrollment-clearance}">
+                                <input type="hidden" name="requestId" th:value="${request.id}">
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Finance decision</label>
+                                    <select class="form-select form-select-sm" name="financeReviewStatus">
+                                        <option th:each="statusOption : ${financeStatuses}"
+                                                th:selected="${statusOption == request.financeReviewStatus}"
+                                                th:text="${statusOption.label}"
+                                                th:value="${statusOption}">Pending</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Authorizations and overrides</label>
+                                    <div class="border rounded p-2 bg-light-subtle">
+                                        <div class="form-check mb-1" th:each="authorizationType : ${financeAuthorizationTypes}">
+                                            <input class="form-check-input" type="checkbox" name="authorizationTypes"
+                                                   th:value="${authorizationType}"
+                                                   th:id="${'authorization-' + request.id + '-' + authorizationType.name()}"
+                                                   th:checked="${#lists.contains(request.financeAuthorizationTypes, authorizationType)}">
+                                            <label class="form-check-label"
+                                                   th:for="${'authorization-' + request.id + '-' + authorizationType.name()}"
+                                                   th:text="${authorizationType.label}">Enrollment fee paid</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Finance note</label>
+                                    <textarea class="form-control form-control-sm" name="financeComment" rows="2"
+                                              th:text="${request.financeComment}"></textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Other authorization note</label>
+                                    <input class="form-control form-control-sm" name="authorizationNote" type="text"
+                                           placeholder="Use when Other authorization is selected">
+                                </div>
+                                <div class="small text-secondary mb-2" th:text="${request.financeStatusLabel}">Pending</div>
+                                <div class="small text-secondary mb-2"
+                                     th:if="${request.financeAuthorizationSummary != null and !#strings.isEmpty(request.financeAuthorizationSummary)}">
+                                    Current authorizations:
+                                    <span th:text="${request.financeAuthorizationSummary}">Enrollment fee paid</span>
+                                </div>
+                                <button class="btn btn-sm btn-primary" type="submit">Save finance status</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -51,27 +248,56 @@
     </div>
     <div class="card border-0 shadow-sm">
         <div class="card-body">
-            <h2 class="h5 mb-3">Upcoming receivables</h2>
+            <h2 class="h5 mb-3">Recent assessed fees</h2>
             <div class="table-responsive">
                 <table class="table align-middle">
                     <thead>
                     <tr>
-                        <th>Account</th>
+                        <th>Student</th>
                         <th>Campus</th>
+                        <th>Fee type</th>
                         <th>Description</th>
-                        <th>Due</th>
-                        <th>Status</th>
+                        <th>Assessed</th>
+                        <th>Total</th>
                         <th>Outstanding</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="invoice : ${invoices}">
-                        <td th:text="${invoice.accountName}"></td>
-                        <td th:text="${invoice.campus.code}"></td>
-                        <td th:text="${invoice.description}"></td>
-                        <td th:text="${invoice.dueDate}"></td>
-                        <td><span class="badge text-bg-warning" th:text="${invoice.status}"></span></td>
-                        <td th:text="${@moneyFormatter.format(invoice.outstandingAmount)}"></td>
+                    <tr th:each="fee : ${studentFees}">
+                        <td th:text="${fee.studentDisplayName}"></td>
+                        <td th:text="${fee.campus.code}"></td>
+                        <td th:text="${fee.feeType.name}"></td>
+                        <td th:text="${fee.description}"></td>
+                        <td th:text="${#temporals.format(fee.assessedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${@moneyFormatter.format(fee.amount)}"></td>
+                        <td th:text="${@moneyFormatter.format(fee.outstandingAmount)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Recent payments</h2>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Family</th>
+                        <th>Payment type</th>
+                        <th>Date</th>
+                        <th>Reference</th>
+                        <th>Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="payment : ${payments}">
+                        <td th:text="${payment.familyAccount.accountName}"></td>
+                        <td th:text="${payment.paymentMethod.label}"></td>
+                        <td th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${payment.referenceNumber}"></td>
+                        <td th:text="${@moneyFormatter.format(payment.totalAmount)}"></td>
                     </tr>
                     </tbody>
                 </table>

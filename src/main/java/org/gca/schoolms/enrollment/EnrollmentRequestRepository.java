@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EnrollmentRequestRepository extends JpaRepository<EnrollmentRequest, Long> {
     List<EnrollmentRequest> findByFamilyAccountOrderBySubmittedOnDesc(FamilyAccount familyAccount);
+    List<EnrollmentRequest> findAllByOrderBySubmittedOnDescIdDesc();
+    List<EnrollmentRequest> findByStatusNotOrderBySubmittedOnDescIdDesc(EnrollmentRequestStatus status);
 }
