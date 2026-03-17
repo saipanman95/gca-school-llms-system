@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Finance Clearance | GCA School MS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<main class="container py-4">
+    <div th:if="${message}" class="alert alert-info" th:text="${message}"></div>
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="h3 mb-1">Finance Clearance</h1>
+            <p class="text-secondary mb-0">Review enrollment finance requirements, overrides, and reenrollment holds.</p>
+        </div>
+        <a class="btn btn-outline-secondary" th:href="@{/finance}">Back to finance center</a>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Request</th>
+                        <th>Registrar</th>
+                        <th>Finance clearance</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="request : ${enrollmentQueue}">
+                        <td class="align-top">
+                            <div class="fw-semibold" th:text="${request.studentDisplayName}">Student</div>
+                            <div class="text-secondary small" th:text="${request.familyAccountName}">Family</div>
+                            <div class="text-secondary small"><span th:text="${request.campusCode}"></span><span> / </span><span th:text="${request.requestedGradeLevel.label}"></span></div>
+                        </td>
+                        <td class="align-top">
+                            <div th:text="${request.requestType}">REENROLLMENT</div>
+                            <div class="text-secondary small" th:text="${request.schoolYear}">2026-2027</div>
+                            <div class="mt-1 d-flex gap-2 flex-wrap">
+                                <span class="badge text-bg-info" th:text="${request.status}">SUBMITTED</span>
+                                <span class="badge text-bg-secondary" th:text="${request.parentStatusLabel}">Under review</span>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div class="fw-semibold" th:text="${request.registrarReviewStatus}">PENDING</div>
+                            <div class="text-secondary small" th:if="${request.registrarComment != null and !#strings.isEmpty(request.registrarComment)}" th:text="${request.registrarComment}">Comment</div>
+                        </td>
+                        <td class="align-top" style="min-width: 26rem;">
+                            <form method="post" th:action="@{/finance/enrollment-clearance}">
+                                <input type="hidden" name="requestId" th:value="${request.id}">
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Finance decision</label>
+                                    <select class="form-select form-select-sm" name="financeReviewStatus">
+                                        <option th:each="statusOption : ${financeStatuses}" th:selected="${statusOption == request.financeReviewStatus}" th:text="${statusOption.label}" th:value="${statusOption}">Pending</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Authorizations and overrides</label>
+                                    <div class="border rounded p-2 bg-light-subtle">
+                                        <div class="form-check mb-1" th:each="authorizationType : ${financeAuthorizationTypes}">
+                                            <input class="form-check-input" type="checkbox" name="authorizationTypes"
+                                                   th:value="${authorizationType}"
+                                                   th:id="${'authorization-' + request.id + '-' + authorizationType.name()}"
+                                                   th:checked="${#lists.contains(request.financeAuthorizationTypes, authorizationType)}">
+                                            <label class="form-check-label" th:for="${'authorization-' + request.id + '-' + authorizationType.name()}" th:text="${authorizationType.label}">Enrollment fee paid</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Finance note</label>
+                                    <textarea class="form-control form-control-sm" name="financeComment" rows="2" th:text="${request.financeComment}"></textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Other authorization note</label>
+                                    <input class="form-control form-control-sm" name="authorizationNote" type="text" placeholder="Use when Other authorization is selected">
+                                </div>
+                                <div class="small text-secondary mb-2" th:text="${request.financeStatusLabel}">Pending</div>
+                                <div class="small text-secondary mb-2" th:if="${request.financeAuthorizationSummary != null and !#strings.isEmpty(request.financeAuthorizationSummary)}">
+                                    Current authorizations: <span th:text="${request.financeAuthorizationSummary}">Enrollment fee paid</span>
+                                </div>
+                                <button class="btn btn-sm btn-primary" type="submit">Save finance status</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

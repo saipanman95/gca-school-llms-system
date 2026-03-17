@@ -25,7 +25,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/dashboard").authenticated()
                 .requestMatchers("/portal/guardian/**").hasRole("PARENT_GUARDIAN")
                 .requestMatchers("/records/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
-                .requestMatchers("/finance/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_FINANCE")
+                .requestMatchers("/finance/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_FINANCE", "SCHOOL_CASHIER")
                 .requestMatchers("/academics/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
                 .anyRequest().authenticated())
             .httpBasic(AbstractHttpConfigurer::disable)
@@ -41,6 +41,7 @@ public class SecurityConfig {
             User.withUsername("principal").password(passwordEncoder.encode("change-me")).roles("SCHOOL_ADMIN").build(),
             User.withUsername("registrar").password(passwordEncoder.encode("change-me")).roles("SCHOOL_STAFF").build(),
             User.withUsername("finance").password(passwordEncoder.encode("change-me")).roles("SCHOOL_FINANCE").build(),
+            User.withUsername("cashier").password(passwordEncoder.encode("change-me")).roles("SCHOOL_CASHIER").build(),
             User.withUsername("guardian").password(passwordEncoder.encode("change-me")).roles("PARENT_GUARDIAN").build(),
             User.withUsername("student").password(passwordEncoder.encode("change-me")).roles("STUDENT").build()
         );

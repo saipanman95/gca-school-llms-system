@@ -4,6 +4,8 @@
 /.vscode/
 *.iml
 /.DS_Store
+**/.DS_Store
+/notes/.obsidian/
 /security-github-stuff-do-not-commit
 /context-thread-history
 /new_token

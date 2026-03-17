@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -81,8 +81,14 @@
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
                     <h2 class="h5">Finance operations</h2>
-                    <p class="text-secondary">Enrollment fees, tuition billing, charge tracking, statements, and aging balances.</p>
+                    <p class="text-secondary">Cashier posting, enrollment finance clearance, fee maintenance, and outstanding account follow-up.</p>
                     <a class="btn btn-outline-primary" th:href="@{/finance}">Open finance</a>
+                    <div class="mt-3 d-flex gap-2 flex-wrap" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE','SCHOOL_CASHIER')">
+                        <a class="btn btn-sm btn-outline-secondary" th:href="@{/finance/cashier}">Cashier</a>
+                        <a class="btn btn-sm btn-outline-secondary" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')" th:href="@{/finance/clearance}">Clearance</a>
+                        <a class="btn btn-sm btn-outline-secondary" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')" th:href="@{/finance/accounts}">Accounts</a>
+                        <a class="btn btn-sm btn-outline-secondary" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')" th:href="@{/finance/fees}">Fees</a>
+                    </div>
                 </div>
             </div>
         </div>

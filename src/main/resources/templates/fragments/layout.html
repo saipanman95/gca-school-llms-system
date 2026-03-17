@@ -13,7 +13,7 @@
                 <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF')">
                     <a class="nav-link" th:href="@{/records}">Records</a>
                 </li>
-                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')">
+                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE','SCHOOL_CASHIER')">
                     <a class="nav-link" th:href="@{/finance}">Finance</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF')">
