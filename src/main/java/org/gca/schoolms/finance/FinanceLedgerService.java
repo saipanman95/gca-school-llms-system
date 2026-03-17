@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import org.gca.schoolms.common.MoneyFormatter;
 import org.gca.schoolms.enrollment.EnrollmentRequest;
 import org.gca.schoolms.enrollment.EnrollmentRequestType;
 import org.gca.schoolms.records.Student;
@@ -11,6 +12,10 @@ import org.gca.schoolms.organization.CampusRepository;
 import org.gca.schoolms.records.StudentRepository;
 import org.gca.schoolms.settings.SchoolProfileService;
 import org.gca.schoolms.settings.SchoolProfileView;
+import org.springframework.mail.MailException;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +31,15 @@ public class FinanceLedgerService {
     private final StudentRepository studentRepository;
     private final CampusRepository campusRepository;
     private final SchoolProfileService schoolProfileService;
+    private final JavaMailSender mailSender;
+    private final MoneyFormatter moneyFormatter;
 
     public FinanceLedgerService(FeeTypeRepository feeTypeRepository, StudentFeeRepository studentFeeRepository,
                                 PaymentRepository paymentRepository, PayerProfileRepository payerProfileRepository,
                                 SchoolProjectTypeRepository schoolProjectTypeRepository,
                                 FamilyAccountRepository familyAccountRepository, StudentRepository studentRepository,
-                                CampusRepository campusRepository, SchoolProfileService schoolProfileService) {
+                                CampusRepository campusRepository, SchoolProfileService schoolProfileService,
+                                ObjectProvider<JavaMailSender> mailSenderProvider, MoneyFormatter moneyFormatter) {
         this.feeTypeRepository = feeTypeRepository;
         this.studentFeeRepository = studentFeeRepository;
         this.paymentRepository = paymentRepository;
@@ -41,6 +49,8 @@ public class FinanceLedgerService {
         this.studentRepository = studentRepository;
         this.campusRepository = campusRepository;
         this.schoolProfileService = schoolProfileService;
+        this.mailSender = mailSenderProvider.getIfAvailable();
+        this.moneyFormatter = moneyFormatter;
     }
 
     @Transactional(readOnly = true)
@@ -447,6 +457,64 @@ public class FinanceLedgerService {
     }
 
     @Transactional(readOnly = true)
+    public BillingStatementView loadBillingStatement(Long familyAccountId) {
+        FamilyAccount familyAccount = familyAccountRepository.findById(familyAccountId).orElseThrow();
+        SchoolProfileView schoolProfile = schoolProfileService.loadView();
+        return new BillingStatementView(
+            LocalDateTime.now(),
+            schoolProfile.schoolName(),
+            schoolProfile.phoneNumber(),
+            schoolProfile.emailAddress(),
+            schoolProfile.mailingAddress(),
+            familyAccount.getAccountNumber(),
+            familyAccount.getAccountName(),
+            familyAccount.getBillingRecipientName(),
+            familyAccount.getBillingRecipientEmail(),
+            familyAccount.getBillingRecipientPhone(),
+            familyAccount.getMailingAddress(),
+            outstandingBalanceForFamily(familyAccount),
+            feesForFamily(familyAccount),
+            paymentsForFamily(familyAccount).stream()
+                .map(payment -> new BillingStatementPaymentRow(
+                    payment.getPaymentDate(),
+                    payment.isAnonymousToFamily() ? "Anonymous donor" : payment.getPayerProfile().getLookupLabel(),
+                    payment.getPaymentPurpose().getLabel(),
+                    payment.getTargetDisplayName(),
+                    payment.getPaymentMethod().getLabel(),
+                    payment.getReferenceNumber(),
+                    payment.getTotalAmount(),
+                    payment.getUnappliedAmount(),
+                    payment.getNotes()
+                ))
+                .toList()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public void emailBillingStatement(Long familyAccountId) {
+        BillingStatementView statement = loadBillingStatement(familyAccountId);
+        if (statement.billingRecipientEmail() == null || statement.billingRecipientEmail().isBlank()) {
+            throw new IllegalArgumentException("Billing recipient email is not available for this family.");
+        }
+        if (mailSender == null) {
+            throw new IllegalStateException("Email delivery is not configured. Add spring.mail.* settings and try again.");
+        }
+        try {
+            var message = mailSender.createMimeMessage();
+            var helper = new MimeMessageHelper(message, false);
+            helper.setTo(statement.billingRecipientEmail());
+            helper.setSubject(statement.schoolName() + " billing statement for " + statement.familyAccountName());
+            if (statement.schoolEmailAddress() != null && !statement.schoolEmailAddress().isBlank()) {
+                helper.setFrom(statement.schoolEmailAddress());
+            }
+            helper.setText(buildBillingStatementEmailBody(statement), false);
+            mailSender.send(message);
+        } catch (MailException | jakarta.mail.MessagingException ex) {
+            throw new IllegalStateException("Email delivery is not configured or failed. Configure spring.mail.* settings and try again.", ex);
+        }
+    }
+
+    @Transactional(readOnly = true)
     public List<org.gca.schoolms.records.Student> students() {
         return studentRepository.findTop10ByOrderByLastNameAscFirstNameAsc();
     }
@@ -558,6 +626,48 @@ public class FinanceLedgerService {
 
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private String buildBillingStatementEmailBody(BillingStatementView statement) {
+        StringBuilder body = new StringBuilder();
+        body.append(statement.schoolName()).append('\n');
+        body.append("Billing Statement").append('\n');
+        body.append("Generated: ").append(statement.generatedOn()).append("\n\n");
+        body.append("Account: ").append(statement.familyAccountName()).append(" (").append(statement.familyAccountNumber()).append(")\n");
+        body.append("Billing recipient: ").append(statement.billingRecipientName()).append('\n');
+        body.append("Outstanding balance: ").append(moneyFormatter.format(statement.outstandingBalance())).append("\n\n");
+        body.append("Assessed fees:\n");
+        for (StudentFee fee : statement.fees()) {
+            body.append("- ")
+                .append(fee.getStudentDisplayName())
+                .append(" | ")
+                .append(fee.getFeeType().getName())
+                .append(" | ")
+                .append(moneyFormatter.format(fee.getAmount()))
+                .append(" | outstanding ")
+                .append(moneyFormatter.format(fee.getOutstandingAmount()))
+                .append('\n');
+        }
+        body.append("\nPayments and credits:\n");
+        for (BillingStatementPaymentRow payment : statement.payments()) {
+            body.append("- ")
+                .append(payment.paymentPurposeLabel())
+                .append(" | ")
+                .append(payment.targetDisplayName())
+                .append(" | ")
+                .append(moneyFormatter.format(payment.totalAmount()))
+                .append(" | ")
+                .append(payment.payerDisplayName())
+                .append('\n');
+        }
+        body.append("\nFor questions, contact ").append(statement.schoolName());
+        if (statement.schoolPhoneNumber() != null && !statement.schoolPhoneNumber().isBlank()) {
+            body.append(" at ").append(statement.schoolPhoneNumber());
+        }
+        if (statement.schoolEmailAddress() != null && !statement.schoolEmailAddress().isBlank()) {
+            body.append(" or ").append(statement.schoolEmailAddress());
+        }
+        return body.toString();
     }
 
     private record ParsedName(String firstName, String middleName, String lastName) {

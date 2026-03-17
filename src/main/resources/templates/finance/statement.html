@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'Billing Statement ' + ${statement.familyAccountNumber()}">Billing Statement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .statement-actions {
+                display: none;
+            }
+            body {
+                background: #fff;
+            }
+        }
+        body {
+            background: #f4f6fb;
+        }
+        .statement-shell {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .statement-logo {
+            max-width: 150px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+<main class="container py-4 statement-shell">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="d-flex gap-3 align-items-start">
+                    <img alt="Grace Christian Academy logo" class="statement-logo" th:src="@{/images/gca_logo_small_navy_blue.png}">
+                    <div>
+                        <div class="text-uppercase small text-secondary" th:text="${statement.schoolName()}">Grace Christian Academy</div>
+                        <h1 class="h3 mb-1">Billing Statement</h1>
+                        <div class="text-secondary" th:text="${statement.familyAccountName() + ' (' + statement.familyAccountNumber() + ')'}">Cruz Family</div>
+                        <div class="small text-secondary mt-2">
+                            <div th:text="${statement.schoolMailingAddress()}">123 Palm Street, Saipan, MP 96950</div>
+                            <div>
+                                <span th:text="${statement.schoolPhoneNumber() ?: 'Phone not set'}">670-555-1000</span>
+                                <span th:if="${statement.schoolEmailAddress() != null and !#strings.isEmpty(statement.schoolEmailAddress())}"> | </span>
+                                <span th:text="${statement.schoolEmailAddress()}">info@gca.example.org</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="small text-secondary">Generated</div>
+                    <div class="fw-semibold" th:text="${#temporals.format(statement.generatedOn(), 'yyyy-MM-dd HH:mm')}">2026-03-17 18:00</div>
+                    <div class="small text-secondary mt-2">Outstanding balance</div>
+                    <div class="fs-5 fw-semibold" th:text="${@moneyFormatter.format(statement.outstandingBalance())}">$0.00</div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <h2 class="h6 text-uppercase text-secondary">Billing recipient</h2>
+                    <div class="fw-semibold" th:text="${statement.billingRecipientName()}">Elena Cruz</div>
+                    <div th:text="${statement.billingRecipientEmail() ?: 'No email on file'}">elena@example.org</div>
+                    <div th:text="${statement.billingRecipientPhone() ?: 'No phone on file'}">670-555-0101</div>
+                </div>
+                <div class="col-md-6">
+                    <h2 class="h6 text-uppercase text-secondary">Mailing address</h2>
+                    <div th:text="${statement.mailingAddress()}">123 Palm Street, Saipan, MP 96950</div>
+                </div>
+            </div>
+
+            <div class="table-responsive mb-4">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Fee type</th>
+                        <th>Description</th>
+                        <th>Assessed</th>
+                        <th>Total</th>
+                        <th>Outstanding</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="fee : ${statement.fees()}">
+                        <td th:text="${fee.studentDisplayName}"></td>
+                        <td th:text="${fee.feeType.name}"></td>
+                        <td th:text="${fee.description}"></td>
+                        <td th:text="${#temporals.format(fee.assessedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${@moneyFormatter.format(fee.amount)}"></td>
+                        <td th:text="${@moneyFormatter.format(fee.outstandingAmount)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-responsive mb-4">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Payer</th>
+                        <th>Purpose</th>
+                        <th>Target</th>
+                        <th>Type</th>
+                        <th>Reference</th>
+                        <th>Amount</th>
+                        <th>Unapplied</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="payment : ${statement.payments()}">
+                        <td th:text="${#temporals.format(payment.paymentDate(), 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${payment.payerDisplayName()}"></td>
+                        <td th:text="${payment.paymentPurposeLabel()}"></td>
+                        <td th:text="${payment.targetDisplayName()}"></td>
+                        <td th:text="${payment.paymentMethodLabel()}"></td>
+                        <td th:text="${payment.referenceNumber()}"></td>
+                        <td th:text="${@moneyFormatter.format(payment.totalAmount())}"></td>
+                        <td th:text="${@moneyFormatter.format(payment.unappliedAmount())}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="statement-actions d-flex gap-2">
+                <button class="btn btn-primary" onclick="window.print()" type="button">Print statement</button>
+                <button class="btn btn-outline-primary"
+                        id="emailClientButton"
+                        th:attr="data-email=${statement.billingRecipientEmail()},
+                                 data-subject=${statement.schoolName() + ' billing statement for ' + statement.familyAccountName()},
+                                 data-body=${'Attached is your billing statement summary.%0A%0AAccount: ' + statement.familyAccountName() + ' (' + statement.familyAccountNumber() + ')%0AOutstanding balance: ' + @moneyFormatter.format(statement.outstandingBalance()) + '%0A%0AIf you have questions, please contact ' + statement.schoolName() + '.'}"
+                        th:disabled="${statement.billingRecipientEmail() == null or #strings.isEmpty(statement.billingRecipientEmail())}"
+                        type="button">Send to email client</button>
+                <a class="btn btn-outline-secondary" href="/finance/accounts">Back to accounts</a>
+            </div>
+        </div>
+    </div>
+</main>
+<script>
+    (() => {
+        const emailClientButton = document.getElementById('emailClientButton');
+        if (!emailClientButton) {
+            return;
+        }
+        emailClientButton.addEventListener('click', () => {
+            const email = emailClientButton.dataset.email;
+            if (!email) {
+                return;
+            }
+            const subject = encodeURIComponent(emailClientButton.dataset.subject ?? '');
+            const body = encodeURIComponent((emailClientButton.dataset.body ?? '').replaceAll('%0A', '\n'));
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        });
+    })();
+</script>
+</body>
+</html>

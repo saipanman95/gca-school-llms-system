@@ -59,6 +59,13 @@ public class FinanceController {
         return "finance/accounts";
     }
 
+    @GetMapping("/finance/accounts/{familyAccountId}/statement")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
+    public String familyStatement(@PathVariable Long familyAccountId, Model model) {
+        model.addAttribute("statement", financeLedgerService.loadBillingStatement(familyAccountId));
+        return "finance/statement";
+    }
+
     @GetMapping("/finance/fees")
     @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
     public String feeMaintenanceHome(@RequestParam(required = false) Long editFeeTypeId, Model model) {
@@ -140,6 +147,19 @@ public class FinanceController {
             financeLedgerService.cancelFee(studentFeeId, cancellationReason, authentication.getName());
             redirectAttributes.addFlashAttribute("message", "Fee cancelled.");
         } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("message", ex.getMessage());
+        }
+        return "redirect:/finance/accounts";
+    }
+
+    @PostMapping("/finance/accounts/{familyAccountId}/statement/email")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
+    public String emailFamilyStatement(@PathVariable Long familyAccountId,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            financeLedgerService.emailBillingStatement(familyAccountId);
+            redirectAttributes.addFlashAttribute("message", "Billing statement emailed.");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
             redirectAttributes.addFlashAttribute("message", ex.getMessage());
         }
         return "redirect:/finance/accounts";

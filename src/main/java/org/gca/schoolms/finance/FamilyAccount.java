@@ -460,6 +460,25 @@ public class FamilyAccount {
         return primaryGuardianName;
     }
 
+    public String getBillingRecipientEmail() {
+        if (!primaryGuardianBillingRecipient && secondaryGuardianEmail != null && !secondaryGuardianEmail.isBlank()) {
+            return secondaryGuardianEmail;
+        }
+        return primaryGuardianEmail;
+    }
+
+    public String getBillingRecipientPhone() {
+        if (!primaryGuardianBillingRecipient && secondaryGuardianPhone != null && !secondaryGuardianPhone.isBlank()) {
+            return secondaryGuardianPhone;
+        }
+        return primaryGuardianPhone;
+    }
+
+    public String getMailingAddress() {
+        String line2 = mailingAddressLine2 != null && !mailingAddressLine2.isBlank() ? ", " + mailingAddressLine2 : "";
+        return mailingAddressLine1 + line2 + ", " + mailingCity + ", " + mailingState + " " + mailingPostalCode;
+    }
+
     public Campus getCampus() {
         return campus;
     }
