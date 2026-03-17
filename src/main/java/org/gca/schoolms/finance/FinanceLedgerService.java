@@ -3,11 +3,14 @@ package org.gca.schoolms.finance;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import org.gca.schoolms.enrollment.EnrollmentRequest;
 import org.gca.schoolms.enrollment.EnrollmentRequestType;
 import org.gca.schoolms.records.Student;
 import org.gca.schoolms.organization.CampusRepository;
 import org.gca.schoolms.records.StudentRepository;
+import org.gca.schoolms.settings.SchoolProfileService;
+import org.gca.schoolms.settings.SchoolProfileView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +24,12 @@ public class FinanceLedgerService {
     private final FamilyAccountRepository familyAccountRepository;
     private final StudentRepository studentRepository;
     private final CampusRepository campusRepository;
+    private final SchoolProfileService schoolProfileService;
 
     public FinanceLedgerService(FeeTypeRepository feeTypeRepository, StudentFeeRepository studentFeeRepository,
                                 PaymentRepository paymentRepository, SchoolProjectTypeRepository schoolProjectTypeRepository,
                                 FamilyAccountRepository familyAccountRepository, StudentRepository studentRepository,
-                                CampusRepository campusRepository) {
+                                CampusRepository campusRepository, SchoolProfileService schoolProfileService) {
         this.feeTypeRepository = feeTypeRepository;
         this.studentFeeRepository = studentFeeRepository;
         this.paymentRepository = paymentRepository;
@@ -33,6 +37,7 @@ public class FinanceLedgerService {
         this.familyAccountRepository = familyAccountRepository;
         this.studentRepository = studentRepository;
         this.campusRepository = campusRepository;
+        this.schoolProfileService = schoolProfileService;
     }
 
     @Transactional(readOnly = true)
@@ -195,9 +200,9 @@ public class FinanceLedgerService {
     }
 
     @Transactional
-    public void recordPayment(PaymentPurpose paymentPurpose, Long studentId, Long payerFamilyAccountId,
+    public Long recordPayment(PaymentPurpose paymentPurpose, Long studentId, Long payerFamilyAccountId,
                               Long schoolProjectTypeId, boolean crossFamilyConfirmed, PaymentMethod paymentMethod,
-                              BigDecimal amount, String referenceNumber, String notes) {
+                              BigDecimal amount, String referenceNumber, String notes, String receivedByUserId) {
         if (payerFamilyAccountId == null) {
             throw new IllegalArgumentException("A guardian / payer must be selected from the lookup list.");
         }
@@ -220,6 +225,7 @@ public class FinanceLedgerService {
                 paymentMethod,
                 amount,
                 LocalDateTime.now(),
+                normalizeReceiverId(receivedByUserId),
                 referenceNumber == null || referenceNumber.isBlank() ? null : referenceNumber.trim(),
                 notes == null || notes.isBlank() ? null : notes.trim()
             ));
@@ -237,12 +243,12 @@ public class FinanceLedgerService {
                 remainingAmount = remainingAmount.subtract(amountApplied);
             }
             paymentRepository.save(payment);
-            return;
+            return payment.getId();
         }
         if (paymentPurpose == PaymentPurpose.GIFT_TO_SCHOOL && schoolProjectType == null) {
             throw new IllegalArgumentException("Select a school project type for gifts to the school.");
         }
-        paymentRepository.save(new Payment(
+        Payment payment = paymentRepository.save(new Payment(
             payerFamilyAccount,
             paymentPurpose,
             targetStudent,
@@ -250,9 +256,11 @@ public class FinanceLedgerService {
             paymentMethod,
             amount,
             LocalDateTime.now(),
+            normalizeReceiverId(receivedByUserId),
             referenceNumber == null || referenceNumber.isBlank() ? null : referenceNumber.trim(),
             notes == null || notes.isBlank() ? null : notes.trim()
         ));
+        return payment.getId();
     }
 
     @Transactional(readOnly = true)
@@ -263,6 +271,48 @@ public class FinanceLedgerService {
     @Transactional(readOnly = true)
     public List<org.gca.schoolms.records.Student> students() {
         return studentRepository.findTop10ByOrderByLastNameAscFirstNameAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public PaymentReceiptView loadReceipt(Long paymentId) {
+        Payment payment = paymentRepository.findWithDetailsById(paymentId).orElseThrow();
+        FamilyAccount payer = payment.getFamilyAccount();
+        ParsedName payerName = parseName(payer.getPrimaryGuardianName());
+        SchoolProfileView schoolProfile = schoolProfileService.loadView();
+        BigDecimal remainingBalance = payment.getPaymentPurpose() == PaymentPurpose.STUDENT_ACCOUNT
+            ? outstandingBalanceForFamily(payment.getTargetStudent().getFamilyAccount())
+            : BigDecimal.ZERO;
+        return new PaymentReceiptView(
+            payment.getId(),
+            "RCT-%06d".formatted(payment.getId()),
+            payment.getPaymentDate(),
+            schoolProfile.schoolName(),
+            schoolProfile.emailAddress(),
+            schoolProfile.phoneNumber(),
+            schoolProfile.mailingAddress(),
+            payment.getReceivedByUserId(),
+            payerName.firstName(),
+            payerName.middleName(),
+            payerName.lastName(),
+            payer.getAccountNumber(),
+            payer.getAccountName(),
+            payment.getPaymentPurpose().getLabel(),
+            payment.getTargetDisplayName(),
+            payment.getSchoolProjectType() != null ? payment.getSchoolProjectType().getName() : null,
+            payment.getPaymentMethod().getLabel(),
+            payment.getReferenceNumber(),
+            payment.getTotalAmount(),
+            payment.getUnappliedAmount(),
+            remainingBalance,
+            payment.getNotes(),
+            payment.getAllocations().stream()
+                .map(allocation -> new PaymentReceiptAllocationView(
+                    allocation.getStudentFee().getFeeType().getName(),
+                    allocation.getStudentFee().getDescription(),
+                    allocation.getAmountApplied(),
+                    allocation.getStudentFee().getOutstandingAmount()))
+                .toList()
+        );
     }
 
     private PaymentRowView toPaymentRowView(Payment payment) {
@@ -278,5 +328,32 @@ public class FinanceLedgerService {
             payment.getUnappliedAmount(),
             payment.getNotes()
         );
+    }
+
+    private String normalizeReceiverId(String receivedByUserId) {
+        if (receivedByUserId == null || receivedByUserId.isBlank()) {
+            return "SYSTEM";
+        }
+        return receivedByUserId.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private ParsedName parseName(String fullName) {
+        if (fullName == null || fullName.isBlank()) {
+            return new ParsedName("", "", "");
+        }
+        String[] parts = fullName.trim().split("\\s+");
+        if (parts.length == 1) {
+            return new ParsedName(parts[0], "", "");
+        }
+        if (parts.length == 2) {
+            return new ParsedName(parts[0], "", parts[1]);
+        }
+        String first = parts[0];
+        String last = parts[parts.length - 1];
+        String middle = String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length - 1));
+        return new ParsedName(first, middle, last);
+    }
+
+    private record ParsedName(String firstName, String middleName, String lastName) {
     }
 }

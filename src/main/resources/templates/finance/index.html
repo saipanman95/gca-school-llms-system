@@ -109,7 +109,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h2 class="h5 mb-3">Record payment</h2>
-                    <form id="recordPaymentForm" method="post" th:action="@{/finance/payments}">
+                    <form id="recordPaymentForm" method="post" target="_blank" th:action="@{/finance/payments}">
                         <div class="mb-3">
                             <label class="form-label" for="paymentPurpose">Payment purpose</label>
                             <select class="form-select" id="paymentPurpose" name="paymentPurpose" required>

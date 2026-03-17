@@ -5,10 +5,12 @@ import java.math.BigDecimal;
 import org.gca.schoolms.enrollment.EnrollmentFinanceAuthorizationType;
 import org.gca.schoolms.enrollment.FinanceReviewStatus;
 import org.gca.schoolms.enrollment.EnrollmentReviewService;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -44,6 +46,12 @@ public class FinanceController {
         model.addAttribute("financeStatuses", FinanceReviewStatus.values());
         model.addAttribute("financeAuthorizationTypes", EnrollmentFinanceAuthorizationType.values());
         return "finance/index";
+    }
+
+    @GetMapping("/finance/payments/{paymentId}/receipt")
+    public String paymentReceipt(@PathVariable Long paymentId, Model model) {
+        model.addAttribute("receipt", financeLedgerService.loadReceipt(paymentId));
+        return "finance/payment-receipt";
     }
 
     @PostMapping("/finance/fee-types")
@@ -87,9 +95,10 @@ public class FinanceController {
                                 @RequestParam BigDecimal amount,
                                 @RequestParam(required = false) String referenceNumber,
                                 @RequestParam(required = false) String notes,
+                                Authentication authentication,
                                 RedirectAttributes redirectAttributes) {
         try {
-            financeLedgerService.recordPayment(
+            Long paymentId = financeLedgerService.recordPayment(
                 paymentPurpose,
                 studentId,
                 payerFamilyAccountId,
@@ -98,9 +107,10 @@ public class FinanceController {
                 paymentMethod,
                 amount,
                 referenceNumber,
-                notes
+                notes,
+                authentication.getName()
             );
-            redirectAttributes.addFlashAttribute("message", "Payment recorded.");
+            return "redirect:/finance/payments/" + paymentId + "/receipt";
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("message", ex.getMessage());
         }

@@ -51,6 +51,9 @@ public class Payment {
     @Column(nullable = false)
     private LocalDateTime paymentDate;
 
+    @Column(nullable = false)
+    private String receivedByUserId;
+
     private String referenceNumber;
 
     private String notes;
@@ -63,13 +66,18 @@ public class Payment {
 
     public Payment(FamilyAccount familyAccount, PaymentMethod paymentMethod, BigDecimal totalAmount,
                    LocalDateTime paymentDate, String referenceNumber, String notes) {
-        this(familyAccount, PaymentPurpose.STUDENT_ACCOUNT, null, null, paymentMethod, totalAmount, paymentDate, referenceNumber, notes);
+        this(familyAccount, PaymentPurpose.STUDENT_ACCOUNT, null, null, paymentMethod, totalAmount, paymentDate, "system", referenceNumber, notes);
+    }
+
+    public Payment(FamilyAccount familyAccount, PaymentMethod paymentMethod, BigDecimal totalAmount,
+                   LocalDateTime paymentDate, String receivedByUserId, String referenceNumber, String notes) {
+        this(familyAccount, PaymentPurpose.STUDENT_ACCOUNT, null, null, paymentMethod, totalAmount, paymentDate, receivedByUserId, referenceNumber, notes);
     }
 
     public Payment(FamilyAccount familyAccount, PaymentPurpose paymentPurpose, Student targetStudent,
                    SchoolProjectType schoolProjectType,
                    PaymentMethod paymentMethod, BigDecimal totalAmount,
-                   LocalDateTime paymentDate, String referenceNumber, String notes) {
+                   LocalDateTime paymentDate, String receivedByUserId, String referenceNumber, String notes) {
         this.familyAccount = familyAccount;
         this.paymentPurpose = paymentPurpose;
         this.targetStudent = targetStudent;
@@ -77,6 +85,7 @@ public class Payment {
         this.paymentMethod = paymentMethod;
         this.totalAmount = totalAmount;
         this.paymentDate = paymentDate;
+        this.receivedByUserId = receivedByUserId;
         this.referenceNumber = referenceNumber;
         this.notes = notes;
     }
@@ -132,6 +141,10 @@ public class Payment {
 
     public LocalDateTime getPaymentDate() {
         return paymentDate;
+    }
+
+    public String getReceivedByUserId() {
+        return receivedByUserId;
     }
 
     public String getReferenceNumber() {

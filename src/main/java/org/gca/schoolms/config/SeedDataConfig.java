@@ -30,6 +30,7 @@ import org.gca.schoolms.records.GradeLevel;
 import org.gca.schoolms.records.Student;
 import org.gca.schoolms.records.StudentRepository;
 import org.gca.schoolms.records.StudentStatus;
+import org.gca.schoolms.settings.SchoolProfileService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,9 +57,11 @@ public class SeedDataConfig {
                                StudentRepository studentRepository, FeeTypeRepository feeTypeRepository,
                                StudentFeeRepository studentFeeRepository, PaymentRepository paymentRepository,
                                SchoolProjectTypeRepository schoolProjectTypeRepository,
+                               SchoolProfileService schoolProfileService,
                                SectionRepository sectionRepository, AttendanceRecordRepository attendanceRecordRepository,
                                EnrollmentRequestRepository enrollmentRequestRepository) {
         return args -> {
+            schoolProfileService.ensureDefaultProfile();
             Campus saipan = campusRepository.findByCode("GCA-SAI")
                 .orElseGet(() -> campusRepository.save(new Campus("GCA-SAI", "Grace Christian Academy Saipan", "Saipan", true)));
             Campus tinian = campusRepository.findByCode("GCA-TIN")
@@ -193,21 +196,21 @@ public class SeedDataConfig {
 
                 Payment cruzPayment = paymentRepository.save(new Payment(
                     cruzFamily, PaymentMethod.CASH, new BigDecimal("1800.00"),
-                    LocalDate.now().minusDays(10).atStartOfDay(), "RCPT-1001", "Partial tuition payment"));
+                    LocalDate.now().minusDays(10).atStartOfDay(), "SYSTEM", "RCPT-1001", "Partial tuition payment"));
                 cruzPayment.getAllocations().add(new PaymentAllocation(
                     cruzPayment, avaTuition, new BigDecimal("1800.00"), LocalDate.now().minusDays(10).atStartOfDay()));
                 paymentRepository.save(cruzPayment);
 
                 Payment santosScholarship = paymentRepository.save(new Payment(
                     santosFamily, PaymentMethod.SCHOLARSHIP_APPLIED, new BigDecimal("100.00"),
-                    LocalDate.now().minusDays(4).atStartOfDay(), "SCH-2026-1", "Scholarship applied to application fee"));
+                    LocalDate.now().minusDays(4).atStartOfDay(), "SYSTEM", "SCH-2026-1", "Scholarship applied to application fee"));
                 santosScholarship.getAllocations().add(new PaymentAllocation(
                     santosScholarship, micahApplication, new BigDecimal("100.00"), LocalDate.now().minusDays(4).atStartOfDay()));
                 paymentRepository.save(santosScholarship);
 
                 Payment leahGrant = paymentRepository.save(new Payment(
                     manglonaFamily, PaymentMethod.CCDF_INHOUSE_GRANT, new BigDecimal("75.00"),
-                    LocalDate.now().minusDays(5).atStartOfDay(), "CCDF-55", "CCDF in-house grant"));
+                    LocalDate.now().minusDays(5).atStartOfDay(), "SYSTEM", "CCDF-55", "CCDF in-house grant"));
                 leahGrant.getAllocations().add(new PaymentAllocation(
                     leahGrant, leahTech, new BigDecimal("75.00"), LocalDate.now().minusDays(5).atStartOfDay()));
                 paymentRepository.save(leahGrant);
