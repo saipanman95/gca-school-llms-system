@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Enrollment Record | GCA School MS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<main class="container py-4" th:with="request=${recordDetail.enrollmentRequest}">
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <a class="link-secondary text-decoration-none small" th:href="@{/records}">Back to records</a>
+            <h1 class="h3 mt-2 mb-1" th:text="${request.studentDisplayName}">Enrollment Record</h1>
+            <p class="text-secondary mb-0">
+                <span th:text="${request.requestType}">REENROLLMENT</span>
+                <span> / </span>
+                <span th:text="${request.schoolYear}">2026-2027</span>
+                <span> / </span>
+                <span th:text="${request.campus.code}">GCA-SAI</span>
+            </p>
+        </div>
+        <div class="text-end">
+            <span class="badge text-bg-info" th:text="${request.status}">SUBMITTED</span>
+            <div class="small text-secondary mt-2" th:text="${request.financeStatusLabel}">Finance review pending</div>
+        </div>
+    </div>
+
+    <section class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Student Record Snapshot</h2>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Legal name</dt>
+                        <dd class="col-sm-8"
+                            th:text="${request.studentFirstName + (request.studentMiddleName != null and !#strings.isEmpty(request.studentMiddleName) ? ' ' + request.studentMiddleName : '') + ' ' + request.studentLastName}">Ava Cruz</dd>
+                        <dt class="col-sm-4">Alias</dt>
+                        <dd class="col-sm-8" th:text="${request.studentAlias}">Ava</dd>
+                        <dt class="col-sm-4">Date of birth</dt>
+                        <dd class="col-sm-8" th:text="${request.studentDateOfBirth}">2010-05-12</dd>
+                        <dt class="col-sm-4">Requested grade</dt>
+                        <dd class="col-sm-8" th:text="${request.requestedGradeLevel.label}">11th</dd>
+                        <dt class="col-sm-4">Religion</dt>
+                        <dd class="col-sm-8" th:text="${request.studentReligiousAffiliation}">Christian</dd>
+                        <dt class="col-sm-4">Church</dt>
+                        <dd class="col-sm-8" th:text="${request.studentChurchAttending}">Grace Chapel</dd>
+                        <dt class="col-sm-4">Ethnicity</dt>
+                        <dd class="col-sm-8" th:text="${request.studentEthnicBackgrounds}">Chamorro</dd>
+                        <dt class="col-sm-4">Languages</dt>
+                        <dd class="col-sm-8">
+                            <div th:each="language : ${recordDetail.studentLanguages}"
+                                 th:text="${language.languageName + ' / ' + language.proficiencyLevel + ' / rank ' + language.preferenceRank}">English / Fluent / rank 1</div>
+                        </dd>
+                        <dt class="col-sm-4">Citizenship</dt>
+                        <dd class="col-sm-8" th:text="${request.studentCitizenshipStatus}">US Citizen</dd>
+                        <dt class="col-sm-4">Visa status</dt>
+                        <dd class="col-sm-8" th:text="${request.studentVisaRequired} ? request.studentVisaType : 'No visa required'">No visa required</dd>
+                        <dt class="col-sm-4">Previous school</dt>
+                        <dd class="col-sm-8" th:text="${request.previousSchoolName}">Saipan Community School</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Parent / Guardian Record Snapshot</h2>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Primary guardian</dt>
+                        <dd class="col-sm-8" th:text="${request.guardianName}">Elena Cruz</dd>
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8" th:text="${request.guardianEmail}">elena@example.org</dd>
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8" th:text="${request.guardianPhone}">670-555-0101</dd>
+                        <dt class="col-sm-4">Mailing address</dt>
+                        <dd class="col-sm-8" th:text="${request.guardianMailingAddressLine1 + ', ' + request.guardianMailingCity + ', ' + request.guardianMailingState + ' ' + request.guardianMailingPostalCode}">123 Palm Street</dd>
+                        <dt class="col-sm-4">Employer</dt>
+                        <dd class="col-sm-8" th:text="${request.guardianEmployerName}">GCA</dd>
+                        <dt class="col-sm-4">Work phone</dt>
+                        <dd class="col-sm-8" th:text="${request.guardianWorkPhone}">670-555-1101</dd>
+                        <dt class="col-sm-4">Marital status</dt>
+                        <dd class="col-sm-8" th:text="${request.maritalStatus}">MARRIED</dd>
+                        <dt class="col-sm-4">Secondary guardian</dt>
+                        <dd class="col-sm-8" th:text="${request.secondaryGuardianName}">David Cruz</dd>
+                        <dt class="col-sm-4">Secondary email</dt>
+                        <dd class="col-sm-8" th:text="${request.secondaryGuardianEmail}">david@example.org</dd>
+                        <dt class="col-sm-4">Secondary phone</dt>
+                        <dd class="col-sm-8" th:text="${request.secondaryGuardianPhone}">670-555-0102</dd>
+                        <dt class="col-sm-4">Billing recipient</dt>
+                        <dd class="col-sm-8" th:text="${request.primaryGuardianBillingRecipient} ? 'Primary guardian' : 'Secondary guardian'">Primary guardian</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Medical and Emergency</h2>
+                    <dl class="row mb-3">
+                        <dt class="col-sm-4">Physician</dt>
+                        <dd class="col-sm-8" th:text="${request.primaryPhysicianName}">Doctor</dd>
+                        <dt class="col-sm-4">Clinic</dt>
+                        <dd class="col-sm-8" th:text="${request.physicianClinicName}">Clinic</dd>
+                        <dt class="col-sm-4">Insurance</dt>
+                        <dd class="col-sm-8" th:text="${request.insuranceProvider}">Insurance</dd>
+                        <dt class="col-sm-4">Allergies</dt>
+                        <dd class="col-sm-8" th:text="${request.studentAllergies}">None</dd>
+                        <dt class="col-sm-4">Medications</dt>
+                        <dd class="col-sm-8" th:text="${request.studentMedications}">None</dd>
+                    </dl>
+                    <h3 class="h6">Emergency contacts</h3>
+                    <div class="border rounded p-3 mb-2" th:each="contact : ${recordDetail.emergencyContacts}">
+                        <div class="fw-semibold" th:text="${contact.contactName}">Contact Name</div>
+                        <div class="small text-secondary" th:text="${contact.relationshipToStudent}">Relationship</div>
+                        <div class="small" th:text="${contact.primaryPhone}">Phone</div>
+                        <div class="small" th:text="${contact.email}">Email</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Documents and Finance</h2>
+                    <div class="mb-3">
+                        <div class="small text-secondary">Required fee</div>
+                        <div class="fw-semibold" th:if="${recordDetail.enrollmentFee != null}"
+                             th:text="${recordDetail.enrollmentFee.feeType.name + ' / outstanding ' + @moneyFormatter.format(recordDetail.enrollmentFee.outstandingAmount)}">Enrollment fee / $300.00</div>
+                        <div class="text-secondary" th:if="${recordDetail.enrollmentFee == null}">No fee attached yet.</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="small text-secondary">Missing required documents</div>
+                        <div th:if="${recordDetail.missingDocuments.isEmpty()}" class="text-success">All currently required documents are on file.</div>
+                        <ul class="mb-0 ps-3 text-danger" th:if="${!recordDetail.missingDocuments.isEmpty()}">
+                            <li th:each="missingDocument : ${recordDetail.missingDocuments}" th:text="${missingDocument}">Birth certificate</li>
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <div class="small text-secondary">Finance authorizations</div>
+                        <div th:if="${recordDetail.financeAuthorizations.isEmpty()}" class="text-secondary">None recorded.</div>
+                        <div th:each="authorization : ${recordDetail.financeAuthorizations}"
+                             th:text="${authorization.authorizationType.label + ' / ' + authorization.approvedOn}">Enrollment fee paid</div>
+                    </div>
+                    <h3 class="h6">Uploaded documents</h3>
+                    <div th:if="${recordDetail.documents.isEmpty()}" class="text-secondary">No uploaded documents.</div>
+                    <div class="border rounded p-3 mb-2" th:each="document : ${recordDetail.documents}">
+                        <div class="fw-semibold" th:text="${document.recordName}">record.pdf</div>
+                        <div class="small text-secondary" th:text="${document.recordType}">TRANSCRIPT</div>
+                        <div class="small text-secondary" th:text="${#temporals.format(document.dateUploaded, 'yyyy-MM-dd HH:mm')}">2026-03-01</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Registrar Review</h2>
+            <form method="post" th:action="@{/records/enrollment-review}">
+                <input type="hidden" name="requestId" th:value="${request.id}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="reviewStatus">Registrar decision</label>
+                        <select class="form-select" id="reviewStatus" name="reviewStatus">
+                            <option th:each="statusOption : ${registrarStatuses}"
+                                    th:selected="${statusOption == request.registrarReviewStatus}"
+                                    th:text="${statusOption}" th:value="${statusOption}">PENDING</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label" for="reviewComment">Comment for family</label>
+                        <textarea class="form-control" id="reviewComment" name="comment" rows="4"
+                                  th:text="${request.registrarComment}"></textarea>
+                    </div>
+                </div>
+                <button class="btn btn-primary mt-3" type="submit">Save review</button>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

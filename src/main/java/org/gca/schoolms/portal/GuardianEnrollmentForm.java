@@ -260,13 +260,57 @@ public class GuardianEnrollmentForm {
 
     private boolean vaccinationRecordOnFile;
 
+    private MultipartFile birthCertificateFile;
+
+    private boolean birthCertificateOnFile;
+
     private MultipartFile healthCertificateFile;
 
     private boolean healthCertificateOnFile;
 
+    private MultipartFile chcBlueCareFile;
+
+    private boolean chcBlueCareOnFile;
+
+    private MultipartFile healthProfileFile;
+
+    private boolean healthProfileOnFile;
+
+    private MultipartFile recentPhotographFile;
+
+    private boolean recentPhotographOnFile;
+
     private MultipartFile previousTranscriptFile;
 
     private boolean previousTranscriptOnFile;
+
+    private MultipartFile reportCardFile;
+
+    private boolean reportCardOnFile;
+
+    private MultipartFile officialTranscriptFile;
+
+    private boolean officialTranscriptOnFile;
+
+    private MultipartFile studentPassportFile;
+
+    private boolean studentPassportOnFile;
+
+    private MultipartFile bankCertificateFile;
+
+    private boolean bankCertificateOnFile;
+
+    private MultipartFile guardianshipDocumentFile;
+
+    private boolean guardianshipDocumentOnFile;
+
+    private MultipartFile studentVisaFile;
+
+    private boolean studentVisaOnFile;
+
+    private MultipartFile previousSchoolI20File;
+
+    private boolean previousSchoolI20OnFile;
 
     @NotNull
     private GradeLevel requestedGradeLevel;
@@ -1028,6 +1072,22 @@ public class GuardianEnrollmentForm {
         this.vaccinationRecordOnFile = vaccinationRecordOnFile;
     }
 
+    public MultipartFile getBirthCertificateFile() {
+        return birthCertificateFile;
+    }
+
+    public void setBirthCertificateFile(MultipartFile birthCertificateFile) {
+        this.birthCertificateFile = birthCertificateFile;
+    }
+
+    public boolean isBirthCertificateOnFile() {
+        return birthCertificateOnFile;
+    }
+
+    public void setBirthCertificateOnFile(boolean birthCertificateOnFile) {
+        this.birthCertificateOnFile = birthCertificateOnFile;
+    }
+
     public MultipartFile getHealthCertificateFile() {
         return healthCertificateFile;
     }
@@ -1044,6 +1104,54 @@ public class GuardianEnrollmentForm {
         this.healthCertificateOnFile = healthCertificateOnFile;
     }
 
+    public MultipartFile getChcBlueCareFile() {
+        return chcBlueCareFile;
+    }
+
+    public void setChcBlueCareFile(MultipartFile chcBlueCareFile) {
+        this.chcBlueCareFile = chcBlueCareFile;
+    }
+
+    public boolean isChcBlueCareOnFile() {
+        return chcBlueCareOnFile;
+    }
+
+    public void setChcBlueCareOnFile(boolean chcBlueCareOnFile) {
+        this.chcBlueCareOnFile = chcBlueCareOnFile;
+    }
+
+    public MultipartFile getHealthProfileFile() {
+        return healthProfileFile;
+    }
+
+    public void setHealthProfileFile(MultipartFile healthProfileFile) {
+        this.healthProfileFile = healthProfileFile;
+    }
+
+    public boolean isHealthProfileOnFile() {
+        return healthProfileOnFile;
+    }
+
+    public void setHealthProfileOnFile(boolean healthProfileOnFile) {
+        this.healthProfileOnFile = healthProfileOnFile;
+    }
+
+    public MultipartFile getRecentPhotographFile() {
+        return recentPhotographFile;
+    }
+
+    public void setRecentPhotographFile(MultipartFile recentPhotographFile) {
+        this.recentPhotographFile = recentPhotographFile;
+    }
+
+    public boolean isRecentPhotographOnFile() {
+        return recentPhotographOnFile;
+    }
+
+    public void setRecentPhotographOnFile(boolean recentPhotographOnFile) {
+        this.recentPhotographOnFile = recentPhotographOnFile;
+    }
+
     public MultipartFile getPreviousTranscriptFile() {
         return previousTranscriptFile;
     }
@@ -1058,6 +1166,118 @@ public class GuardianEnrollmentForm {
 
     public void setPreviousTranscriptOnFile(boolean previousTranscriptOnFile) {
         this.previousTranscriptOnFile = previousTranscriptOnFile;
+    }
+
+    public MultipartFile getReportCardFile() {
+        return reportCardFile;
+    }
+
+    public void setReportCardFile(MultipartFile reportCardFile) {
+        this.reportCardFile = reportCardFile;
+    }
+
+    public boolean isReportCardOnFile() {
+        return reportCardOnFile;
+    }
+
+    public void setReportCardOnFile(boolean reportCardOnFile) {
+        this.reportCardOnFile = reportCardOnFile;
+    }
+
+    public MultipartFile getOfficialTranscriptFile() {
+        return officialTranscriptFile;
+    }
+
+    public void setOfficialTranscriptFile(MultipartFile officialTranscriptFile) {
+        this.officialTranscriptFile = officialTranscriptFile;
+    }
+
+    public boolean isOfficialTranscriptOnFile() {
+        return officialTranscriptOnFile;
+    }
+
+    public void setOfficialTranscriptOnFile(boolean officialTranscriptOnFile) {
+        this.officialTranscriptOnFile = officialTranscriptOnFile;
+    }
+
+    public MultipartFile getStudentPassportFile() {
+        return studentPassportFile;
+    }
+
+    public void setStudentPassportFile(MultipartFile studentPassportFile) {
+        this.studentPassportFile = studentPassportFile;
+    }
+
+    public boolean isStudentPassportOnFile() {
+        return studentPassportOnFile;
+    }
+
+    public void setStudentPassportOnFile(boolean studentPassportOnFile) {
+        this.studentPassportOnFile = studentPassportOnFile;
+    }
+
+    public MultipartFile getBankCertificateFile() {
+        return bankCertificateFile;
+    }
+
+    public void setBankCertificateFile(MultipartFile bankCertificateFile) {
+        this.bankCertificateFile = bankCertificateFile;
+    }
+
+    public boolean isBankCertificateOnFile() {
+        return bankCertificateOnFile;
+    }
+
+    public void setBankCertificateOnFile(boolean bankCertificateOnFile) {
+        this.bankCertificateOnFile = bankCertificateOnFile;
+    }
+
+    public MultipartFile getGuardianshipDocumentFile() {
+        return guardianshipDocumentFile;
+    }
+
+    public void setGuardianshipDocumentFile(MultipartFile guardianshipDocumentFile) {
+        this.guardianshipDocumentFile = guardianshipDocumentFile;
+    }
+
+    public boolean isGuardianshipDocumentOnFile() {
+        return guardianshipDocumentOnFile;
+    }
+
+    public void setGuardianshipDocumentOnFile(boolean guardianshipDocumentOnFile) {
+        this.guardianshipDocumentOnFile = guardianshipDocumentOnFile;
+    }
+
+    public MultipartFile getStudentVisaFile() {
+        return studentVisaFile;
+    }
+
+    public void setStudentVisaFile(MultipartFile studentVisaFile) {
+        this.studentVisaFile = studentVisaFile;
+    }
+
+    public boolean isStudentVisaOnFile() {
+        return studentVisaOnFile;
+    }
+
+    public void setStudentVisaOnFile(boolean studentVisaOnFile) {
+        this.studentVisaOnFile = studentVisaOnFile;
+    }
+
+    public MultipartFile getPreviousSchoolI20File() {
+        return previousSchoolI20File;
+    }
+
+    public void setPreviousSchoolI20File(MultipartFile previousSchoolI20File) {
+        this.previousSchoolI20File = previousSchoolI20File;
+    }
+
+    public boolean isPreviousSchoolI20OnFile() {
+        return previousSchoolI20OnFile;
+    }
+
+    public void setPreviousSchoolI20OnFile(boolean previousSchoolI20OnFile) {
+        this.previousSchoolI20OnFile = previousSchoolI20OnFile;
     }
 
     public GradeLevel getRequestedGradeLevel() {

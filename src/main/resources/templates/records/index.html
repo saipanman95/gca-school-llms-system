@@ -37,6 +37,7 @@
                         <th>Progress</th>
                         <th>Finance</th>
                         <th>Registrar review</th>
+                        <th></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -64,6 +65,10 @@
                                 <div class="progress-bar" role="progressbar"
                                      th:style="'width:' + ${request.completionPercentage} + '%;'"
                                      th:attr="aria-valuenow=${request.completionPercentage},aria-valuemin=0,aria-valuemax=100"></div>
+                            </div>
+                            <div class="small text-danger mt-2" th:if="${!request.missingDocuments.isEmpty()}">
+                                Missing documents:
+                                <span th:text="${#strings.listJoin(request.missingDocuments, ', ')}">Birth certificate</span>
                             </div>
                         </td>
                         <td class="align-top">
@@ -93,6 +98,10 @@
                                 </div>
                                 <button class="btn btn-sm btn-primary" type="submit">Save review</button>
                             </form>
+                        </td>
+                        <td class="align-top text-end">
+                            <a class="btn btn-sm btn-outline-primary"
+                               th:href="@{/records/enrollments/{requestId}(requestId=${request.id})}">View record</a>
                         </td>
                     </tr>
                     </tbody>
@@ -127,16 +136,22 @@
                         <th>Guardian account</th>
                         <th>Status</th>
                         <th>Date of birth</th>
+                        <th></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="student : ${students}">
                         <td th:text="${student.studentNumber}"></td>
                         <td th:text="${student.displayName}"></td>
-                        <td th:text="${student.campus.code}"></td>
-                        <td th:text="${student.familyAccount.accountName}"></td>
+                        <td th:text="${student.campusCode}"></td>
+                        <td th:text="${student.familyAccountName}"></td>
                         <td><span class="badge text-bg-secondary" th:text="${student.status}"></span></td>
                         <td th:text="${student.dateOfBirth}"></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary"
+                               th:if="${student.latestEnrollmentRequestId != null}"
+                               th:href="@{/records/enrollments/{requestId}(requestId=${student.latestEnrollmentRequestId})}">View latest record</a>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

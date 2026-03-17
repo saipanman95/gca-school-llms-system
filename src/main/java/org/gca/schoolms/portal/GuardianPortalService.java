@@ -345,11 +345,12 @@ public class GuardianPortalService {
         int totalFields = 14;
         int completeFields = totalFields - missingFields.size();
         int completionPercentage = (int) Math.round((completeFields * 100.0) / totalFields);
-        boolean documentsComplete = hasRequiredDocuments(form);
+        List<String> missingDocuments = missingDocumentLabels(form);
+        boolean documentsComplete = missingDocuments.isEmpty();
         if (!documentsComplete) {
             missingFields.add("Required documents");
         }
-        return new EnrollmentCompletionView(completionPercentage, missingFields, documentsComplete);
+        return new EnrollmentCompletionView(completionPercentage, missingFields, missingDocuments, documentsComplete);
     }
 
     public EnrollmentCompletionView calculateCompletion(EnrollmentRequest request) {
@@ -723,9 +724,20 @@ public class GuardianPortalService {
         if (targetStatus != EnrollmentRequestStatus.DRAFT) {
             financeLedgerService.ensureEnrollmentRequestFee(savedRequest);
         }
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.BIRTH_CERTIFICATE, form.getBirthCertificateFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.VACCINATION_CARD, form.getVaccinationRecordFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.HEALTH_CERTIFICATE, form.getHealthCertificateFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.CHC_BLUE_CARE, form.getChcBlueCareFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.HEALTH_PROFILE, form.getHealthProfileFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.RECENT_PHOTOGRAPH, form.getRecentPhotographFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.REPORT_CARD, form.getReportCardFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.OFFICIAL_TRANSCRIPT, form.getOfficialTranscriptFile());
         storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT, form.getPreviousTranscriptFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.STUDENT_PASSPORT, form.getStudentPassportFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.BANK_CERTIFICATE, form.getBankCertificateFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.GUARDIANSHIP_DOCUMENT, form.getGuardianshipDocumentFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.STUDENT_VISA, form.getStudentVisaFile());
+        storeEnrollmentDocument(savedRequest, EnrollmentDocumentType.PREVIOUS_SCHOOL_I20, form.getPreviousSchoolI20File());
     }
 
     private EnrollmentRequest findManageableEnrollmentRequest(String username, Long requestId) {
@@ -787,32 +799,103 @@ public class GuardianPortalService {
         };
     }
 
-    private boolean hasRequiredDocuments(GuardianEnrollmentForm form) {
-        return (form.isVaccinationRecordOnFile() || hasFile(form.getVaccinationRecordFile()))
-            && (form.isHealthCertificateOnFile() || hasFile(form.getHealthCertificateFile()))
-            && (form.isPreviousTranscriptOnFile() || hasFile(form.getPreviousTranscriptFile()));
+    public List<String> missingDocumentLabels(GuardianEnrollmentForm form) {
+        List<String> missingDocuments = new ArrayList<>();
+        addMissingDocument(missingDocuments, form.isBirthCertificateOnFile() || hasFile(form.getBirthCertificateFile()), "Birth certificate");
+        addMissingDocument(missingDocuments, form.isVaccinationRecordOnFile() || hasFile(form.getVaccinationRecordFile()), "Immunization record");
+        addMissingDocument(missingDocuments,
+            (form.isHealthCertificateOnFile() || hasFile(form.getHealthCertificateFile()))
+                || (form.isChcBlueCareOnFile() || hasFile(form.getChcBlueCareFile())),
+            "School entrance health certificate or CHC Blue Care");
+        addMissingDocument(missingDocuments, form.isHealthProfileOnFile() || hasFile(form.getHealthProfileFile()), "Health profile");
+        addMissingDocument(missingDocuments, form.isRecentPhotographOnFile() || hasFile(form.getRecentPhotographFile()), "Recent photograph");
+
+        if (form.isStudentVisaRequired()) {
+            addMissingDocument(missingDocuments, form.isStudentPassportOnFile() || hasFile(form.getStudentPassportFile()), "Copy of passport");
+            addMissingDocument(missingDocuments, form.isBankCertificateOnFile() || hasFile(form.getBankCertificateFile()), "Bank certificate from parents");
+            addMissingDocument(missingDocuments, form.isGuardianshipDocumentOnFile() || hasFile(form.getGuardianshipDocumentFile()), "Guardianship document");
+            addMissingDocument(missingDocuments, form.isStudentVisaOnFile() || hasFile(form.getStudentVisaFile()), "Copy of F1 Visa");
+            addMissingDocument(missingDocuments, form.isPreviousSchoolI20OnFile() || hasFile(form.getPreviousSchoolI20File()), "Copy of I-20 from previous school");
+        }
+
+        if (requiresTransferSchoolDocuments(form)) {
+            addMissingDocument(missingDocuments, form.isReportCardOnFile() || hasFile(form.getReportCardFile()), "Report card");
+            addMissingDocument(missingDocuments,
+                (form.isOfficialTranscriptOnFile() || hasFile(form.getOfficialTranscriptFile()))
+                    || (form.isPreviousTranscriptOnFile() || hasFile(form.getPreviousTranscriptFile())),
+                "Official transcript");
+        }
+        return missingDocuments;
     }
 
-    private boolean hasRequiredDocuments(EnrollmentRequest request) {
+    public List<String> missingDocumentLabels(EnrollmentRequest request) {
         EnumSet<EnrollmentDocumentType> presentTypes = enrollmentDocumentRepository.findByEnrollmentRequest(request).stream()
             .map(document -> document.getRecordType())
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(EnrollmentDocumentType.class)));
-        return presentTypes.contains(EnrollmentDocumentType.VACCINATION_CARD)
-            && presentTypes.contains(EnrollmentDocumentType.HEALTH_CERTIFICATE)
-            && presentTypes.contains(EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT);
+        List<String> missingDocuments = new ArrayList<>();
+        addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.BIRTH_CERTIFICATE), "Birth certificate");
+        addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.VACCINATION_CARD), "Immunization record");
+        addMissingDocument(missingDocuments,
+            presentTypes.contains(EnrollmentDocumentType.HEALTH_CERTIFICATE)
+                || presentTypes.contains(EnrollmentDocumentType.CHC_BLUE_CARE),
+            "School entrance health certificate or CHC Blue Care");
+        addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.HEALTH_PROFILE), "Health profile");
+        addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.RECENT_PHOTOGRAPH), "Recent photograph");
+
+        if (request.isStudentVisaRequired()) {
+            addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.STUDENT_PASSPORT), "Copy of passport");
+            addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.BANK_CERTIFICATE), "Bank certificate from parents");
+            addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.GUARDIANSHIP_DOCUMENT), "Guardianship document");
+            addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.STUDENT_VISA), "Copy of F1 Visa");
+            addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.PREVIOUS_SCHOOL_I20), "Copy of I-20 from previous school");
+        }
+
+        if (requiresTransferSchoolDocuments(request)) {
+            addMissingDocument(missingDocuments, presentTypes.contains(EnrollmentDocumentType.REPORT_CARD), "Report card");
+            addMissingDocument(missingDocuments,
+                presentTypes.contains(EnrollmentDocumentType.OFFICIAL_TRANSCRIPT)
+                    || presentTypes.contains(EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT),
+                "Official transcript");
+        }
+        return missingDocuments;
     }
 
     private boolean hasFile(org.springframework.web.multipart.MultipartFile file) {
         return file != null && !file.isEmpty();
     }
 
+    private void addMissingDocument(List<String> missingDocuments, boolean present, String label) {
+        if (!present) {
+            missingDocuments.add(label);
+        }
+    }
+
     private void applyDocumentFlags(GuardianEnrollmentForm form, EnrollmentRequest request) {
         EnumSet<EnrollmentDocumentType> presentTypes = enrollmentDocumentRepository.findByEnrollmentRequest(request).stream()
             .map(EnrollmentDocument::getRecordType)
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(EnrollmentDocumentType.class)));
+        form.setBirthCertificateOnFile(presentTypes.contains(EnrollmentDocumentType.BIRTH_CERTIFICATE));
         form.setVaccinationRecordOnFile(presentTypes.contains(EnrollmentDocumentType.VACCINATION_CARD));
         form.setHealthCertificateOnFile(presentTypes.contains(EnrollmentDocumentType.HEALTH_CERTIFICATE));
+        form.setChcBlueCareOnFile(presentTypes.contains(EnrollmentDocumentType.CHC_BLUE_CARE));
+        form.setHealthProfileOnFile(presentTypes.contains(EnrollmentDocumentType.HEALTH_PROFILE));
+        form.setRecentPhotographOnFile(presentTypes.contains(EnrollmentDocumentType.RECENT_PHOTOGRAPH));
         form.setPreviousTranscriptOnFile(presentTypes.contains(EnrollmentDocumentType.PREVIOUS_SCHOOL_TRANSCRIPT));
+        form.setReportCardOnFile(presentTypes.contains(EnrollmentDocumentType.REPORT_CARD));
+        form.setOfficialTranscriptOnFile(presentTypes.contains(EnrollmentDocumentType.OFFICIAL_TRANSCRIPT));
+        form.setStudentPassportOnFile(presentTypes.contains(EnrollmentDocumentType.STUDENT_PASSPORT));
+        form.setBankCertificateOnFile(presentTypes.contains(EnrollmentDocumentType.BANK_CERTIFICATE));
+        form.setGuardianshipDocumentOnFile(presentTypes.contains(EnrollmentDocumentType.GUARDIANSHIP_DOCUMENT));
+        form.setStudentVisaOnFile(presentTypes.contains(EnrollmentDocumentType.STUDENT_VISA));
+        form.setPreviousSchoolI20OnFile(presentTypes.contains(EnrollmentDocumentType.PREVIOUS_SCHOOL_I20));
+    }
+
+    private boolean requiresTransferSchoolDocuments(GuardianEnrollmentForm form) {
+        return form.getPreviousSchoolName() != null && !form.getPreviousSchoolName().isBlank();
+    }
+
+    private boolean requiresTransferSchoolDocuments(EnrollmentRequest request) {
+        return request.getPreviousSchoolName() != null && !request.getPreviousSchoolName().isBlank();
     }
 
     private void applyGuardianProfile(GuardianEnrollmentForm form, FamilyAccount familyAccount) {

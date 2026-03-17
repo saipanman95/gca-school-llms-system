@@ -62,6 +62,12 @@ public class EnrollmentReviewService {
         request.updateFinanceReview(financeReviewStatus, financeComment, LocalDate.now());
     }
 
+    @Transactional(readOnly = true)
+    public List<String> missingDocumentLabels(Long requestId) {
+        EnrollmentRequest request = enrollmentRequestRepository.findById(requestId).orElseThrow();
+        return guardianPortalService.missingDocumentLabels(request);
+    }
+
     private EnrollmentReviewSnapshot toSnapshot(EnrollmentRequest request) {
         EnrollmentCompletionView completion = guardianPortalService.calculateCompletion(request);
         return new EnrollmentReviewSnapshot(
@@ -76,6 +82,7 @@ public class EnrollmentReviewService {
             request.getRegistrarReviewStatus(),
             request.getRegistrarComment(),
             completion.completionPercentage(),
+            completion.missingDocuments(),
             guardianPortalService.buildParentStatusLabel(request, completion),
             request.getFinanceReviewStatus(),
             request.getFinanceComment(),

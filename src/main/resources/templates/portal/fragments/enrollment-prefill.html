@@ -419,16 +419,70 @@
             <h3 class="h6 text-uppercase text-secondary mb-3">Student Records Uploads</h3>
             <div class="row g-3">
                 <div class="col-md-6">
+                    <label class="form-label">Birth certificate</label>
+                    <input class="form-control" th:field="*{birthCertificateFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="col-md-6">
                     <label class="form-label">Vaccination record</label>
                     <input class="form-control" th:field="*{vaccinationRecordFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Health certificate</label>
+                    <label class="form-label">School entrance health certificate</label>
                     <input class="form-control" th:field="*{healthCertificateFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">CHC Blue Care</label>
+                    <input class="form-control" th:field="*{chcBlueCareFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Health profile</label>
+                    <input class="form-control" th:field="*{healthProfileFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Recent photograph</label>
+                    <input class="form-control" th:field="*{recentPhotographFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
                 <div class="col-12">
-                    <label class="form-label">Transcript from previous school</label>
+                    <label class="form-label">Report card from previous school</label>
+                    <input class="form-control" th:field="*{reportCardFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Official transcript from previous school</label>
+                    <input class="form-control" th:field="*{officialTranscriptFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Legacy transcript upload</label>
                     <input class="form-control" th:field="*{previousTranscriptFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="col-12">
+                    <div class="small text-secondary">All students: birth certificate, immunization record, school entrance health certificate or CHC Blue Care, health profile, and recent photograph.</div>
+                </div>
+                <div class="col-12" th:if="*{studentVisaRequired}">
+                    <div class="border rounded-3 p-3 bg-light-subtle">
+                        <h4 class="h6 text-uppercase text-secondary mb-3">Foreign Student Required Uploads</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Copy of passport</label>
+                                <input class="form-control" th:field="*{studentPassportFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Bank certificate from parents</label>
+                                <input class="form-control" th:field="*{bankCertificateFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Guardianship document</label>
+                                <input class="form-control" th:field="*{guardianshipDocumentFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Copy of F1 Visa</label>
+                                <input class="form-control" th:field="*{studentVisaFile}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Copy of I-20 from previous school</label>
+                                <input class="form-control" th:field="*{previousSchoolI20File}" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-12">
                     <div class="small text-secondary">Stored filename convention: `studentlastname_firstname_studentid_schoolyear_recordtype`. New students use `pending` until a student ID is assigned.</div>

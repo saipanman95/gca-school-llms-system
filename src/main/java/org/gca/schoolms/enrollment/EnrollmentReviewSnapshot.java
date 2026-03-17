@@ -15,6 +15,7 @@ public record EnrollmentReviewSnapshot(
     RegistrarReviewStatus registrarReviewStatus,
     String registrarComment,
     int completionPercentage,
+    List<String> missingDocuments,
     String parentStatusLabel,
     FinanceReviewStatus financeReviewStatus,
     String financeComment,

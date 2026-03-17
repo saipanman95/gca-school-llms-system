@@ -64,4 +64,24 @@ public class EnrollmentDocument {
     public EnrollmentDocumentType getRecordType() {
         return recordType;
     }
+
+    public String getRecordName() {
+        return recordName;
+    }
+
+    public String getStoredFilename() {
+        return storedFilename;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public String getStoragePath() {
+        return storagePath;
+    }
+
+    public LocalDateTime getDateUploaded() {
+        return dateUploaded;
+    }
 }
