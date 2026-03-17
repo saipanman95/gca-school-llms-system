@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import org.gca.schoolms.enrollment.EnrollmentRequest;
 import org.gca.schoolms.organization.Campus;
 import org.gca.schoolms.records.Student;
@@ -52,6 +54,16 @@ public class StudentFee {
 
     @Column(nullable = false)
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StudentFeeStatus status = StudentFeeStatus.ACTIVE;
+
+    private LocalDateTime cancelledAt;
+
+    private String cancelledByUserId;
+
+    private String cancellationReason;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "enrollment_request_id")
@@ -132,6 +144,22 @@ public class StudentFee {
         return enrollmentRequest;
     }
 
+    public StudentFeeStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public String getCancelledByUserId() {
+        return cancelledByUserId;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
     public List<PaymentAllocation> getPaymentAllocations() {
         return paymentAllocations;
     }
@@ -143,6 +171,20 @@ public class StudentFee {
     }
 
     public BigDecimal getOutstandingAmount() {
+        if (status == StudentFeeStatus.CANCELLED) {
+            return BigDecimal.ZERO;
+        }
         return amount.subtract(getAppliedAmount());
+    }
+
+    public boolean isCancelable() {
+        return status == StudentFeeStatus.ACTIVE && getAppliedAmount().compareTo(BigDecimal.ZERO) == 0;
+    }
+
+    public void cancel(String cancelledByUserId, String cancellationReason, LocalDateTime cancelledAt) {
+        this.status = StudentFeeStatus.CANCELLED;
+        this.cancelledByUserId = cancelledByUserId;
+        this.cancellationReason = cancellationReason;
+        this.cancelledAt = cancelledAt;
     }
 }

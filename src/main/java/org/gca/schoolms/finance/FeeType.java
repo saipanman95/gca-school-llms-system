@@ -23,6 +23,8 @@ public class FeeType {
     @Column(precision = 12, scale = 2)
     private BigDecimal defaultAmount;
 
+    private Integer maxAssessmentsPerStudentPerSchoolYear;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -30,9 +32,15 @@ public class FeeType {
     }
 
     public FeeType(String code, String name, BigDecimal defaultAmount, boolean active) {
+        this(code, name, defaultAmount, null, active);
+    }
+
+    public FeeType(String code, String name, BigDecimal defaultAmount,
+                   Integer maxAssessmentsPerStudentPerSchoolYear, boolean active) {
         this.code = code;
         this.name = name;
         this.defaultAmount = defaultAmount;
+        this.maxAssessmentsPerStudentPerSchoolYear = maxAssessmentsPerStudentPerSchoolYear;
         this.active = active;
     }
 
@@ -48,11 +56,27 @@ public class FeeType {
         return name;
     }
 
+    public void update(String code, String name, BigDecimal defaultAmount,
+                       Integer maxAssessmentsPerStudentPerSchoolYear) {
+        this.code = code;
+        this.name = name;
+        this.defaultAmount = defaultAmount;
+        this.maxAssessmentsPerStudentPerSchoolYear = maxAssessmentsPerStudentPerSchoolYear;
+    }
+
     public BigDecimal getDefaultAmount() {
         return defaultAmount;
     }
 
     public boolean isActive() {
         return active;
+    }
+
+    public Integer getMaxAssessmentsPerStudentPerSchoolYear() {
+        return maxAssessmentsPerStudentPerSchoolYear;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

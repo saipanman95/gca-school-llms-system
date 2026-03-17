@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import org.gca.schoolms.enrollment.EnrollmentFinanceAuthorizationType;
 import org.gca.schoolms.enrollment.FinanceReviewStatus;
 import org.gca.schoolms.enrollment.EnrollmentReviewService;
+import org.gca.schoolms.settings.SchoolYearService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -21,19 +22,25 @@ public class FinanceController {
 
     private final EnrollmentReviewService enrollmentReviewService;
     private final FinanceLedgerService financeLedgerService;
+    private final SchoolYearService schoolYearService;
 
     public FinanceController(EnrollmentReviewService enrollmentReviewService,
-                             FinanceLedgerService financeLedgerService) {
+                             FinanceLedgerService financeLedgerService,
+                             SchoolYearService schoolYearService) {
         this.enrollmentReviewService = enrollmentReviewService;
         this.financeLedgerService = financeLedgerService;
+        this.schoolYearService = schoolYearService;
     }
 
     @GetMapping("/finance")
-    public String financeHome(Model model) {
+    public String financeHome(@RequestParam(required = false) Long editFeeTypeId, Model model) {
         model.addAttribute("outstandingBalance", financeLedgerService.totalOutstandingBalance());
         model.addAttribute("familyAccounts", financeLedgerService.familyAccounts());
         model.addAttribute("feeTypes", financeLedgerService.feeTypes());
+        model.addAttribute("feeTypeForm", financeLedgerService.buildFeeTypeForm(editFeeTypeId));
         model.addAttribute("schoolProjectTypes", financeLedgerService.schoolProjectTypes());
+        model.addAttribute("schoolYears", schoolYearService.schoolYears());
+        model.addAttribute("currentSchoolYear", schoolYearService.currentSchoolYearLabel());
         model.addAttribute("students", financeLedgerService.students());
         model.addAttribute("studentFees", financeLedgerService.recentFees());
         model.addAttribute("paymentOpenFees", financeLedgerService.openFeesForPaymentPosting());
@@ -55,12 +62,31 @@ public class FinanceController {
     }
 
     @PostMapping("/finance/fee-types")
-    public String createFeeType(@RequestParam String code,
-                                @RequestParam String name,
-                                @RequestParam(required = false) BigDecimal defaultAmount,
+    public String createFeeType(FeeTypeForm feeTypeForm,
                                 RedirectAttributes redirectAttributes) {
-        financeLedgerService.createFeeType(code, name, defaultAmount);
-        redirectAttributes.addFlashAttribute("message", "Fee type added.");
+        try {
+            if (feeTypeForm.getId() == null) {
+                financeLedgerService.createFeeType(
+                    feeTypeForm.getCode(),
+                    feeTypeForm.getName(),
+                    feeTypeForm.getDefaultAmount(),
+                    feeTypeForm.getMaxAssessmentsPerStudentPerSchoolYear()
+                );
+                redirectAttributes.addFlashAttribute("message", "Fee type added.");
+            } else {
+                financeLedgerService.updateFeeType(
+                    feeTypeForm.getId(),
+                    feeTypeForm.getCode(),
+                    feeTypeForm.getName(),
+                    feeTypeForm.getDefaultAmount(),
+                    feeTypeForm.getMaxAssessmentsPerStudentPerSchoolYear(),
+                    feeTypeForm.isActive()
+                );
+                redirectAttributes.addFlashAttribute("message", "Fee type updated.");
+            }
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("message", ex.getMessage());
+        }
         return "redirect:/finance";
     }
 
@@ -80,8 +106,26 @@ public class FinanceController {
                             @RequestParam String schoolYear,
                             @RequestParam(required = false) String description,
                             RedirectAttributes redirectAttributes) {
-        financeLedgerService.assessFee(studentId, feeTypeId, amount, schoolYear, description);
-        redirectAttributes.addFlashAttribute("message", "Fee assessed.");
+        try {
+            financeLedgerService.assessFee(studentId, feeTypeId, amount, schoolYear, description);
+            redirectAttributes.addFlashAttribute("message", "Fee assessed.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("message", ex.getMessage());
+        }
+        return "redirect:/finance";
+    }
+
+    @PostMapping("/finance/fees/{studentFeeId}/cancel")
+    public String cancelFee(@PathVariable Long studentFeeId,
+                            @RequestParam String cancellationReason,
+                            Authentication authentication,
+                            RedirectAttributes redirectAttributes) {
+        try {
+            financeLedgerService.cancelFee(studentFeeId, cancellationReason, authentication.getName());
+            redirectAttributes.addFlashAttribute("message", "Fee cancelled.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("message", ex.getMessage());
+        }
         return "redirect:/finance";
     }
 

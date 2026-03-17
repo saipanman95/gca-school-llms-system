@@ -31,12 +31,43 @@ import org.gca.schoolms.records.Student;
 import org.gca.schoolms.records.StudentRepository;
 import org.gca.schoolms.records.StudentStatus;
 import org.gca.schoolms.settings.SchoolProfileService;
+import org.gca.schoolms.settings.SchoolYear;
+import org.gca.schoolms.settings.SchoolYearRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SeedDataConfig {
+
+    private static FeeType ensureFeeType(FeeTypeRepository repository, String code, String name,
+                                         BigDecimal defaultAmount, Integer maxAssessmentsPerStudentPerSchoolYear) {
+        return repository.findByCode(code)
+            .map(existing -> {
+                existing.update(code, name, defaultAmount, maxAssessmentsPerStudentPerSchoolYear);
+                return repository.save(existing);
+            })
+            .orElseGet(() -> repository.save(new FeeType(
+                code,
+                name,
+                defaultAmount,
+                maxAssessmentsPerStudentPerSchoolYear,
+                true
+            )));
+    }
+
+    private static void ensureSchoolYear(SchoolYearRepository repository, String label, LocalDate startDate,
+                                         LocalDate endDate, LocalDate firstDayOfClasses,
+                                         LocalDate lastDayOfClasses) {
+        repository.findByLabel(label)
+            .orElseGet(() -> repository.save(new SchoolYear(
+                label,
+                startDate,
+                endDate,
+                firstDayOfClasses,
+                lastDayOfClasses
+            )));
+    }
 
     private static Student findStudentByNumber(List<Student> students, String studentNumber) {
         return students.stream()
@@ -57,11 +88,23 @@ public class SeedDataConfig {
                                StudentRepository studentRepository, FeeTypeRepository feeTypeRepository,
                                StudentFeeRepository studentFeeRepository, PaymentRepository paymentRepository,
                                SchoolProjectTypeRepository schoolProjectTypeRepository,
+                               SchoolYearRepository schoolYearRepository,
                                SchoolProfileService schoolProfileService,
                                SectionRepository sectionRepository, AttendanceRecordRepository attendanceRecordRepository,
                                EnrollmentRequestRepository enrollmentRequestRepository) {
         return args -> {
             schoolProfileService.ensureDefaultProfile();
+            for (int startYear = 2018; startYear <= 2027; startYear++) {
+                String label = startYear + "-" + (startYear + 1);
+                ensureSchoolYear(
+                    schoolYearRepository,
+                    label,
+                    LocalDate.of(startYear, 7, 1),
+                    LocalDate.of(startYear + 1, 6, 30),
+                    LocalDate.of(startYear, 8, 15),
+                    LocalDate.of(startYear + 1, 5, 31)
+                );
+            }
             Campus saipan = campusRepository.findByCode("GCA-SAI")
                 .orElseGet(() -> campusRepository.save(new Campus("GCA-SAI", "Grace Christian Academy Saipan", "Saipan", true)));
             Campus tinian = campusRepository.findByCode("GCA-TIN")
@@ -155,22 +198,18 @@ public class SeedDataConfig {
             Section english = null;
             Section algebra = null;
             Section biology = null;
-            FeeType enrollmentFeeType = feeTypeRepository.findByCode("ENROLLMENT_FEE")
-                .orElseGet(() -> feeTypeRepository.save(new FeeType("ENROLLMENT_FEE", "Enrollment fee", new BigDecimal("300.00"), true)));
-            FeeType applicationFeeType = feeTypeRepository.findByCode("APPLICATION_FEE")
-                .orElseGet(() -> feeTypeRepository.save(new FeeType("APPLICATION_FEE", "Application fee", new BigDecimal("150.00"), true)));
-            FeeType tuitionFeeType = feeTypeRepository.findByCode("TUITION_FEE")
-                .orElseGet(() -> feeTypeRepository.save(new FeeType("TUITION_FEE", "Tuition fee", null, true)));
-            feeTypeRepository.findByCode("BOOK_FEE")
-                .orElseGet(() -> feeTypeRepository.save(new FeeType("BOOK_FEE", "Book fee", null, true)));
-            feeTypeRepository.findByCode("COMPUTER_LAB_FEE")
-                .orElseGet(() -> feeTypeRepository.save(new FeeType("COMPUTER_LAB_FEE", "Computer lab fee", null, true)));
-            feeTypeRepository.findByCode("ELECTRONIC_FEE")
-                .orElseGet(() -> feeTypeRepository.save(new FeeType("ELECTRONIC_FEE", "Electronic fee", null, true)));
-            feeTypeRepository.findByCode("LUNCH_FEE")
-                .orElseGet(() -> feeTypeRepository.save(new FeeType("LUNCH_FEE", "Lunch fee", null, true)));
-            feeTypeRepository.findByCode("AFTERSCHOOL_FEE")
-                .orElseGet(() -> feeTypeRepository.save(new FeeType("AFTERSCHOOL_FEE", "Afterschool fee", null, true)));
+            FeeType enrollmentFeeType = ensureFeeType(
+                feeTypeRepository, "ENROLLMENT_FEE", "Enrollment fee", new BigDecimal("300.00"), 1);
+            FeeType applicationFeeType = ensureFeeType(
+                feeTypeRepository, "APPLICATION_FEE", "Application fee", new BigDecimal("150.00"), 1);
+            FeeType tuitionFeeType = ensureFeeType(
+                feeTypeRepository, "TUITION_FEE", "Tuition fee", null, 1);
+            ensureFeeType(feeTypeRepository, "BOOK_FEE", "Book fee", null, 1);
+            ensureFeeType(feeTypeRepository, "UNIFORM_FEE", "Uniform fee", null, 1);
+            ensureFeeType(feeTypeRepository, "COMPUTER_LAB_FEE", "Computer lab fee", null, 1);
+            ensureFeeType(feeTypeRepository, "ELECTRONIC_FEE", "Electronic fee", null, 1);
+            ensureFeeType(feeTypeRepository, "LUNCH_FEE", "Lunch fee", null, null);
+            ensureFeeType(feeTypeRepository, "AFTERSCHOOL_FEE", "Afterschool fee", null, null);
             schoolProjectTypeRepository.findByCode("GENERAL")
                 .orElseGet(() -> schoolProjectTypeRepository.save(new org.gca.schoolms.finance.SchoolProjectType("GENERAL", "General", true)));
             schoolProjectTypeRepository.findByCode("BUILDING")

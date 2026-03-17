@@ -27,26 +27,46 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <h2 class="h5 mb-3">Add fee type</h2>
-                    <form method="post" th:action="@{/finance/fee-types}">
+                    <h2 class="h5 mb-3" th:text="${feeTypeForm.id != null ? 'Edit fee type' : 'Add fee type'}">Add fee type</h2>
+                    <form method="post" th:action="@{/finance/fee-types}" th:object="${feeTypeForm}">
+                        <input th:field="*{id}" type="hidden">
                         <div class="mb-3">
                             <label class="form-label" for="feeTypeCode">Code</label>
-                            <input class="form-control" id="feeTypeCode" name="code" placeholder="ENROLLMENT_FEE" required type="text">
+                            <input class="form-control" id="feeTypeCode" placeholder="ENROLLMENT_FEE" required th:field="*{code}" type="text">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="feeTypeName">Name</label>
-                            <input class="form-control" id="feeTypeName" name="name" placeholder="Enrollment fee" required type="text">
+                            <label class="form-label" for="feeTypeName">Name / description</label>
+                            <input class="form-control" id="feeTypeName" placeholder="Enrollment fee" required th:field="*{name}" type="text">
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="feeTypeDefaultAmount">Default amount</label>
-                            <input class="form-control" id="feeTypeDefaultAmount" min="0.00" name="defaultAmount" placeholder="300.00" step="0.01" type="number">
+                            <input class="form-control" id="feeTypeDefaultAmount" min="0.00" placeholder="300.00" step="0.01" th:field="*{defaultAmount}" type="number">
                         </div>
-                        <button class="btn btn-primary" type="submit">Add fee type</button>
+                        <div class="mb-3">
+                            <label class="form-label" for="feeTypeMaxAssessmentsPerStudentPerSchoolYear">Max assessments per student per school year</label>
+                            <input class="form-control" id="feeTypeMaxAssessmentsPerStudentPerSchoolYear" min="1" placeholder="Leave blank for no limit" th:field="*{maxAssessmentsPerStudentPerSchoolYear}" type="number">
+                            <div class="form-text">Use `1` for fees like tuition, books, or uniforms that should only be assessed once per school year.</div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" id="feeTypeActive" th:field="*{active}" type="checkbox">
+                            <label class="form-check-label" for="feeTypeActive">Active</label>
+                            <div class="form-text">Deactivate older fee types instead of repurposing them.</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" th:text="${feeTypeForm.id != null ? 'Update fee type' : 'Add fee type'}" type="submit">Add fee type</button>
+                            <a class="btn btn-outline-secondary" th:if="${feeTypeForm.id != null}" th:href="@{/finance}">Cancel</a>
+                        </div>
                     </form>
                     <hr>
                     <div class="small text-secondary mb-2">Current fee types</div>
                     <div class="d-flex flex-wrap gap-2">
-                        <span class="badge text-bg-light border" th:each="feeType : ${feeTypes}" th:text="${feeType.name}">Enrollment fee</span>
+                        <a class="badge text-bg-light border text-decoration-none"
+                           th:each="feeType : ${feeTypes}"
+                           th:href="@{/finance(editFeeTypeId=${feeType.id})}"
+                           th:text="${feeType.name
+                               + (feeType.defaultAmount != null ? ' (' + @moneyFormatter.format(feeType.defaultAmount) + ')' : '')
+                               + (feeType.maxAssessmentsPerStudentPerSchoolYear != null ? ' • max ' + feeType.maxAssessmentsPerStudentPerSchoolYear + '/year' : '')
+                               + (!feeType.active ? ' • inactive' : '')}">Enrollment fee</a>
                     </div>
                     <hr>
                     <h2 class="h5 mb-3">Add school project type</h2>
@@ -85,7 +105,11 @@
                             <label class="form-label" for="feeTypeId">Fee type</label>
                             <select class="form-select" id="feeTypeId" name="feeTypeId" required>
                                 <option value="">Select fee type</option>
-                                <option th:each="feeType : ${feeTypes}" th:text="${feeType.name}" th:value="${feeType.id}">Tuition fee</option>
+                                <option th:each="feeType : ${feeTypes}"
+                                        th:attr="data-default-amount=${feeType.defaultAmount}"
+                                        th:disabled="${!feeType.active}"
+                                        th:text="${feeType.name}"
+                                        th:value="${feeType.id}">Tuition fee</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -94,7 +118,13 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="feeSchoolYear">School year</label>
-                            <input class="form-control" id="feeSchoolYear" name="schoolYear" placeholder="2026-2027" required type="text">
+                            <select class="form-select" id="feeSchoolYear" name="schoolYear" required>
+                                <option value="">Select school year</option>
+                                <option th:each="schoolYear : ${schoolYears}"
+                                        th:selected="${schoolYear.label == currentSchoolYear}"
+                                        th:text="${schoolYear.label}"
+                                        th:value="${schoolYear.label}">2025-2026</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="feeDescription">Description</label>
@@ -332,8 +362,10 @@
                         <th>Fee type</th>
                         <th>Description</th>
                         <th>Assessed</th>
+                        <th>Status</th>
                         <th>Total</th>
                         <th>Outstanding</th>
+                        <th>Action</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -343,8 +375,30 @@
                         <td th:text="${fee.feeType.name}"></td>
                         <td th:text="${fee.description}"></td>
                         <td th:text="${#temporals.format(fee.assessedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${fee.status.name() == 'CANCELLED' ? ' text-bg-secondary' : ' text-bg-success'}"
+                                  th:text="${fee.status.label}">Active</span>
+                            <div class="text-secondary small" th:if="${fee.status.name() == 'CANCELLED'}">
+                                <span th:text="${fee.cancellationReason}">Reason</span>
+                            </div>
+                        </td>
                         <td th:text="${@moneyFormatter.format(fee.amount)}"></td>
                         <td th:text="${@moneyFormatter.format(fee.outstandingAmount)}"></td>
+                        <td style="min-width: 16rem;">
+                            <form class="d-flex gap-2 align-items-start"
+                                  method="post"
+                                  th:if="${fee.cancelable}"
+                                  th:action="@{/finance/fees/{id}/cancel(id=${fee.id})}">
+                                <input class="form-control form-control-sm"
+                                       name="cancellationReason"
+                                       placeholder="Cancellation reason"
+                                       required
+                                       type="text">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Cancel fee</button>
+                            </form>
+                            <span class="text-secondary small" th:unless="${fee.cancelable}">Locked</span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -389,6 +443,8 @@
 </main>
 <script th:inline="javascript">
     (() => {
+        const feeTypeSelect = document.getElementById('feeTypeId');
+        const feeAmountInput = document.getElementById('feeAmount');
         const paymentForm = document.getElementById('recordPaymentForm');
         const purposeSelect = document.getElementById('paymentPurpose');
         const studentLookup = document.getElementById('studentLookup');
@@ -411,6 +467,15 @@
             description: node.dataset.description,
             outstandingAmount: node.dataset.outstandingAmount
         }));
+
+        function syncFeeDefaultAmount() {
+            const selectedOption = feeTypeSelect.selectedOptions[0];
+            if (!selectedOption) {
+                return;
+            }
+            const defaultAmount = selectedOption.dataset.defaultAmount;
+            feeAmountInput.value = defaultAmount && defaultAmount !== 'null' ? defaultAmount : '';
+        }
 
         function datalistOptionByValue(listId, value) {
             return Array.from(document.querySelectorAll(`#${listId} option`))
@@ -542,6 +607,8 @@
             }
         });
 
+        feeTypeSelect.addEventListener('change', syncFeeDefaultAmount);
+        syncFeeDefaultAmount();
         syncPurposeVisibility();
         buildAllocationPreview();
     })();

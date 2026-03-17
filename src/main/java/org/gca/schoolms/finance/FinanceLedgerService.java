@@ -75,6 +75,22 @@ public class FinanceLedgerService {
     }
 
     @Transactional(readOnly = true)
+    public FeeTypeForm buildFeeTypeForm(Long feeTypeId) {
+        FeeTypeForm form = new FeeTypeForm();
+        if (feeTypeId == null) {
+            return form;
+        }
+        FeeType feeType = feeTypeRepository.findById(feeTypeId).orElseThrow();
+        form.setId(feeType.getId());
+        form.setCode(feeType.getCode());
+        form.setName(feeType.getName());
+        form.setDefaultAmount(feeType.getDefaultAmount());
+        form.setMaxAssessmentsPerStudentPerSchoolYear(feeType.getMaxAssessmentsPerStudentPerSchoolYear());
+        form.setActive(feeType.isActive());
+        return form;
+    }
+
+    @Transactional(readOnly = true)
     public List<StudentFee> recentFees() {
         return studentFeeRepository.findTop20ByOrderByAssessedAtDescIdDesc();
     }
@@ -143,12 +159,44 @@ public class FinanceLedgerService {
 
     @Transactional
     public void createFeeType(String code, String name) {
-        createFeeType(code, name, null);
+        createFeeType(code, name, null, null);
     }
 
     @Transactional
     public void createFeeType(String code, String name, BigDecimal defaultAmount) {
-        feeTypeRepository.save(new FeeType(code.trim().toUpperCase(), name.trim(), defaultAmount, true));
+        createFeeType(code, name, defaultAmount, null);
+    }
+
+    @Transactional
+    public void createFeeType(String code, String name, BigDecimal defaultAmount,
+                              Integer maxAssessmentsPerStudentPerSchoolYear) {
+        feeTypeRepository.save(new FeeType(
+            code.trim().toUpperCase(Locale.ROOT),
+            name.trim(),
+            defaultAmount,
+            normalizeAssessmentLimit(maxAssessmentsPerStudentPerSchoolYear),
+            true
+        ));
+    }
+
+    @Transactional
+    public void updateFeeType(Long id, String code, String name, BigDecimal defaultAmount,
+                              Integer maxAssessmentsPerStudentPerSchoolYear, boolean active) {
+        FeeType feeType = feeTypeRepository.findById(id).orElseThrow();
+        String normalizedCode = code.trim().toUpperCase(Locale.ROOT);
+        if (!feeType.getCode().equals(normalizedCode) && studentFeeRepository.countByFeeType(feeType) > 0) {
+            throw new IllegalArgumentException(
+                "Fee codes cannot be changed after the fee type has been used. Deactivate it and create a new fee type instead."
+            );
+        }
+        feeType.update(
+            normalizedCode,
+            name.trim(),
+            defaultAmount,
+            normalizeAssessmentLimit(maxAssessmentsPerStudentPerSchoolYear)
+        );
+        feeType.setActive(active);
+        feeTypeRepository.save(feeType);
     }
 
     @Transactional
@@ -160,6 +208,11 @@ public class FinanceLedgerService {
     public void assessFee(Long studentId, Long feeTypeId, BigDecimal amount, String schoolYear, String description) {
         var student = studentRepository.findById(studentId).orElseThrow();
         var feeType = feeTypeRepository.findById(feeTypeId).orElseThrow();
+        if (!feeType.isActive()) {
+            throw new IllegalArgumentException("Inactive fee types cannot be assessed. Reactivate the fee type or choose another one.");
+        }
+        String normalizedSchoolYear = schoolYear.trim();
+        enforceAssessmentLimit(student, feeType, normalizedSchoolYear);
         studentFeeRepository.save(new StudentFee(
             student,
             student.getFamilyAccount(),
@@ -167,7 +220,7 @@ public class FinanceLedgerService {
             feeType,
             amount,
             LocalDateTime.now(),
-            schoolYear.trim(),
+            normalizedSchoolYear,
             description == null || description.isBlank() ? feeType.getName() : description.trim()
         ));
     }
@@ -197,6 +250,41 @@ public class FinanceLedgerService {
             description,
             enrollmentRequest
         ));
+    }
+
+    private Integer normalizeAssessmentLimit(Integer maxAssessmentsPerStudentPerSchoolYear) {
+        if (maxAssessmentsPerStudentPerSchoolYear == null || maxAssessmentsPerStudentPerSchoolYear < 1) {
+            return null;
+        }
+        return maxAssessmentsPerStudentPerSchoolYear;
+    }
+
+    private void enforceAssessmentLimit(Student student, FeeType feeType, String schoolYear) {
+        Integer assessmentLimit = feeType.getMaxAssessmentsPerStudentPerSchoolYear();
+        if (assessmentLimit == null) {
+            return;
+        }
+        long existingCount = studentFeeRepository.countByStudentAndFeeTypeAndSchoolYearAndStatus(
+            student, feeType, schoolYear, StudentFeeStatus.ACTIVE);
+        if (existingCount >= assessmentLimit) {
+            throw new IllegalArgumentException(
+                feeType.getName() + " can only be assessed " + assessmentLimit
+                    + " time(s) for " + student.getDisplayName() + " in " + schoolYear + "."
+            );
+        }
+    }
+
+    @Transactional
+    public void cancelFee(Long studentFeeId, String cancellationReason, String cancelledByUserId) {
+        StudentFee studentFee = studentFeeRepository.findById(studentFeeId).orElseThrow();
+        if (!studentFee.isCancelable()) {
+            throw new IllegalArgumentException("Only active fees with no payments applied can be cancelled.");
+        }
+        if (cancellationReason == null || cancellationReason.isBlank()) {
+            throw new IllegalArgumentException("A cancellation reason is required.");
+        }
+        studentFee.cancel(normalizeReceiverId(cancelledByUserId), cancellationReason.trim(), LocalDateTime.now());
+        studentFeeRepository.save(studentFee);
     }
 
     @Transactional
