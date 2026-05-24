@@ -1,0 +1,6 @@
+package org.gca.schoolms.integration.powerschool;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PowerSchoolSectionRepository extends JpaRepository<PowerSchoolSection, Integer> {
+}

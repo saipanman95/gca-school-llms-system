@@ -1,5 +1,6 @@
 package org.gca.schoolms.config;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,6 +16,11 @@ import org.gca.schoolms.academics.SectionRepository;
 import org.gca.schoolms.finance.FamilyAccount;
 import org.gca.schoolms.finance.FamilyAccountRepository;
 import org.gca.schoolms.finance.FeeType;
+import org.gca.schoolms.finance.FeeBillingSchedule;
+import org.gca.schoolms.finance.FeeSchedule;
+import org.gca.schoolms.finance.FeeScheduleGradeGroup;
+import org.gca.schoolms.finance.FeeScheduleItem;
+import org.gca.schoolms.finance.FeeScheduleRepository;
 import org.gca.schoolms.finance.FeeTypeRepository;
 import org.gca.schoolms.finance.MaritalStatus;
 import org.gca.schoolms.finance.Payment;
@@ -26,8 +32,22 @@ import org.gca.schoolms.finance.PaymentRepository;
 import org.gca.schoolms.finance.SchoolProjectTypeRepository;
 import org.gca.schoolms.finance.StudentFee;
 import org.gca.schoolms.finance.StudentFeeRepository;
+import org.gca.schoolms.integration.powerschool.TeacherCourseStageRepository;
+import org.gca.schoolms.integration.powerschool.TeacherCourseStageSeedService;
 import org.gca.schoolms.organization.Campus;
 import org.gca.schoolms.organization.CampusRepository;
+import org.gca.schoolms.policy.AwardRule;
+import org.gca.schoolms.policy.AwardRuleRepository;
+import org.gca.schoolms.policy.AwardRuleSet;
+import org.gca.schoolms.policy.AwardRuleSetRepository;
+import org.gca.schoolms.policy.GradingScaleBand;
+import org.gca.schoolms.policy.GradingScaleBandRepository;
+import org.gca.schoolms.policy.GradingScaleSet;
+import org.gca.schoolms.policy.GradingScaleSetRepository;
+import org.gca.schoolms.policy.GradingSpecialMark;
+import org.gca.schoolms.policy.GradingSpecialMarkRepository;
+import org.gca.schoolms.policy.LegacyGradingScale;
+import org.gca.schoolms.policy.LegacyGradingScaleRepository;
 import org.gca.schoolms.records.GradeLevel;
 import org.gca.schoolms.records.Student;
 import org.gca.schoolms.records.StudentRepository;
@@ -35,6 +55,7 @@ import org.gca.schoolms.records.StudentStatus;
 import org.gca.schoolms.settings.SchoolProfileService;
 import org.gca.schoolms.settings.SchoolYear;
 import org.gca.schoolms.settings.SchoolYearRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +67,14 @@ public class SeedDataConfig {
                                          BigDecimal defaultAmount, Integer maxAssessmentsPerStudentPerSchoolYear) {
         return repository.findByCode(code)
             .map(existing -> {
-                existing.update(code, name, defaultAmount, maxAssessmentsPerStudentPerSchoolYear);
+                existing.update(
+                    code,
+                    name,
+                    defaultAmount,
+                    existing.getBillingSchedule(),
+                    existing.getBillingMonthCount(),
+                    maxAssessmentsPerStudentPerSchoolYear
+                );
                 return repository.save(existing);
             })
             .orElseGet(() -> repository.save(new FeeType(
@@ -108,18 +136,188 @@ public class SeedDataConfig {
             .orElse(false);
     }
 
+    private static GradingScaleSet ensureGradingScaleSet(GradingScaleSetRepository repository, String code, String name,
+                                                         LocalDate effectiveStartDate, LocalDate effectiveEndDate) {
+        return repository.findByCode(code)
+            .orElseGet(() -> repository.save(new GradingScaleSet(code, name, effectiveStartDate, effectiveEndDate, true)));
+    }
+
+    private static AwardRuleSet ensureAwardRuleSet(AwardRuleSetRepository repository, String code, String name,
+                                                   LocalDate effectiveStartDate, LocalDate effectiveEndDate) {
+        return repository.findByCode(code)
+            .orElseGet(() -> repository.save(new AwardRuleSet(code, name, effectiveStartDate, effectiveEndDate, true)));
+    }
+
+    private static void seedAcademicPolicyData(GradingScaleSetRepository gradingScaleSetRepository,
+                                               GradingScaleBandRepository gradingScaleBandRepository,
+                                               GradingSpecialMarkRepository gradingSpecialMarkRepository,
+                                               LegacyGradingScaleRepository legacyGradingScaleRepository,
+                                               AwardRuleSetRepository awardRuleSetRepository,
+                                               AwardRuleRepository awardRuleRepository) {
+        GradingScaleSet gradingScaleSet = ensureGradingScaleSet(
+            gradingScaleSetRepository,
+            "GCA_DEFAULT_2025",
+            "GCA Default Grading Scale",
+            LocalDate.of(2025, 7, 1),
+            null
+        );
+        if (gradingScaleBandRepository.findAllByScaleSetOrderByTrackCodeAscSortOrderAsc(gradingScaleSet).isEmpty()) {
+            gradingScaleBandRepository.saveAll(List.of(
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "A+", new BigDecimal("99"), new BigDecimal("100"), new BigDecimal("4.00"), 10),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "A", new BigDecimal("95"), new BigDecimal("98"), new BigDecimal("4.00"), 20),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "A-", new BigDecimal("90"), new BigDecimal("94"), new BigDecimal("4.00"), 30),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "B+", new BigDecimal("87"), new BigDecimal("89"), new BigDecimal("3.50"), 40),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "B", new BigDecimal("83"), new BigDecimal("86"), new BigDecimal("3.25"), 50),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "B-", new BigDecimal("80"), new BigDecimal("82"), new BigDecimal("3.00"), 60),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "C+", new BigDecimal("77"), new BigDecimal("79"), new BigDecimal("2.50"), 70),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "C", new BigDecimal("73"), new BigDecimal("76"), new BigDecimal("2.25"), 80),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "C-", new BigDecimal("70"), new BigDecimal("72"), new BigDecimal("2.00"), 90),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "D+", new BigDecimal("67"), new BigDecimal("69"), new BigDecimal("1.50"), 100),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "D", new BigDecimal("64"), new BigDecimal("66"), new BigDecimal("1.25"), 110),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "D-", new BigDecimal("63"), new BigDecimal("63"), new BigDecimal("1.00"), 120),
+                new GradingScaleBand(gradingScaleSet, "STANDARD", "F", new BigDecimal("0"), new BigDecimal("62"), new BigDecimal("0.00"), 130),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "A+", new BigDecimal("99"), new BigDecimal("105"), new BigDecimal("4.00"), 10),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "A", new BigDecimal("95"), new BigDecimal("98"), new BigDecimal("4.00"), 20),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "A-", new BigDecimal("90"), new BigDecimal("94"), new BigDecimal("4.00"), 30),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "B+", new BigDecimal("87"), new BigDecimal("89"), new BigDecimal("3.50"), 40),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "B", new BigDecimal("83"), new BigDecimal("86"), new BigDecimal("3.25"), 50),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "B-", new BigDecimal("80"), new BigDecimal("82"), new BigDecimal("3.00"), 60),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "C+", new BigDecimal("77"), new BigDecimal("79"), new BigDecimal("2.50"), 70),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "C", new BigDecimal("73"), new BigDecimal("76"), new BigDecimal("2.25"), 80),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "C-", new BigDecimal("70"), new BigDecimal("72"), new BigDecimal("2.00"), 90),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "D", new BigDecimal("64"), new BigDecimal("66"), new BigDecimal("1.25"), 110),
+                new GradingScaleBand(gradingScaleSet, "HONORS", "D-", new BigDecimal("63"), new BigDecimal("63"), new BigDecimal("1.00"), 120),
+                new GradingScaleBand(gradingScaleSet, "AP", "A+", new BigDecimal("99"), new BigDecimal("110"), new BigDecimal("5.00"), 10),
+                new GradingScaleBand(gradingScaleSet, "AP", "A", new BigDecimal("95"), new BigDecimal("98"), new BigDecimal("5.00"), 20),
+                new GradingScaleBand(gradingScaleSet, "AP", "A-", new BigDecimal("90"), new BigDecimal("94"), new BigDecimal("5.00"), 30),
+                new GradingScaleBand(gradingScaleSet, "AP", "B+", new BigDecimal("87"), new BigDecimal("89"), new BigDecimal("4.50"), 40),
+                new GradingScaleBand(gradingScaleSet, "AP", "B", new BigDecimal("83"), new BigDecimal("86"), new BigDecimal("4.25"), 50),
+                new GradingScaleBand(gradingScaleSet, "AP", "B-", new BigDecimal("80"), new BigDecimal("82"), new BigDecimal("4.00"), 60),
+                new GradingScaleBand(gradingScaleSet, "AP", "C+", new BigDecimal("77"), new BigDecimal("79"), new BigDecimal("3.50"), 70),
+                new GradingScaleBand(gradingScaleSet, "AP", "C", new BigDecimal("73"), new BigDecimal("76"), new BigDecimal("3.25"), 80),
+                new GradingScaleBand(gradingScaleSet, "AP", "C-", new BigDecimal("70"), new BigDecimal("72"), new BigDecimal("3.00"), 90),
+                new GradingScaleBand(gradingScaleSet, "AP", "D+", new BigDecimal("67"), new BigDecimal("69"), new BigDecimal("1.50"), 100),
+                new GradingScaleBand(gradingScaleSet, "AP", "D", new BigDecimal("64"), new BigDecimal("66"), new BigDecimal("1.25"), 110),
+                new GradingScaleBand(gradingScaleSet, "AP", "D-", new BigDecimal("63"), new BigDecimal("63"), new BigDecimal("1.00"), 120)
+            ));
+        }
+        if (gradingSpecialMarkRepository.findAllByScaleSetOrderBySortOrderAsc(gradingScaleSet).isEmpty()) {
+            gradingSpecialMarkRepository.saveAll(List.of(
+                new GradingSpecialMark(gradingScaleSet, "P", "Pass", false, true, 10),
+                new GradingSpecialMark(gradingScaleSet, "I", "Incomplete", false, false, 20),
+                new GradingSpecialMark(gradingScaleSet, "NC", "No Credit", false, false, 30)
+            ));
+        }
+        if (legacyGradingScaleRepository.count() == 0) {
+            legacyGradingScaleRepository.saveAll(List.of(
+                new LegacyGradingScale("A+", new BigDecimal("99"), new BigDecimal("100"), 10),
+                new LegacyGradingScale("A", new BigDecimal("95"), new BigDecimal("98"), 20),
+                new LegacyGradingScale("A-", new BigDecimal("90"), new BigDecimal("94"), 30),
+                new LegacyGradingScale("B+", new BigDecimal("87"), new BigDecimal("89"), 40),
+                new LegacyGradingScale("B", new BigDecimal("83"), new BigDecimal("86"), 50),
+                new LegacyGradingScale("B-", new BigDecimal("80"), new BigDecimal("82"), 60),
+                new LegacyGradingScale("C+", new BigDecimal("77"), new BigDecimal("79"), 70),
+                new LegacyGradingScale("C", new BigDecimal("73"), new BigDecimal("76"), 80),
+                new LegacyGradingScale("C-", new BigDecimal("70"), new BigDecimal("72"), 90),
+                new LegacyGradingScale("D+", new BigDecimal("67"), new BigDecimal("69"), 100),
+                new LegacyGradingScale("D", new BigDecimal("64"), new BigDecimal("66"), 110),
+                new LegacyGradingScale("D-", new BigDecimal("63"), new BigDecimal("63"), 120),
+                new LegacyGradingScale("F", new BigDecimal("0"), new BigDecimal("62"), 130)
+            ));
+        }
+
+        AwardRuleSet awardRuleSet = ensureAwardRuleSet(
+            awardRuleSetRepository,
+            "GCA_ACADEMIC_AWARDS_2025",
+            "GCA Academic Awards",
+            LocalDate.of(2025, 7, 1),
+            null
+        );
+        if (awardRuleRepository.findAllByRuleSetOrderByAwardCategoryAscNameAsc(awardRuleSet).isEmpty()) {
+            awardRuleRepository.saveAll(List.of(
+                new AwardRule(awardRuleSet, "VALEDICTORIAN", "Valedictorian", "GRADUATION_RANKING",
+                    9, 12, 9, 12, 83, null, 1, 1, true, true, true, true,
+                    "Highest cumulative numeric average for grades 9-12 or 3-5 with GCA attendance across the required years."),
+                new AwardRule(awardRuleSet, "SALUTATORIAN", "Salutatorian", "GRADUATION_RANKING",
+                    9, 12, 9, 12, 83, null, 2, 2, true, true, true, true,
+                    "Second highest cumulative numeric average for grades 9-12 or 3-5 with GCA attendance across the required years."),
+                new AwardRule(awardRuleSet, "GRADUATING_WITH_HONORS_3", "3rd Graduating With Honors", "GRADUATION_RANKING",
+                    9, 12, 10, 12, null, null, 3, 3, true, false, false, true,
+                    "Third highest numeric average. Elementary note in source document says attended GCA from 3rd through 5th grade."),
+                new AwardRule(awardRuleSet, "GRADUATING_WITH_HONORS_4", "4th Graduating With Honors", "GRADUATION_RANKING",
+                    9, 12, 10, 12, null, null, 4, 4, true, false, false, true,
+                    "Fourth highest numeric average. Elementary note in source document says attended GCA from 3rd through 5th grade."),
+                new AwardRule(awardRuleSet, "GRADUATING_WITH_HONORS_5", "5th Graduating With Honors", "GRADUATION_RANKING",
+                    9, 12, 10, 12, null, null, 5, 5, true, false, false, true,
+                    "Fifth highest numeric average. Elementary note in source document says attended GCA from 3rd through 5th grade."),
+                new AwardRule(awardRuleSet, "CONSISTENT_PRINCIPALS_LIST", "Consistent Principal's List", "CONSISTENCY",
+                    null, null, null, null, 95, null, null, null, false, false, true, true,
+                    "A average in all subjects with no numeric grade below 95 per quarter per year."),
+                new AwardRule(awardRuleSet, "CONSISTENT_HONOR_ROLL", "Consistent Honor Roll", "CONSISTENCY",
+                    null, null, null, null, 80, null, null, null, false, false, true, true,
+                    "A or B average in all subjects with no numeric grade below 80 per quarter per school year."),
+                new AwardRule(awardRuleSet, "CONSISTENT_HIGH_GPA_GRADE_5", "Consistent High GPA Grade 5", "CONSISTENCY",
+                    3, 5, 4, 5, null, new BigDecimal("3.50"), null, null, false, false, false, true,
+                    "5th grade students maintaining GPA 3.5 for the present year and two previous years, with GCA attendance for grades 4 and 5."),
+                new AwardRule(awardRuleSet, "CONSISTENT_HIGH_GPA_GRADE_12", "Consistent High GPA Grade 12", "CONSISTENCY",
+                    9, 12, 11, 12, null, new BigDecimal("3.50"), null, null, false, false, false, true,
+                    "12th grade students maintaining GPA 3.5 for grades 9-12, with GCA attendance for grades 11 and 12."),
+                new AwardRule(awardRuleSet, "A_HONOR_ROLL", "A Honor Roll", "QUARTERLY_CERTIFICATE",
+                    null, null, null, null, 90, null, null, null, false, false, true, false,
+                    "Quarter certificate rule: no grade below 90."),
+                new AwardRule(awardRuleSet, "B_HONOR_ROLL", "B Honor Roll", "QUARTERLY_CERTIFICATE",
+                    null, null, null, null, 80, null, null, null, false, false, true, false,
+                    "Quarter certificate rule: no grade below 80.")
+            ));
+        }
+    }
+
+    private static void seedTeacherCourseStage(TeacherCourseStageRepository repository,
+                                               TeacherCourseStageSeedService seedService) {
+        if (repository.count() > 0) {
+            return;
+        }
+        try {
+            repository.saveAll(seedService.loadSeedRows());
+        } catch (IOException exception) {
+            throw new IllegalStateException("Failed to seed teacher course stage data", exception);
+        }
+    }
+
     @Bean
     CommandLineRunner seedData(CampusRepository campusRepository, FamilyAccountRepository familyAccountRepository,
                                StudentRepository studentRepository, FeeTypeRepository feeTypeRepository,
+                               FeeScheduleRepository feeScheduleRepository,
                                StudentFeeRepository studentFeeRepository, PaymentRepository paymentRepository,
                                PayerProfileRepository payerProfileRepository,
                                SchoolProjectTypeRepository schoolProjectTypeRepository,
                                SchoolYearRepository schoolYearRepository,
                                SchoolProfileService schoolProfileService,
                                SectionRepository sectionRepository, AttendanceRecordRepository attendanceRecordRepository,
-                               EnrollmentRequestRepository enrollmentRequestRepository) {
+                               EnrollmentRequestRepository enrollmentRequestRepository,
+                               GradingScaleSetRepository gradingScaleSetRepository,
+                               GradingScaleBandRepository gradingScaleBandRepository,
+                               GradingSpecialMarkRepository gradingSpecialMarkRepository,
+                               LegacyGradingScaleRepository legacyGradingScaleRepository,
+                               AwardRuleSetRepository awardRuleSetRepository,
+                               AwardRuleRepository awardRuleRepository,
+                               TeacherCourseStageRepository teacherCourseStageRepository,
+                               TeacherCourseStageSeedService teacherCourseStageSeedService,
+                               @Value("${app.seed-demo-data:true}") boolean seedDemoData) {
         return args -> {
             schoolProfileService.ensureDefaultProfile();
+            seedAcademicPolicyData(
+                gradingScaleSetRepository,
+                gradingScaleBandRepository,
+                gradingSpecialMarkRepository,
+                legacyGradingScaleRepository,
+                awardRuleSetRepository,
+                awardRuleRepository
+            );
+            seedTeacherCourseStage(teacherCourseStageRepository, teacherCourseStageSeedService);
+            if (!seedDemoData) {
+                return;
+            }
             for (int startYear = 2018; startYear <= 2027; startYear++) {
                 String label = startYear + "-" + (startYear + 1);
                 ensureSchoolYear(
@@ -233,12 +431,59 @@ public class SeedDataConfig {
                 feeTypeRepository, "APPLICATION_FEE", "Application fee", new BigDecimal("150.00"), 1);
             FeeType tuitionFeeType = ensureFeeType(
                 feeTypeRepository, "TUITION_FEE", "Tuition fee", null, 1);
+            tuitionFeeType.update(
+                tuitionFeeType.getCode(),
+                tuitionFeeType.getName(),
+                tuitionFeeType.getDefaultAmount(),
+                FeeBillingSchedule.MONTHLY,
+                10,
+                tuitionFeeType.getMaxAssessmentsPerStudentPerSchoolYear()
+            );
+            feeTypeRepository.save(tuitionFeeType);
             ensureFeeType(feeTypeRepository, "BOOK_FEE", "Book fee", null, 1);
             ensureFeeType(feeTypeRepository, "UNIFORM_FEE", "Uniform fee", null, 1);
             ensureFeeType(feeTypeRepository, "COMPUTER_LAB_FEE", "Computer lab fee", null, 1);
             ensureFeeType(feeTypeRepository, "ELECTRONIC_FEE", "Electronic fee", null, 1);
             ensureFeeType(feeTypeRepository, "LUNCH_FEE", "Lunch fee", null, null);
             ensureFeeType(feeTypeRepository, "AFTERSCHOOL_FEE", "Afterschool fee", null, null);
+            if (feeScheduleRepository.count() == 0) {
+                FeeType tuition = feeTypeRepository.findByCode("TUITION_FEE").orElseThrow();
+                FeeType books = feeTypeRepository.findByCode("BOOK_FEE").orElseThrow();
+                FeeType electronic = feeTypeRepository.findByCode("ELECTRONIC_FEE").orElseThrow();
+
+                FeeSchedule elementarySchedule = feeScheduleRepository.save(
+                    new FeeSchedule("Standard package", "2026-2027", FeeScheduleGradeGroup.ELEMENTARY, saipan, true)
+                );
+                elementarySchedule.getItems().add(new FeeScheduleItem(
+                    elementarySchedule, tuition, new BigDecimal("355.00"), "Elementary monthly tuition", 1
+                ));
+                elementarySchedule.getItems().add(new FeeScheduleItem(
+                    elementarySchedule, books, new BigDecimal("125.00"), "Elementary book fee", 2
+                ));
+                feeScheduleRepository.save(elementarySchedule);
+
+                FeeSchedule juniorHighSchedule = feeScheduleRepository.save(
+                    new FeeSchedule("Standard package", "2026-2027", FeeScheduleGradeGroup.JUNIOR_HIGH, saipan, true)
+                );
+                juniorHighSchedule.getItems().add(new FeeScheduleItem(
+                    juniorHighSchedule, tuition, new BigDecimal("425.00"), "Junior High monthly tuition", 1
+                ));
+                juniorHighSchedule.getItems().add(new FeeScheduleItem(
+                    juniorHighSchedule, electronic, new BigDecimal("200.00"), "Junior High technology fee", 2
+                ));
+                feeScheduleRepository.save(juniorHighSchedule);
+
+                FeeSchedule highSchoolSchedule = feeScheduleRepository.save(
+                    new FeeSchedule("Standard package", "2026-2027", FeeScheduleGradeGroup.HIGH_SCHOOL, saipan, true)
+                );
+                highSchoolSchedule.getItems().add(new FeeScheduleItem(
+                    highSchoolSchedule, tuition, new BigDecimal("455.00"), "High School monthly tuition", 1
+                ));
+                highSchoolSchedule.getItems().add(new FeeScheduleItem(
+                    highSchoolSchedule, electronic, new BigDecimal("250.00"), "High School technology fee", 2
+                ));
+                feeScheduleRepository.save(highSchoolSchedule);
+            }
             schoolProjectTypeRepository.findByCode("GENERAL")
                 .orElseGet(() -> schoolProjectTypeRepository.save(new org.gca.schoolms.finance.SchoolProjectType("GENERAL", "General", true)));
             schoolProjectTypeRepository.findByCode("BUILDING")

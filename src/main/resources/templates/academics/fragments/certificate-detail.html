@@ -1,0 +1,105 @@
+<div th:fragment="detail"
+     xmlns:th="http://www.thymeleaf.org"
+     id="certificate-detail-panel"
+     class="card border-0 shadow-sm certificate-detail-card"
+     th:if="${selectedStudent != null}">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h2 class="h4 mb-1" th:text="${selectedStudent.displayName()}">Student</h2>
+                <p class="text-secondary mb-0">
+                    Grade <span th:text="${T(org.gca.schoolms.certificates.CertificateLabelUtil).displayGrade(selectedStudent.gradeLevel())}">11</span>
+                    <span> / </span>
+                    <span th:text="${selectedTerm}">Q3</span>
+                    <span> / </span>
+                    <span th:text="${selectedYear}">2026</span>
+                </p>
+            </div>
+            <span class="badge text-bg-primary" th:text="${honorResult.displayName}">A Honor Roll</span>
+        </div>
+
+        <div class="mb-4">
+            <h3 class="h6 text-uppercase text-secondary mb-2">Certificate type</h3>
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="badge"
+                      th:each="certificateType : ${certificateTypes}"
+                      th:classappend="${certificateType == honorResult} ? ' text-bg-success' : ' text-bg-light border text-dark'"
+                      th:text="${certificateType.displayName}">Principal's List</span>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Percent</th>
+                    <th>Letter</th>
+                    <th>Track</th>
+                    <th>GPA</th>
+                    <th>Excluded from GPA</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="gradeRow : ${grades}">
+                    <td>
+                        <div th:text="${gradeRow.courseName}">Course</div>
+                        <div class="small text-secondary" th:text="${gradeRow.teacherName}">Teacher</div>
+                    </td>
+                    <td th:text="${gradeRow.percent}">95</td>
+                    <td th:text="${gradeRow.letterGrade}">A</td>
+                    <td th:text="${gradeRow.academicTrack}">Standard</td>
+                    <td th:text="${gradeRow.computedGpaDisplay()}">4.00</td>
+                    <td th:text="${gradeRow.excludeFromGpa} ? 'Yes' : 'No'">No</td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr class="fw-semibold">
+                    <td>Average</td>
+                    <td th:text="${averagePercent != null ? averagePercent : '-'}">95.00</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td th:text="${averageGpa != null ? averageGpa : '-'}">4.00</td>
+                    <td>-</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="alert alert-warning mb-3" th:if="${honorResult.name() == 'NONE'}">
+            This student does not currently qualify for a certificate type for the selected term.
+        </div>
+
+        <form class="row g-3 align-items-end" method="get"
+              th:action="@{/academics/certificates/{id}/honor-roll(id=${selectedStudent.id})}"
+              target="_blank">
+            <input type="hidden" name="term" th:value="${selectedTerm}">
+            <input type="hidden" name="year" th:value="${selectedYear}">
+            <div class="col-md-6">
+                <label class="form-label" for="overrideHonorResult">Certificate type override</label>
+                <select class="form-select" id="overrideHonorResult" name="override">
+                    <option value="">Use calculated result</option>
+                    <option th:each="result : ${certificateTypes}"
+                            th:text="${result.displayName}"
+                            th:value="${result.name()}"
+                            th:selected="${result == honorResult}">Principal's List</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <button class="btn btn-primary" type="submit"
+                        th:disabled="${honorResult.name() == 'NONE'}">Generate certificate PDF</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:fragment="empty"
+     xmlns:th="http://www.thymeleaf.org"
+     id="certificate-detail-panel"
+     class="card border-0 shadow-sm certificate-detail-card"
+     th:if="${selectedStudent == null}">
+    <div class="card-body">
+        <h2 class="h5 mb-2">No student selected</h2>
+        <p class="text-secondary mb-0">Choose a student from the left to review grades and generate a native LMS certificate.</p>
+    </div>
+</div>

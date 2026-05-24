@@ -1,0 +1,261 @@
+<div id="fee-schedule-fragment" th:fragment="feeScheduleSection">
+    <div id="fee-schedule-section">
+        <div th:if="${scheduleMessage}" class="alert alert-info mb-4" th:text="${scheduleMessage}"></div>
+        <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h2 class="h5 mb-1" th:text="${feeScheduleForm.id != null ? 'Edit fee schedule' : 'School year fee schedules'}">School year fee schedules</h2>
+                    <p class="text-secondary mb-0">Group standard yearly tuition and required fees by type, campus, and school year. Keep ad hoc extras like lunch, library, and afterschool separate.</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <form method="post"
+                          th:action="@{/finance/fee-schedules}"
+                          th:object="${feeScheduleForm}"
+                          hx-post="/finance/fee-schedules"
+                          hx-target="#fee-schedule-fragment"
+                          hx-swap="outerHTML">
+                        <input th:field="*{id}" type="hidden">
+                        <div class="mb-3">
+                            <label class="form-label" for="feeScheduleName">Schedule name</label>
+                            <input class="form-control" id="feeScheduleName" placeholder="Standard package" required th:field="*{name}" type="text">
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="feeScheduleGradeGroup">Type</label>
+                                <select class="form-select" id="feeScheduleGradeGroup" th:field="*{gradeGroup}">
+                                    <option th:each="gradeGroup : ${gradeGroups}" th:text="${gradeGroup.label}" th:value="${gradeGroup.name()}">Elementary</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="feeScheduleCampusId">Campus</label>
+                                <select class="form-select" id="feeScheduleCampusId" required th:field="*{campusId}">
+                                    <option value="">Select campus</option>
+                                    <option th:each="campus : ${campuses}" th:text="${campus.code + ' • ' + campus.name}" th:value="${campus.id}">SAI • Saipan Campus</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label class="form-label" for="feeScheduleSchoolYear">School year</label>
+                            <select class="form-select" id="feeScheduleSchoolYear" required th:field="*{schoolYear}">
+                                <option value="">Select school year</option>
+                                <option th:each="schoolYear : ${schoolYears}" th:text="${schoolYear.label}" th:value="${schoolYear.label}">2026-2027</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="feeScheduleItemLines">Schedule items</label>
+                            <input id="feeScheduleItemLines" th:field="*{itemLines}" type="hidden">
+                            <div class="border rounded overflow-hidden">
+                                <div class="table-responsive">
+                                    <table class="table align-middle mb-0">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 4rem;">Order</th>
+                                            <th>Fee type</th>
+                                            <th style="width: 9rem;">Amount</th>
+                                            <th>Description</th>
+                                            <th style="width: 6rem;">Action</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="feeScheduleItemsBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn btn-sm btn-outline-primary" id="addFeeScheduleItemButton" type="button">Add row</button>
+                            </div>
+                            <div class="form-text">Drag rows by the handle to reorder them. Each row becomes one fee schedule item.</div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" id="feeScheduleActive" th:field="*{active}" type="checkbox">
+                            <label class="form-check-label" for="feeScheduleActive">Active</label>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" th:text="${feeScheduleForm.id != null ? 'Update fee schedule' : 'Add fee schedule'}" type="submit">Add fee schedule</button>
+                            <a class="btn btn-outline-secondary"
+                               th:if="${feeScheduleForm.id != null}"
+                               th:href="@{/finance/fees}"
+                               hx-get="/finance/fee-schedules"
+                               hx-target="#fee-schedule-fragment"
+                               hx-swap="outerHTML">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-lg-7">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>School year</th>
+                                <th>Campus</th>
+                                <th>Name</th>
+                                <th>Items</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="feeSchedule : ${feeSchedules}">
+                                <td th:text="${feeSchedule.gradeGroup.label}">Elementary</td>
+                                <td th:text="${feeSchedule.schoolYear}">2026-2027</td>
+                                <td th:text="${feeSchedule.campus.code}">SAI</td>
+                                <td>
+                                       <a class="link-primary text-decoration-none"
+                                           th:href="@{/finance/fees(editFeeScheduleId=${feeSchedule.id})}"
+                                           th:attr="hx-get=@{/finance/fee-schedules(editFeeScheduleId=${feeSchedule.id})}"
+                                       hx-target="#fee-schedule-fragment"
+                                       hx-swap="outerHTML"
+                                       th:text="${feeSchedule.name}">Standard package</a>
+                                </td>
+                                <td>
+                                    <div class="small" th:each="item : ${feeSchedule.items}">
+                                        <span th:text="${item.feeType.code}">TUITION_FEE</span>
+                                        <span>:</span>
+                                        <span th:text="${@moneyFormatter.format(item.amount)}">$355.00</span>
+                                        <span class="text-secondary" th:text="${' • ' + item.description}">Description</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge" th:classappend="${feeSchedule.active ? ' text-bg-success' : ' text-bg-secondary'}"
+                                          th:text="${feeSchedule.active ? 'Active' : 'Inactive'}">Active</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    <template id="feeScheduleItemRowTemplate">
+    <tr draggable="true">
+        <td>
+            <button class="btn btn-sm btn-outline-secondary fee-schedule-drag-handle" title="Drag to reorder" type="button">::</button>
+        </td>
+        <td>
+            <select class="form-select form-select-sm fee-schedule-fee-type" required>
+                <option value="">Select fee type</option>
+                <option th:each="feeType : ${feeTypes}"
+                        th:text="${feeType.code + ' • ' + feeType.name}"
+                        th:value="${feeType.code}">TUITION_FEE • Tuition fee</option>
+            </select>
+        </td>
+        <td>
+            <input class="form-control form-control-sm fee-schedule-amount" min="0.00" required step="0.01" type="number">
+        </td>
+        <td>
+            <input class="form-control form-control-sm fee-schedule-description" placeholder="Description" type="text">
+        </td>
+        <td>
+            <button class="btn btn-sm btn-outline-danger fee-schedule-remove-row" type="button">Remove</button>
+        </td>
+    </tr>
+    </template>
+    <script>
+    (() => {
+        const feeScheduleFragment = document.getElementById('fee-schedule-fragment');
+        if (!feeScheduleFragment) {
+            return;
+        }
+
+        const feeScheduleSection = feeScheduleFragment.querySelector('#fee-schedule-section');
+        const feeScheduleForm = feeScheduleSection.querySelector('form[action$="/finance/fee-schedules"]');
+        const feeScheduleItemLinesInput = document.getElementById('feeScheduleItemLines');
+        const feeScheduleItemsBody = document.getElementById('feeScheduleItemsBody');
+        const feeScheduleItemRowTemplate = document.getElementById('feeScheduleItemRowTemplate');
+        const addFeeScheduleItemButton = document.getElementById('addFeeScheduleItemButton');
+        let draggedFeeScheduleRow = null;
+
+        function buildFeeScheduleItemRow(code = '', amount = '', description = '') {
+            const row = feeScheduleItemRowTemplate.content.firstElementChild.cloneNode(true);
+            row.querySelector('.fee-schedule-fee-type').value = code;
+            row.querySelector('.fee-schedule-amount').value = amount;
+            row.querySelector('.fee-schedule-description').value = description;
+            row.addEventListener('dragstart', () => {
+                draggedFeeScheduleRow = row;
+                row.classList.add('table-active');
+            });
+            row.addEventListener('dragend', () => {
+                draggedFeeScheduleRow = null;
+                row.classList.remove('table-active');
+            });
+            row.addEventListener('dragover', (event) => event.preventDefault());
+            row.addEventListener('drop', (event) => {
+                event.preventDefault();
+                if (!draggedFeeScheduleRow || draggedFeeScheduleRow === row) {
+                    return;
+                }
+                const rows = Array.from(feeScheduleItemsBody.querySelectorAll('tr'));
+                const draggedIndex = rows.indexOf(draggedFeeScheduleRow);
+                const targetIndex = rows.indexOf(row);
+                if (draggedIndex < targetIndex) {
+                    feeScheduleItemsBody.insertBefore(draggedFeeScheduleRow, row.nextSibling);
+                } else {
+                    feeScheduleItemsBody.insertBefore(draggedFeeScheduleRow, row);
+                }
+                syncFeeScheduleItemLines();
+            });
+            row.querySelector('.fee-schedule-remove-row').addEventListener('click', () => {
+                row.remove();
+                if (!feeScheduleItemsBody.children.length) {
+                    buildAndAppendFeeScheduleItemRow();
+                }
+                syncFeeScheduleItemLines();
+            });
+            row.querySelector('.fee-schedule-fee-type').addEventListener('change', syncFeeScheduleItemLines);
+            row.querySelector('.fee-schedule-amount').addEventListener('input', syncFeeScheduleItemLines);
+            row.querySelector('.fee-schedule-description').addEventListener('input', syncFeeScheduleItemLines);
+            return row;
+        }
+
+        function buildAndAppendFeeScheduleItemRow(code = '', amount = '', description = '') {
+            feeScheduleItemsBody.appendChild(buildFeeScheduleItemRow(code, amount, description));
+            syncFeeScheduleItemLines();
+        }
+
+        function syncFeeScheduleItemLines() {
+            const lines = Array.from(feeScheduleItemsBody.querySelectorAll('tr'))
+                .map((row) => {
+                    const code = row.querySelector('.fee-schedule-fee-type').value.trim();
+                    const amount = row.querySelector('.fee-schedule-amount').value.trim();
+                    const description = row.querySelector('.fee-schedule-description').value.trim();
+                    if (!code && !amount && !description) {
+                        return '';
+                    }
+                    return [code, amount, description].join('|');
+                })
+                .filter((line) => line !== '');
+            feeScheduleItemLinesInput.value = lines.join('\n');
+        }
+
+        function loadFeeScheduleItemRows() {
+            const rawLines = feeScheduleItemLinesInput.value.trim();
+            if (!rawLines) {
+                buildAndAppendFeeScheduleItemRow();
+                return;
+            }
+            rawLines.split(/\r?\n/).forEach((line) => {
+                if (!line.trim()) {
+                    return;
+                }
+                const [code = '', amount = '', description = ''] = line.split('|');
+                buildAndAppendFeeScheduleItemRow(code, amount, description);
+            });
+            syncFeeScheduleItemLines();
+        }
+
+        addFeeScheduleItemButton.addEventListener('click', () => buildAndAppendFeeScheduleItemRow());
+        feeScheduleForm.addEventListener('submit', (event) => {
+            syncFeeScheduleItemLines();
+            if (!feeScheduleItemLinesInput.value.trim()) {
+                event.preventDefault();
+                alert('Add at least one fee schedule row before saving.');
+            }
+        });
+        loadFeeScheduleItemRows();
+    })();
+    </script>
+</div>

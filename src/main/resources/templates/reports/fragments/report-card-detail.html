@@ -1,0 +1,98 @@
+<div th:fragment="detail"
+     xmlns:th="http://www.thymeleaf.org"
+     id="report-card-detail-panel"
+     class="card border-0 shadow-sm certificate-detail-card"
+     th:if="${selectedStudent != null}">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h2 class="h4 mb-1" th:text="${selectedStudent.displayName()}">Student</h2>
+                <p class="mb-1 fw-semibold">
+                    Quarter <span th:text="${#strings.substring(selectedTerm, 1)}">3</span> - Report Card
+                </p>
+                <p class="text-secondary mb-0">
+                    Grade <span th:text="${T(org.gca.schoolms.certificates.CertificateLabelUtil).displayGrade(selectedStudent.gradeLevel())}">5</span>
+                    <span> / </span>
+                    Report Card Through <span th:text="${selectedTerm}">Q3</span>
+                    <span> / </span>
+                    <span th:text="${selectedYear}">2026</span>
+                </p>
+            </div>
+            <div class="d-flex gap-2 align-items-start">
+                <span class="badge text-bg-light border text-dark"
+                      th:text="${#lists.size(reportCard.visibleTerms)} + ' quarters shown'">3 quarters shown</span>
+                <a class="btn btn-sm btn-outline-primary"
+                   th:href="@{/reports/report-cards/{id}/pdf(id=${selectedStudent.id},term=${selectedTerm},year=${selectedYear})}"
+                   target="_blank">Generate PDF</a>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4" th:if="${reportCard.legacyContact != null}">
+            <div class="col-md-4">
+                <div class="small text-secondary text-uppercase">Contact</div>
+                <div th:text="${reportCard.legacyContact.primaryContactName != null ? reportCard.legacyContact.primaryContactName : 'No contact name on import'}">Parent Name</div>
+            </div>
+            <div class="col-md-4">
+                <div class="small text-secondary text-uppercase">Email</div>
+                <div th:text="${reportCard.legacyContact.primaryContactEmail != null ? reportCard.legacyContact.primaryContactEmail : 'No contact email on import'}">guardian@example.org</div>
+            </div>
+            <div class="col-md-4">
+                <div class="small text-secondary text-uppercase">Phone</div>
+                <div th:text="${reportCard.legacyContact.primaryContactPhone != null ? reportCard.legacyContact.primaryContactPhone : 'No contact phone on import'}">670-555-0100</div>
+            </div>
+            <div class="col-12">
+                <div class="small text-secondary text-uppercase">Mailing address</div>
+                <div th:text="${reportCard.legacyContact.mailingAddressSingleLine() != null ? reportCard.legacyContact.mailingAddressSingleLine() : 'No mailing address on import'}">PO Box 1000, Saipan, MP 96950</div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Course</th>
+                    <th th:each="termOption : ${reportCard.visibleTerms}" colspan="2" th:text="${termOption}">Q1</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th th:if="${#lists.contains(reportCard.visibleTerms, 'Q1')}">Grade</th>
+                    <th th:if="${#lists.contains(reportCard.visibleTerms, 'Q1')}">Cit</th>
+                    <th th:if="${#lists.contains(reportCard.visibleTerms, 'Q2')}">Grade</th>
+                    <th th:if="${#lists.contains(reportCard.visibleTerms, 'Q2')}">Cit</th>
+                    <th th:if="${#lists.contains(reportCard.visibleTerms, 'Q3')}">Grade</th>
+                    <th th:if="${#lists.contains(reportCard.visibleTerms, 'Q3')}">Cit</th>
+                    <th th:if="${#lists.contains(reportCard.visibleTerms, 'Q4')}">Grade</th>
+                    <th th:if="${#lists.contains(reportCard.visibleTerms, 'Q4')}">Cit</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="courseRow : ${reportCard.courses}">
+                    <td>
+                        <div th:text="${courseRow.courseName}">Course</div>
+                        <div class="small text-secondary" th:text="${courseRow.teacherName}">Teacher</div>
+                    </td>
+                    <td th:if="${#lists.contains(reportCard.visibleTerms, 'Q1')}" th:text="${courseRow.q1GradeDisplay()}">95</td>
+                    <td th:if="${#lists.contains(reportCard.visibleTerms, 'Q1')}" th:text="${courseRow.q1CitizenshipDisplay()}">E</td>
+                    <td th:if="${#lists.contains(reportCard.visibleTerms, 'Q2')}" th:text="${courseRow.q2GradeDisplay()}">95</td>
+                    <td th:if="${#lists.contains(reportCard.visibleTerms, 'Q2')}" th:text="${courseRow.q2CitizenshipDisplay()}">E</td>
+                    <td th:if="${#lists.contains(reportCard.visibleTerms, 'Q3')}" th:text="${courseRow.q3GradeDisplay()}">95</td>
+                    <td th:if="${#lists.contains(reportCard.visibleTerms, 'Q3')}" th:text="${courseRow.q3CitizenshipDisplay()}">E</td>
+                    <td th:if="${#lists.contains(reportCard.visibleTerms, 'Q4')}" th:text="${courseRow.q4GradeDisplay()}">95</td>
+                    <td th:if="${#lists.contains(reportCard.visibleTerms, 'Q4')}" th:text="${courseRow.q4CitizenshipDisplay()}">E</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="empty"
+     xmlns:th="http://www.thymeleaf.org"
+     id="report-card-detail-panel"
+     class="card border-0 shadow-sm certificate-detail-card"
+     th:if="${selectedStudent == null}">
+    <div class="card-body">
+        <h2 class="h5 mb-2">No student selected</h2>
+        <p class="text-secondary mb-0">Choose a student from the left to review cumulative quarter grades for the selected report-card term.</p>
+    </div>
+</div>

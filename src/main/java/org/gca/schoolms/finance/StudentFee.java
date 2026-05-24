@@ -55,6 +55,10 @@ public class StudentFee {
     @Column(nullable = false)
     private String description;
 
+    private Integer installmentNumber;
+
+    private Integer installmentCount;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StudentFeeStatus status = StudentFeeStatus.ACTIVE;
@@ -77,12 +81,19 @@ public class StudentFee {
 
     public StudentFee(Student student, FamilyAccount familyAccount, Campus campus, FeeType feeType,
                       BigDecimal amount, LocalDateTime assessedAt, String schoolYear, String description) {
-        this(student, familyAccount, campus, feeType, amount, assessedAt, schoolYear, description, null);
+        this(student, familyAccount, campus, feeType, amount, assessedAt, schoolYear, description, null, null, null);
     }
 
     public StudentFee(Student student, FamilyAccount familyAccount, Campus campus, FeeType feeType,
                       BigDecimal amount, LocalDateTime assessedAt, String schoolYear,
                       String description, EnrollmentRequest enrollmentRequest) {
+        this(student, familyAccount, campus, feeType, amount, assessedAt, schoolYear, description, null, null, enrollmentRequest);
+    }
+
+    public StudentFee(Student student, FamilyAccount familyAccount, Campus campus, FeeType feeType,
+                      BigDecimal amount, LocalDateTime assessedAt, String schoolYear,
+                      String description, Integer installmentNumber, Integer installmentCount,
+                      EnrollmentRequest enrollmentRequest) {
         this.student = student;
         this.familyAccount = familyAccount;
         this.campus = campus;
@@ -91,6 +102,8 @@ public class StudentFee {
         this.assessedAt = assessedAt;
         this.schoolYear = schoolYear;
         this.description = description;
+        this.installmentNumber = installmentNumber;
+        this.installmentCount = installmentCount;
         this.enrollmentRequest = enrollmentRequest;
     }
 
@@ -142,6 +155,14 @@ public class StudentFee {
 
     public EnrollmentRequest getEnrollmentRequest() {
         return enrollmentRequest;
+    }
+
+    public Integer getInstallmentNumber() {
+        return installmentNumber;
+    }
+
+    public Integer getInstallmentCount() {
+        return installmentCount;
     }
 
     public StudentFeeStatus getStatus() {

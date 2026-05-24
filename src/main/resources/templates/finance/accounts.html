@@ -38,12 +38,18 @@
                             <label class="form-label" for="feeTypeId">Fee type</label>
                             <select class="form-select" id="feeTypeId" name="feeTypeId" required>
                                 <option value="">Select fee type</option>
-                                <option th:each="feeType : ${feeTypes}" th:attr="data-default-amount=${feeType.defaultAmount}" th:disabled="${!feeType.active}" th:text="${feeType.name}" th:value="${feeType.id}">Tuition fee</option>
+                                <option th:each="feeType : ${feeTypes}"
+                                        th:attr="data-default-amount=${feeType.defaultAmount},data-billing-schedule=${feeType.billingSchedule.name()},data-billing-month-count=${feeType.billingMonthCount}"
+                                        th:disabled="${!feeType.active}"
+                                        th:text="${feeType.name}"
+                                        th:value="${feeType.id}">Tuition fee</option>
                             </select>
+                            <div class="form-text" id="feeTypeBillingHint">One-time fee assessment.</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="feeAmount">Amount</label>
                             <input class="form-control" id="feeAmount" min="0.01" name="amount" required step="0.01" type="number">
+                            <div class="form-text" id="feeAmountTotalHint">Enter the fee amount to assess.</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="feeSchoolYear">School year</label>
@@ -61,7 +67,32 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-8">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Assess school year fee schedule</h2>
+                    <form id="assessFeeScheduleForm" method="post" th:action="@{/finance/fee-schedules/assess}">
+                        <div class="mb-3">
+                            <label class="form-label" for="feeScheduleStudentLookup">Student</label>
+                            <input class="form-control" id="feeScheduleStudentLookup" list="paymentStudentOptions" placeholder="Type student last name" required type="text">
+                            <input id="feeScheduleStudentId" name="studentId" type="hidden">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="feeScheduleId">Fee schedule</label>
+                            <select class="form-select" id="feeScheduleId" name="feeScheduleId" required>
+                                <option value="">Select fee schedule</option>
+                                <option th:each="feeSchedule : ${feeScheduleOptions}"
+                                        th:text="${feeSchedule.label}"
+                                        th:value="${feeSchedule.id}">2026-2027 • Elementary • Standard package</option>
+                            </select>
+                            <div class="form-text">Use fee schedules for standard yearly tuition and required fees. Assess ad hoc extras separately.</div>
+                        </div>
+                        <button class="btn btn-outline-primary" type="submit">Assess fee schedule</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h2 class="h5 mb-3">Families with balances</h2>
@@ -162,6 +193,9 @@
         const assessFeeForm = document.getElementById('assessFeeForm');
         const feeStudentLookup = document.getElementById('feeStudentLookup');
         const feeStudentIdInput = document.getElementById('feeStudentId');
+        const assessFeeScheduleForm = document.getElementById('assessFeeScheduleForm');
+        const feeScheduleStudentLookup = document.getElementById('feeScheduleStudentLookup');
+        const feeScheduleStudentIdInput = document.getElementById('feeScheduleStudentId');
 
         function datalistOptionByValue(listId, value) {
             return Array.from(document.querySelectorAll(`#${listId} option`)).find(option => option.value === value);
@@ -181,6 +215,48 @@
             feeAmountInput.value = defaultAmount && defaultAmount !== 'null' ? defaultAmount : '';
         }
 
+        function syncFeeBillingHint() {
+            const selectedOption = feeTypeSelect.selectedOptions[0];
+            const hint = document.getElementById('feeTypeBillingHint');
+            if (!selectedOption || !selectedOption.value) {
+                hint.textContent = 'One-time fee assessment.';
+                return;
+            }
+            if (selectedOption.dataset.billingSchedule === 'MONTHLY') {
+                const monthCount = selectedOption.dataset.billingMonthCount || '10';
+                hint.textContent = `This fee will create ${monthCount} monthly installment charges when assessed.`;
+                return;
+            }
+            hint.textContent = 'One-time fee assessment.';
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function syncFeeAmountTotalHint() {
+            const selectedOption = feeTypeSelect.selectedOptions[0];
+            const hint = document.getElementById('feeAmountTotalHint');
+            const amount = Number.parseFloat(feeAmountInput.value);
+
+            if (!selectedOption || !selectedOption.value || Number.isNaN(amount) || amount <= 0) {
+                hint.textContent = 'Enter the fee amount to assess.';
+                return;
+            }
+
+            if (selectedOption.dataset.billingSchedule === 'MONTHLY') {
+                const monthCount = Number.parseInt(selectedOption.dataset.billingMonthCount || '10', 10);
+                const totalAmount = amount * monthCount;
+                hint.textContent = `Monthly amount ${formatCurrency(amount)} x ${monthCount} months = total scheduled amount ${formatCurrency(totalAmount)}.`;
+                return;
+            }
+
+            hint.textContent = `Total assessed amount: ${formatCurrency(amount)}.`;
+        }
+
         feeStudentLookup.addEventListener('input', () => syncLookup(feeStudentLookup, 'paymentStudentOptions', feeStudentIdInput, 'id'));
         feeStudentLookup.addEventListener('change', () => syncLookup(feeStudentLookup, 'paymentStudentOptions', feeStudentIdInput, 'id'));
         assessFeeForm.addEventListener('submit', (event) => {
@@ -191,8 +267,24 @@
                 alert('Select the student from the lookup list before assessing the fee.');
             }
         });
+        feeScheduleStudentLookup.addEventListener('input', () => syncLookup(feeScheduleStudentLookup, 'paymentStudentOptions', feeScheduleStudentIdInput, 'id'));
+        feeScheduleStudentLookup.addEventListener('change', () => syncLookup(feeScheduleStudentLookup, 'paymentStudentOptions', feeScheduleStudentIdInput, 'id'));
+        assessFeeScheduleForm.addEventListener('submit', (event) => {
+            syncLookup(feeScheduleStudentLookup, 'paymentStudentOptions', feeScheduleStudentIdInput, 'id');
+            if (!feeScheduleStudentIdInput.value) {
+                event.preventDefault();
+                feeScheduleStudentLookup.focus();
+                alert('Select the student from the lookup list before assessing the fee schedule.');
+            }
+        });
         feeTypeSelect.addEventListener('change', syncFeeDefaultAmount);
+        feeTypeSelect.addEventListener('change', syncFeeBillingHint);
+        feeTypeSelect.addEventListener('change', syncFeeAmountTotalHint);
+        feeAmountInput.addEventListener('input', syncFeeAmountTotalHint);
+        feeAmountInput.addEventListener('change', syncFeeAmountTotalHint);
         syncFeeDefaultAmount();
+        syncFeeBillingHint();
+        syncFeeAmountTotalHint();
     })();
 </script>
 </body>

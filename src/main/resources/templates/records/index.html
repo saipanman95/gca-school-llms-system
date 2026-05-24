@@ -123,6 +123,65 @@
             </div>
         </div>
     </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h5 mb-1">Imported guardian relationships</h2>
+                    <p class="text-secondary mb-0">Resolved preview from legacy guardian exports joined to imported students by `STUDENTSDCID`.</p>
+                </div>
+                <span class="badge text-bg-secondary" th:text="${#lists.size(importedGuardianPreview)} + ' rows'">0 rows</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Guardian</th>
+                        <th>Relationship</th>
+                        <th>Notifications</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(importedGuardianPreview)}">
+                        <td class="text-secondary" colspan="4">No imported guardian relationships available.</td>
+                    </tr>
+                    <tr th:each="row : ${importedGuardianPreview}">
+                        <td class="align-top">
+                            <div class="fw-semibold" th:text="${row.studentDisplayName()}">Student</div>
+                            <div class="text-secondary small">
+                                <span th:text="${'ID ' + row.studentId}"></span>
+                                <span> / </span>
+                                <span th:text="${'DCID ' + row.studentDcid}"></span>
+                                <span> / </span>
+                                <span th:text="${'Grade ' + row.gradeLevel}"></span>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div class="fw-semibold" th:text="${row.guardianName != null and !#strings.isEmpty(row.guardianName) ? row.guardianName : 'Unnamed guardian'}">Guardian</div>
+                            <div class="text-secondary small" th:text="${row.guardianEmail != null and !#strings.isEmpty(row.guardianEmail) ? row.guardianEmail : 'No email on import'}">guardian@example.org</div>
+                            <div class="text-secondary small" th:text="${row.guardianPhoneSummary()}">670-555-0100 / preferred</div>
+                            <div class="small mt-1">
+                                <span th:if="${row.primaryGuardian}" class="badge text-bg-primary">Primary</span>
+                                <span th:unless="${row.primaryGuardian}" class="badge text-bg-light text-dark">Linked</span>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div th:text="${row.relationshipSummary()}">Type 20 / SIF 1735 / Order 20</div>
+                            <div class="text-secondary small" th:text="${row.contactRankingSummary()}">legal guardian / receives mail</div>
+                            <div class="text-secondary small"
+                                 th:text="${row.guardianPersonId != null ? 'Person key ' + row.guardianPersonId : 'Person key n/a'}">Person key</div>
+                        </td>
+                        <td class="align-top">
+                            <div th:text="${row.notificationSummary()}">summary, grades</div>
+                            <div class="text-secondary small" th:text="${'Preference score ' + row.notificationPreferenceScore}">Preference score 0</div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <h2 class="h5 mb-3">Recent students</h2>
@@ -144,7 +203,13 @@
                         <td th:text="${student.studentNumber}"></td>
                         <td th:text="${student.displayName}"></td>
                         <td th:text="${student.campusCode}"></td>
-                        <td th:text="${student.familyAccountName}"></td>
+                        <td>
+                            <div th:text="${student.familyAccountName}"></div>
+                            <div class="text-secondary small" th:if="${student.importedGuardianSummary != null}">
+                                <span th:text="${student.importedGuardianSummary}">Guardian name</span>
+                                <span th:text="${' (' + student.importedGuardianCount + ')'}"> (1)</span>
+                            </div>
+                        </td>
                         <td><span class="badge text-bg-secondary" th:text="${student.status}"></span></td>
                         <td th:text="${student.dateOfBirth}"></td>
                         <td class="text-end">

@@ -22,6 +22,7 @@ public record EnrollmentReviewSnapshot(
     List<EnrollmentFinanceAuthorizationType> financeAuthorizationTypes,
     String financeAuthorizationSummary,
     boolean enrollmentFeePaid,
+    String enrollmentChargeSummary,
     String financeStatusLabel
 ) {
 }

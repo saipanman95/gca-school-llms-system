@@ -8,6 +8,8 @@ public class FeeTypeForm {
     private String code;
     private String name;
     private BigDecimal defaultAmount;
+    private FeeBillingSchedule billingSchedule = FeeBillingSchedule.ONE_TIME;
+    private Integer billingMonthCount;
     private Integer maxAssessmentsPerStudentPerSchoolYear;
     private boolean active = true;
 
@@ -41,6 +43,22 @@ public class FeeTypeForm {
 
     public void setDefaultAmount(BigDecimal defaultAmount) {
         this.defaultAmount = defaultAmount;
+    }
+
+    public FeeBillingSchedule getBillingSchedule() {
+        return billingSchedule;
+    }
+
+    public void setBillingSchedule(FeeBillingSchedule billingSchedule) {
+        this.billingSchedule = billingSchedule;
+    }
+
+    public Integer getBillingMonthCount() {
+        return billingMonthCount;
+    }
+
+    public void setBillingMonthCount(Integer billingMonthCount) {
+        this.billingMonthCount = billingMonthCount;
     }
 
     public Integer getMaxAssessmentsPerStudentPerSchoolYear() {

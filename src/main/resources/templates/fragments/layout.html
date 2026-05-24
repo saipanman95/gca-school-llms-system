@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top app-sticky-nav">
     <div class="container-fluid">
         <a class="navbar-brand fw-semibold" th:href="@{/dashboard}">GCA School MS</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
@@ -10,19 +10,25 @@
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
-                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF')">
+                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF','GUIDANCE_COUNSELOR')">
                     <a class="nav-link" th:href="@{/records}">Records</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE','SCHOOL_CASHIER')">
                     <a class="nav-link" th:href="@{/finance}">Finance</a>
                 </li>
-                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF')">
+                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF','GUIDANCE_COUNSELOR')">
                     <a class="nav-link" th:href="@{/academics}">Academics</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF')">
+                    <a class="nav-link" th:href="@{/reports}">Reports</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_STAFF')">
+                    <a class="nav-link" th:href="@{/admin/imports}">Data Import</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN')">
                     <a class="nav-link" th:href="@{/admin/settings}">Administration</a>
                 </li>
-                <li class="nav-item" sec:authorize="hasRole('PARENT_GUARDIAN')">
+                <li class="nav-item" sec:authorize="hasAnyRole('PARENT_GUARDIAN','SYSTEM_ADMIN')">
                     <a class="nav-link" th:href="@{/portal/guardian}">Family Portal</a>
                 </li>
             </ul>

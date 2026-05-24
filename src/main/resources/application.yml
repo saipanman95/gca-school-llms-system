@@ -1,6 +1,12 @@
 spring:
   application:
     name: school-ms
+  profiles:
+    group:
+      mysql-dev:
+        - mysql
+      mysql-prod:
+        - mysql
   datasource:
     url: jdbc:h2:file:./data/school-ms;MODE=MySQL;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
@@ -13,8 +19,14 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: false
   thymeleaf:
     cache: false
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   h2:
     console:
       enabled: true
@@ -27,3 +39,6 @@ server:
 app:
   storage:
     enrollment-root: ./data/uploads/enrollment
+  powerschool-import:
+    enabled: false
+    paths: []

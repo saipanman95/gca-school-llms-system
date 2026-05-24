@@ -6,10 +6,12 @@ import org.gca.schoolms.enrollment.EnrollmentFinanceAuthorizationType;
 import org.gca.schoolms.enrollment.FinanceReviewStatus;
 import org.gca.schoolms.enrollment.EnrollmentReviewService;
 import org.gca.schoolms.settings.SchoolYearService;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,8 +36,24 @@ public class FinanceController {
 
     @GetMapping("/finance")
     public String financeHome(Model model) {
-        var financeQueue = enrollmentReviewService.loadFinanceQueue();
-        model.addAttribute("home", financeLedgerService.loadFinanceHome(financeQueue.size()));
+        int financeQueueSize = 0;
+        try {
+            financeQueueSize = enrollmentReviewService.loadFinanceQueue().size();
+        } catch (DataAccessException exception) {
+            financeQueueSize = 0;
+        }
+        try {
+            model.addAttribute("home", financeLedgerService.loadFinanceHome(financeQueueSize));
+        } catch (DataAccessException exception) {
+            model.addAttribute("home", new FinanceHomeView(
+                BigDecimal.ZERO,
+                0,
+                0,
+                financeQueueSize,
+                0,
+                0
+            ));
+        }
         return "finance/home";
     }
 
@@ -68,9 +86,21 @@ public class FinanceController {
 
     @GetMapping("/finance/fees")
     @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
-    public String feeMaintenanceHome(@RequestParam(required = false) Long editFeeTypeId, Model model) {
-        populateFeeMaintenanceModel(editFeeTypeId, model);
+    public String feeMaintenanceHome(@RequestParam(required = false) Long editFeeTypeId,
+                                     @RequestParam(required = false) Long editFeeScheduleId,
+                                     Model model) {
+        populateFeeMaintenanceModel(editFeeTypeId, editFeeScheduleId, model);
         return "finance/fees";
+    }
+
+    @GetMapping("/finance/fee-schedules")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
+    public String feeScheduleSection(@RequestParam(required = false) Long editFeeScheduleId,
+                                     @RequestParam(required = false) String scheduleMessage,
+                                     Model model) {
+        populateFeeScheduleModel(editFeeScheduleId, model);
+        model.addAttribute("scheduleMessage", scheduleMessage);
+        return "finance/fragments/fee-schedules :: feeScheduleSection";
     }
 
     @GetMapping("/finance/payments/{paymentId}/receipt")
@@ -90,6 +120,8 @@ public class FinanceController {
                     feeTypeForm.getCode(),
                     feeTypeForm.getName(),
                     feeTypeForm.getDefaultAmount(),
+                    feeTypeForm.getBillingSchedule(),
+                    feeTypeForm.getBillingMonthCount(),
                     feeTypeForm.getMaxAssessmentsPerStudentPerSchoolYear()
                 );
                 redirectAttributes.addFlashAttribute("message", "Fee type added.");
@@ -99,6 +131,8 @@ public class FinanceController {
                     feeTypeForm.getCode(),
                     feeTypeForm.getName(),
                     feeTypeForm.getDefaultAmount(),
+                    feeTypeForm.getBillingSchedule(),
+                    feeTypeForm.getBillingMonthCount(),
                     feeTypeForm.getMaxAssessmentsPerStudentPerSchoolYear(),
                     feeTypeForm.isActive()
                 );
@@ -120,6 +154,42 @@ public class FinanceController {
         return "redirect:/finance/fees";
     }
 
+    @PostMapping("/finance/fee-schedules")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
+    public String createFeeSchedule(FeeScheduleForm feeScheduleForm,
+                                    @RequestHeader(name = "HX-Request", required = false) String hxRequest,
+                                    Model model,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            if (feeScheduleForm.getId() == null) {
+                financeLedgerService.createFeeSchedule(feeScheduleForm);
+                if (hxRequest != null) {
+                    populateFeeScheduleModel(null, model);
+                    model.addAttribute("scheduleMessage", "Fee schedule added.");
+                    return "finance/fragments/fee-schedules :: feeScheduleSection";
+                }
+                redirectAttributes.addFlashAttribute("message", "Fee schedule added.");
+            } else {
+                financeLedgerService.updateFeeSchedule(feeScheduleForm);
+                if (hxRequest != null) {
+                    populateFeeScheduleModel(null, model);
+                    model.addAttribute("scheduleMessage", "Fee schedule updated.");
+                    return "finance/fragments/fee-schedules :: feeScheduleSection";
+                }
+                redirectAttributes.addFlashAttribute("message", "Fee schedule updated.");
+            }
+        } catch (IllegalArgumentException ex) {
+            if (hxRequest != null) {
+                populateFeeScheduleModel(feeScheduleForm.getId(), model);
+                model.addAttribute("feeScheduleForm", feeScheduleForm);
+                model.addAttribute("scheduleMessage", ex.getMessage());
+                return "finance/fragments/fee-schedules :: feeScheduleSection";
+            }
+            redirectAttributes.addFlashAttribute("message", ex.getMessage());
+        }
+        return "redirect:/finance/fees";
+    }
+
     @PostMapping("/finance/fees")
     @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
     public String assessFee(@RequestParam Long studentId,
@@ -131,6 +201,20 @@ public class FinanceController {
         try {
             financeLedgerService.assessFee(studentId, feeTypeId, amount, schoolYear, description);
             redirectAttributes.addFlashAttribute("message", "Fee assessed.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("message", ex.getMessage());
+        }
+        return "redirect:/finance/accounts";
+    }
+
+    @PostMapping("/finance/fee-schedules/assess")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SCHOOL_ADMIN','SCHOOL_FINANCE')")
+    public String assessFeeSchedule(@RequestParam Long studentId,
+                                    @RequestParam Long feeScheduleId,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            financeLedgerService.assessFeeSchedule(studentId, feeScheduleId);
+            redirectAttributes.addFlashAttribute("message", "Fee schedule assessed.");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("message", ex.getMessage());
         }
@@ -249,15 +333,26 @@ public class FinanceController {
     private void populateAccountsModel(Model model) {
         model.addAttribute("paymentStudentOptions", financeLedgerService.paymentStudentOptions());
         model.addAttribute("feeTypes", financeLedgerService.feeTypes());
+        model.addAttribute("feeScheduleOptions", financeLedgerService.feeScheduleOptions());
         model.addAttribute("schoolYears", schoolYearService.schoolYears());
         model.addAttribute("currentSchoolYear", schoolYearService.currentSchoolYearLabel());
         model.addAttribute("studentFees", financeLedgerService.recentFees());
         model.addAttribute("outstandingAccounts", financeLedgerService.outstandingAccounts());
     }
 
-    private void populateFeeMaintenanceModel(Long editFeeTypeId, Model model) {
+    private void populateFeeMaintenanceModel(Long editFeeTypeId, Long editFeeScheduleId, Model model) {
         model.addAttribute("feeTypes", financeLedgerService.feeTypes());
         model.addAttribute("feeTypeForm", financeLedgerService.buildFeeTypeForm(editFeeTypeId));
         model.addAttribute("schoolProjectTypes", financeLedgerService.schoolProjectTypes());
+        populateFeeScheduleModel(editFeeScheduleId, model);
+    }
+
+    private void populateFeeScheduleModel(Long editFeeScheduleId, Model model) {
+        model.addAttribute("feeTypes", financeLedgerService.feeTypes());
+        model.addAttribute("feeSchedules", financeLedgerService.feeSchedules());
+        model.addAttribute("feeScheduleForm", financeLedgerService.buildFeeScheduleForm(editFeeScheduleId));
+        model.addAttribute("gradeGroups", FeeScheduleGradeGroup.values());
+        model.addAttribute("schoolYears", schoolYearService.schoolYears());
+        model.addAttribute("campuses", financeLedgerService.campuses());
     }
 }

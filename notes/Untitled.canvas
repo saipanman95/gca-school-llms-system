@@ -1,1 +1,6 @@
-{}
+{
+	"nodes":[
+		{"id":"d322e90bc236055f","x":-284,"y":-306,"width":250,"height":60,"type":"text","text":"DROP TABLE IF EXISTS `wp_actionscheduler_actions`;"}
+	],
+	"edges":[]
+}

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@PreAuthorize("hasRole('PARENT_GUARDIAN')")
+@PreAuthorize("hasAnyRole('PARENT_GUARDIAN','SYSTEM_ADMIN')")
 public class GuardianPortalController {
 
     private static final String[] STUDENT_ETHNICITY_OPTIONS = {

@@ -1,9 +1,17 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/school_ms?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: school_user
-    password: change-me
+    url: ${SCHOOL_MS_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/gca_records?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${SCHOOL_MS_DATASOURCE_USERNAME:gca_app}
+    password: ${SCHOOL_MS_DATASOURCE_PASSWORD:${DB_PASSWORD}}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
 
+app:
+  seed-demo-data: false

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page {
+            size: 11in 8.5in;
+            margin: 0;
+        }
+
+        @font-face {
+            font-family: "Bailenson";
+            src: url("fonts/Bailenson-0WXG9.ttf");
+        }
+
+        html, body {
+            width: 11in;
+            height: 8.5in;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            position: relative;
+            overflow: hidden;
+            color: #14213d;
+        }
+
+        img.bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 11in;
+            height: 8.5in;
+            z-index: 0;
+        }
+
+        .content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 11in;
+            height: 8.5in;
+        }
+
+        .honor-roll-script {
+            position: absolute;
+            top: 2.8in;
+            left: 0;
+            width: 11in;
+            text-align: center;
+            font-family: "Bailenson", cursive;
+            font-size: 98px;
+        }
+
+        .this-certifies {
+            position: absolute;
+            top: 4.10in;
+            left: 0;
+            width: 11in;
+            text-align: center;
+            font-family: "Bailenson", cursive;
+            font-size: 30px;
+        }
+
+        .student {
+            position: absolute;
+            top: 4.40in;
+            left: 0;
+            width: 11in;
+            text-align: center;
+            font-family: "Times New Roman", serif;
+            font-weight: bold;
+        }
+
+        .had-done-superior {
+            position: absolute;
+            top: 5.23in;
+            left: 0;
+            width: 11in;
+            text-align: center;
+            font-family: "Bailenson", cursive;
+            font-size: 30px;
+        }
+
+        .grade-level {
+            position: absolute;
+            top: 5.51in;
+            left: 0;
+            width: 11in;
+            text-align: center;
+            font-family: "Times New Roman", serif;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .for-school-year {
+            position: absolute;
+            top: 5.97in;
+            left: 0;
+            width: 11in;
+            text-align: center;
+            font-family: "Bailenson", cursive;
+            font-size: 30px;
+        }
+
+        .given-this-day {
+            position: absolute;
+            top: 6.6in;
+            left: 0;
+            width: 11in;
+            text-align: center;
+            font-family: "Bailenson", cursive;
+            font-size: 30px;
+        }
+
+        .teacher-name {
+            position: absolute;
+            bottom: 0.9in;
+            left: 0.45in;
+            width: 3in;
+            text-align: center;
+            font-size: 20px;
+            font-family: "Times New Roman", serif;
+            font-weight: bold;
+        }
+
+        .principal-name {
+            position: absolute;
+            bottom: 0.9in;
+            right: 0.55in;
+            width: 3in;
+            text-align: center;
+            font-size: 20px;
+            font-family: "Times New Roman", serif;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<img class="bg" src="images/certificate-base.png" alt="Certificate Background" />
+
+<div class="content">
+    <div class="honor-roll-script" th:text="${honorResult.displayName}">Honor Roll</div>
+
+    <div class="this-certifies">This certifies that</div>
+
+    <div class="student" th:style="'font-size:' + ${studentFontSize} + 'px'" th:text="${studentName}">Student Name</div>
+
+    <div class="had-done-superior">had done superior work in</div>
+
+    <div class="grade-level" th:text="${gradeLevel}">11</div>
+    <div class="for-school-year">
+        for the <span th:text="${termLabel}">3rd quarter</span> of the school year
+        <span th:text="${schoolYearLabel}">2025-2026</span>
+    </div>
+
+    <div class="given-this-day">
+        Given this <span th:text="${issueDateOrdinal}">19th</span> day of
+        <span th:text="${issueMonthYear}">December, 2025</span> at
+        <span th:text="${issueLocation}">Saipan</span>
+    </div>
+
+    <div class="principal-name" th:text="${principalName}">Principal</div>
+    <div class="teacher-name" th:text="${homeroomTeacher}">Homeroom Teacher</div>
+</div>
+</body>
+</html>

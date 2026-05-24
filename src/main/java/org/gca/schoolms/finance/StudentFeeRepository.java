@@ -10,8 +10,11 @@ public interface StudentFeeRepository extends JpaRepository<StudentFee, Long> {
     List<StudentFee> findTop20ByOrderByAssessedAtDescIdDesc();
     List<StudentFee> findByFamilyAccountOrderByAssessedAtDescIdDesc(FamilyAccount familyAccount);
     List<StudentFee> findByStudentOrderByAssessedAtAscIdAsc(Student student);
+    List<StudentFee> findByEnrollmentRequestOrderByAssessedAtAscIdAsc(EnrollmentRequest enrollmentRequest);
     List<StudentFee> findAllByOrderByAssessedAtAscIdAsc();
-    Optional<StudentFee> findByEnrollmentRequest(EnrollmentRequest enrollmentRequest);
     long countByStudentAndFeeTypeAndSchoolYearAndStatus(Student student, FeeType feeType, String schoolYear, StudentFeeStatus status);
+    long countByStudentAndFeeTypeAndSchoolYearAndStatusAndInstallmentNumber(Student student, FeeType feeType,
+                                                                            String schoolYear, StudentFeeStatus status,
+                                                                            Integer installmentNumber);
     long countByFeeType(FeeType feeType);
 }

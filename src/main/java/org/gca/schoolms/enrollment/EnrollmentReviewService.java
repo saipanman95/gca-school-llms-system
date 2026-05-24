@@ -1,8 +1,11 @@
 package org.gca.schoolms.enrollment;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.gca.schoolms.finance.StudentFee;
+import org.gca.schoolms.finance.StudentFeeRepository;
 import org.gca.schoolms.portal.EnrollmentCompletionView;
 import org.gca.schoolms.portal.GuardianPortalService;
 import org.springframework.stereotype.Service;
@@ -13,11 +16,14 @@ public class EnrollmentReviewService {
 
     private final EnrollmentRequestRepository enrollmentRequestRepository;
     private final GuardianPortalService guardianPortalService;
+    private final StudentFeeRepository studentFeeRepository;
 
     public EnrollmentReviewService(EnrollmentRequestRepository enrollmentRequestRepository,
-                                   GuardianPortalService guardianPortalService) {
+                                   GuardianPortalService guardianPortalService,
+                                   StudentFeeRepository studentFeeRepository) {
         this.enrollmentRequestRepository = enrollmentRequestRepository;
         this.guardianPortalService = guardianPortalService;
+        this.studentFeeRepository = studentFeeRepository;
     }
 
     @Transactional(readOnly = true)
@@ -70,6 +76,13 @@ public class EnrollmentReviewService {
 
     private EnrollmentReviewSnapshot toSnapshot(EnrollmentRequest request) {
         EnrollmentCompletionView completion = guardianPortalService.calculateCompletion(request);
+        List<StudentFee> enrollmentFees = studentFeeRepository.findByEnrollmentRequestOrderByAssessedAtAscIdAsc(request);
+        BigDecimal outstandingAmount = enrollmentFees.stream()
+            .map(StudentFee::getOutstandingAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        String enrollmentChargeSummary = enrollmentFees.isEmpty()
+            ? "No enrollment-linked charges created yet."
+            : enrollmentFees.size() + " charge(s) linked to request • outstanding " + outstandingAmount;
         return new EnrollmentReviewSnapshot(
             request.getId(),
             request.getStudentDisplayName(),
@@ -94,6 +107,7 @@ public class EnrollmentReviewService {
                 .map(EnrollmentFinanceAuthorizationType::getLabel)
                 .collect(Collectors.joining(", ")),
             request.hasFinanceAuthorization(EnrollmentFinanceAuthorizationType.ENROLLMENT_FEE_PAID),
+            enrollmentChargeSummary,
             request.getFinanceStatusLabel()
         );
     }

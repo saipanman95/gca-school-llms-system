@@ -6,6 +6,7 @@ public enum RoleName {
     SCHOOL_STAFF,
     SCHOOL_FINANCE,
     SCHOOL_CASHIER,
+    GUIDANCE_COUNSELOR,
     PARENT_GUARDIAN,
     STUDENT
 }

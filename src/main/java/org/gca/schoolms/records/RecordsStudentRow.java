@@ -8,6 +8,8 @@ public record RecordsStudentRow(
     String displayName,
     String campusCode,
     String familyAccountName,
+    String importedGuardianSummary,
+    Integer importedGuardianCount,
     StudentStatus status,
     LocalDate dateOfBirth,
     Long latestEnrollmentRequestId

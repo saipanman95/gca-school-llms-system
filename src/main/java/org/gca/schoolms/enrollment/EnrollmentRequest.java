@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -54,7 +55,8 @@ public class EnrollmentRequest {
     @Column(nullable = false)
     private RegistrarReviewStatus registrarReviewStatus;
 
-    @Column(length = 2000)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String registrarComment;
 
     private LocalDate registrarReviewedOn;
@@ -63,7 +65,8 @@ public class EnrollmentRequest {
     @Column(nullable = false)
     private FinanceReviewStatus financeReviewStatus;
 
-    @Column(length = 2000)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String financeComment;
 
     private LocalDate financeReviewedOn;
@@ -85,17 +88,27 @@ public class EnrollmentRequest {
 
     private LocalDate studentDateOfBirth;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentReligiousAffiliation;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentChurchAttending;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentEthnicBackgrounds;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentEthnicBackgroundOther;
 
     @Column(nullable = false)
     private boolean childPottyTrained;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String pottyAccidentFrequency;
 
     @Column(nullable = false)
@@ -127,22 +140,36 @@ public class EnrollmentRequest {
 
     private String guardianWorkEmail;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String guardianWorkAddressLine1;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String guardianWorkAddressLine2;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String guardianWorkCity;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String guardianWorkState;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String guardianWorkPostalCode;
 
     private String guardianGender;
 
     private String guardianEthnicity;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String guardianCitizenshipStatus;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String guardianCountryOfCitizenship;
 
     @Column(nullable = false)
@@ -165,14 +192,24 @@ public class EnrollmentRequest {
 
     private String secondaryGuardianPhone;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryMailingAddressLine1;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryMailingAddressLine2;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryMailingCity;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryMailingState;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryMailingPostalCode;
 
     private String secondaryEmployerName;
@@ -181,22 +218,36 @@ public class EnrollmentRequest {
 
     private String secondaryWorkEmail;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryWorkAddressLine1;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryWorkAddressLine2;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryWorkCity;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryWorkState;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryWorkPostalCode;
 
     private String secondaryGender;
 
     private String secondaryEthnicity;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryCitizenshipStatus;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String secondaryCountryOfCitizenship;
 
     @Column(nullable = false)
@@ -216,8 +267,12 @@ public class EnrollmentRequest {
     @Column(nullable = false)
     private boolean primaryGuardianBillingRecipient;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentCitizenshipStatus;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentCountryOfCitizenship;
 
     @Column(nullable = false)
@@ -234,30 +289,56 @@ public class EnrollmentRequest {
     @Column(nullable = false)
     private boolean studentF1Required;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentI20Status;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String primaryPhysicianName;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String physicianClinicName;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String physicianPhone;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String preferredHospital;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String insuranceProvider;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String insurancePolicyNumber;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentAllergies;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentChronicConditions;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentMedications;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentDietaryRestrictions;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentActivityRestrictions;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String studentMedicalNotes;
 
     @Column(nullable = false)
@@ -287,16 +368,28 @@ public class EnrollmentRequest {
     @Column(nullable = false)
     private boolean allowAspirin;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String otherApprovedMedications;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String previousSchoolName;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String previousSchoolCity;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String previousSchoolState;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String previousSchoolCountry;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String previousSchoolLastGradeCompleted;
 
     @Enumerated(EnumType.STRING)

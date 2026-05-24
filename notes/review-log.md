@@ -75,3 +75,233 @@
 - Expected: Should have option for cashier page, option to Review Finance Clearance page, should have outstanding records page for contacting parents/guardians about payments. The main dashboard page should display these to make it easier to navigate.  Should have a page for fee maintenance.  Additionally, some options here should be limited. For example a cashier shouldnt have override capability or capability to change fee structure. This leads me to believe there might be two types of general finance users: cashier and business admin
 - priority: medium
 - status: done.
+
+- Screen: Finance
+- Request: billing is done on the monthly basis and reacurring for tuition. So this means a couple of things: 1. A parent could pay for the entire year, which would treated as credit. 2. current billing practice is to apply parts of the fee monthly across 10 months.  This billing practice concerns the application of the tuition fee for daycare, elementatry, junior high and highschool.
+- Expected: might need to change how fees are understood. Question: do we need extra field parameters attached to fee to track this?
+- priority: high
+- status: open
+
+- Screen: Finance
+- Request: need daily reporting from cashier how much received (cash, check, credit card, MS/Visa, CCDF) break down of payments - need data to exported to "account track" and "quickbooks" and exportable to MS excel.
+- Expected: a button for daily report to be generated
+- priority: high
+- status: open
+
+- Screen: finance
+- request: need reporting feature that allows filtering which accounts are x days old. Need reporting feature that filters based on ethnicicity and/or national identity. This is useful since the local economy is affected highly by tourism. filter criteria should also include by grade level, daycare, whether ESL progrom as well.  Additionally need a Daily report of how much new fees/billables for that day, how much was collected (advances/payment). need to see total funds recieved for the day should include reporting features of past due, paid, etc.
+- Expected: Click reporting button menu option and new page loads with filter criteria.  Data should be exportable as MS excel
+- priority: high
+- status:open
+
+- screen: finance
+- request: need to think about nuanced ways to  correct inaccurate entry of fee. Example:  especially after payment.  A fee should have administrtive override if needed. Not automatically overridable by cashier.
+- expected: maybe this is an adminstrative page for conducting overrides and capturing justification of why a fee is reversed, changed, corrected, canceled.
+- priority: high
+- status: open
+
+## 2026-05-21
+
+- Screen: Security / application access
+- Request: review current work completed so far
+- Finding: system now includes an in-memory `admin` user with password `password` and full finance, staff, and admin privileges. This is effectively a production backdoor if left in place.
+- Priority: critical
+- Status: done
+
+- Screen: Security / system admin access
+- Request: ensure the system admin account has access on the entire system
+- Expected: `sysadmin` should be able to access every application area, including the family portal, without relying on the removed hardcoded `admin` account.
+- Priority: high
+- Status: done
+
+- Screen: Finance monthly billing / fee schedules
+- Request: review current work completed so far
+- Finding: monthly fee assessment logic and UI messaging do not agree. The UI implies entered tuition is a monthly amount, but the service splits that amount across the installment count, which undercharges scheduled tuition and monthly fees.
+- Priority: high
+- Status: open
+
+- Screen: MySQL deployment / schema compatibility
+- Request: review current work completed so far
+- Finding: MySQL profile has `ddl-auto: none`, but new entities, tables, and columns were added without any migration files or migration tooling. H2 tests pass, but MySQL startup or runtime behavior will break until schema updates are added.
+- Priority: high
+- Status: open
+
+- Screen: Records enrollment detail
+- Request: review current work completed so far
+- Finding: enrollment requests can now create multiple linked fees, but the records detail page still shows only the first fee. Staff will not see the full enrollment-related charge set from this screen.
+- Priority: medium
+- Status: open
+
+- Screen: Security / authentication persistence
+- Request: migrate hardcoded in-memory authentication into database-backed users and roles
+- Expected: replace `InMemoryUserDetailsManager` with database-backed authentication so current accounts and roles are stored in tables, managed through repositories and services, and available across environments without hardcoding credentials in `SecurityConfig`.
+- MVP direction:
+- Keep authorization simple for this iteration.
+- Continue using the current role names already referenced by Spring Security annotations and URL rules.
+- Move users, encoded passwords, and role assignments into database tables.
+- Do not implement database-defined permissions or admin-created roles in this first pass.
+- If finer-grained permission management is needed later, track it as a follow-up enhancement after database-backed authentication is stable.
+- Migration approach chosen for MVP:
+- Use Flyway for schema migration management.
+- Add `flyway-core` and `flyway-mysql` through Spring Boot dependency management.
+- Store migration files under `src/main/resources/db/migration`.
+- Keep Flyway enabled for the MySQL profile where `ddl-auto` is already `none`.
+- Keep the default H2/dev profile simple for now; if Flyway is enabled there later, it must be coordinated with the current `create-drop` behavior.
+- Complete description:
+- Database tables needed:
+- `app_user`
+- Purpose: primary user account table used by Spring Security and application authorization.
+- Suggested columns: `id` bigint PK, `username` varchar unique not null, `password_hash` varchar not null, `enabled` boolean not null, `account_non_expired` boolean not null, `account_non_locked` boolean not null, `credentials_non_expired` boolean not null, `display_name` varchar null, `email` varchar null, `last_login_at` timestamp null, `created_at` timestamp not null, `updated_at` timestamp not null.
+- Notes: store only encoded password hashes. `username` should be case-normalized consistently.
+- `app_role`
+- Purpose: authoritative role catalog.
+- Suggested columns: `id` bigint PK, `code` varchar unique not null, `name` varchar not null, `description` varchar null, `created_at` timestamp not null, `updated_at` timestamp not null.
+- Seed rows should include: `SYSTEM_ADMIN`, `SCHOOL_ADMIN`, `SCHOOL_STAFF`, `SCHOOL_FINANCE`, `SCHOOL_CASHIER`, `GUIDANCE_COUNSELOR`, `PARENT_GUARDIAN`, `STUDENT`.
+- Notes: for the MVP, these roles remain code-known roles. We are persisting them, not making them dynamically user-defined yet.
+- `app_user_role`
+- Purpose: join table between users and roles.
+- Suggested columns: `user_id` bigint FK not null, `role_id` bigint FK not null.
+- Constraints: composite PK or unique constraint on (`user_id`, `role_id`).
+- Exact MVP DDL target:
+- `app_user`
+- `id bigint not null auto_increment primary key`
+- `username varchar(100) not null`
+- `password_hash varchar(255) not null`
+- `enabled boolean not null default true`
+- `account_non_expired boolean not null default true`
+- `account_non_locked boolean not null default true`
+- `credentials_non_expired boolean not null default true`
+- `display_name varchar(150) null`
+- `email varchar(150) null`
+- `last_login_at datetime null`
+- `created_at datetime not null default current_timestamp`
+- `updated_at datetime not null default current_timestamp on update current_timestamp`
+- unique index on `username`
+- optional unique index on `email` can wait until we know whether multiple demo accounts may share blank/null email behavior
+- `app_role`
+- `id bigint not null auto_increment primary key`
+- `code varchar(100) not null`
+- `name varchar(150) not null`
+- `description varchar(255) null`
+- `created_at datetime not null default current_timestamp`
+- `updated_at datetime not null default current_timestamp on update current_timestamp`
+- unique index on `code`
+- `app_user_role`
+- `user_id bigint not null`
+- `role_id bigint not null`
+- primary key (`user_id`, `role_id`)
+- foreign key (`user_id`) references `app_user(id)`
+- foreign key (`role_id`) references `app_role(id)`
+- index on `role_id` to support reverse lookups by role
+- Recommended first migration file contents:
+- `V1__create_auth_tables.sql`
+- create `app_user`
+- create `app_role`
+- create `app_user_role`
+- insert the seeded role catalog
+- Do not seed user rows in the SQL migration. Create users through the startup seed service so passwords are always encoded by the application `PasswordEncoder`.
+- Optional table:
+- `app_user_login_audit`
+- Purpose: capture login success/failure and operational audit history if desired.
+- Suggested columns: `id` bigint PK, `user_id` bigint null, `username_attempted` varchar not null, `event_type` varchar not null, `ip_address` varchar null, `user_agent` varchar null, `occurred_at` timestamp not null, `details` varchar null.
+- Notes: optional for first pass, but useful if we want traceability around admin and finance access.
+- JPA/domain classes needed:
+- `AppUser`
+- Maps to `app_user`; should expose a collection of roles and helper methods for account state flags.
+- `AppRole`
+- Maps to `app_role`; should store the role code values currently referenced by `hasRole` and `hasAnyRole`.
+- Either `AppUserRole` entity or direct `@ManyToMany`
+- Recommendation: use an explicit `AppUserRole` entity only if we expect metadata on assignments later. Otherwise a join table is enough for a first pass.
+- Repositories needed:
+- `AppUserRepository`
+- Methods likely needed: `findByUsername(String username)`, `existsByUsername(String username)`, plus any admin lookup methods.
+- `AppRoleRepository`
+- Methods likely needed: `findByCode(String code)`, `findAllByOrderByCodeAsc()`.
+- Optional `AppUserLoginAuditRepository`
+- Needed only if login audit tracking is implemented in the first pass.
+- Service layer classes needed:
+- `AppUserDetailsService`
+- Implements `UserDetailsService`.
+- Loads `AppUser` by username, translates database roles into Spring Security `GrantedAuthority` values, and throws `UsernameNotFoundException` when appropriate.
+- `AppUserService`
+- Handles creation, password updates, enable/disable operations, role assignment, and account migration logic from the current hardcoded accounts.
+- `AppRoleService`
+- Handles role lookup and ensures the standard role catalog exists.
+- Notes: keep role management minimal in the MVP. This service can focus on lookup and seeding support rather than full role authoring UI.
+- `AuthenticationSeedService` or equivalent startup seeder
+- Seeds standard roles and migrates the current accounts: `sysadmin`, `principal`, `registrar`, `finance`, `cashier`, `counselor`, `guardian`, `student`.
+- This seeding step should create the records only if missing and should encode passwords using the existing `PasswordEncoder`.
+- Optional `AuthenticationAuditService`
+- Records login events if the audit table is included.
+- Spring Security configuration changes needed:
+- Keep the existing `PasswordEncoder` bean.
+- Remove `InMemoryUserDetailsManager` from `SecurityConfig`.
+- Register the new `AppUserDetailsService` as the `UserDetailsService` bean.
+- Ensure authentication uses the persisted user details and existing role names without changing current `hasRole` / `hasAnyRole` expressions.
+- Keep current URL authorization rules unless intentionally changed later.
+- Do not refactor existing authorization annotations into database-driven permission checks in this MVP.
+- Configuration details to implement:
+- `pom.xml`
+- add Flyway dependencies
+- `application-mysql.yml`
+- keep `spring.jpa.hibernate.ddl-auto=none`
+- ensure Flyway is enabled for MySQL and points at the default `db/migration` location
+- `application.yml`
+- leave current dev/test behavior unchanged unless we intentionally decide to have Flyway manage H2 as well
+- Migration/seed behavior needed:
+- Add database migration files or equivalent schema creation for `app_user`, `app_role`, and `app_user_role`.
+- Seed the role catalog first.
+- Seed these users into `app_user` with encoded passwords and role assignments in `app_user_role`:
+- `sysadmin` -> `SYSTEM_ADMIN`
+- `principal` -> `SCHOOL_ADMIN`
+- `registrar` -> `SCHOOL_STAFF`
+- `finance` -> `SCHOOL_FINANCE`
+- `cashier` -> `SCHOOL_CASHIER`
+- `counselor` -> `GUIDANCE_COUNSELOR`
+- `guardian` -> `PARENT_GUARDIAN`
+- `student` -> `STUDENT`
+- Password migration should preserve current source passwords for the first migration pass, but as encoded hashes in the database rather than literals in code.
+- Intended MVP access scope for `GUIDANCE_COUNSELOR`:
+- Allow attendance access.
+- Allow discipline/counseling record access as those features are added.
+- Allow limited records management access focused on student lookup and review.
+- Do not allow finance, fee maintenance, cashier operations, administration settings, or data import features by default.
+- Do not grant full registrar authority by default.
+- Current code areas that likely need `GUIDANCE_COUNSELOR` added for MVP:
+- `SecurityConfig` route rules:
+- `/records/**` should likely include `GUIDANCE_COUNSELOR` for read-oriented student record access.
+- `/academics/**` should likely include `GUIDANCE_COUNSELOR` because the current academics screen includes attendance data.
+- `/reports/**` should stay excluded for now unless counseling-specific reporting is explicitly needed.
+- `/admin/imports/**`, `/finance/**`, and `/portal/guardian/**` should stay excluded.
+- Controller-level annotations likely to update:
+- `RecordsController` class-level `@PreAuthorize` should likely include `GUIDANCE_COUNSELOR`, but enrollment-review update actions may need to be narrowed later if counselors should not perform registrar completion work.
+- `AcademicsController` class-level `@PreAuthorize` should likely include `GUIDANCE_COUNSELOR` for attendance visibility.
+- `ReportsController` should stay unchanged in the MVP.
+- `DataImportController` should stay unchanged in the MVP.
+- Notes on follow-up refinement:
+- If counselor access needs to be read-only in records, controller-level access may need to split read endpoints from registrar update endpoints instead of using one class-level annotation for everything.
+- Suggested implementation sequence:
+- 1. Add schema migrations for auth tables.
+- 2. Add JPA entities and repositories.
+- 3. Add `AppUserDetailsService` and supporting services.
+- 4. Add startup seeding for roles and current accounts.
+- 5. Replace `InMemoryUserDetailsManager` in `SecurityConfig`.
+- 6. Add tests covering login lookup, role mapping, disabled users, and seeded account presence.
+- Deferred follow-up, not part of MVP:
+- Evaluate whether we need `app_permission`, `app_role_permission`, role administration pages, or feature/page grouping tables for more dynamic authorization control.
+- Add a system-admin user management page that can create new users and manage their role assignments once the database-backed authentication foundation is in place.
+- Authentication admin hardening follow-up:
+- Add user delete/deactivation flow design.
+- Recommendation: prefer soft-disable for most accounts over hard delete so auditability and foreign-key safety are preserved.
+- If true delete is later supported, it should be restricted to accounts with no dependent operational records and should require explicit confirmation.
+- Add password confirmation fields to the admin user form when setting or resetting a password.
+- Expected behavior: reject save when password and confirmation do not match; allow blank password fields to mean “leave existing password unchanged” during edits.
+- Add self-lockout protections for `SYSTEM_ADMIN` account management.
+- Expected safeguards:
+- prevent a system admin from disabling their own currently authenticated account
+- prevent a system admin from removing their own `SYSTEM_ADMIN` role if that would leave them without system-admin access
+- prevent deletion of the currently authenticated account
+- Consider requiring a second confirmation step before disabling or deleting the last enabled `SYSTEM_ADMIN` account in the system.
+- Add clearer admin UX around edit/cancel state, validation messages, and success/error separation so user-management operations are less ambiguous.
+- Priority: high
+- Status: open

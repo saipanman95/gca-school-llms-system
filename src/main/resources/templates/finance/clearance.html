@@ -79,6 +79,7 @@
                                     <input class="form-control form-control-sm" name="authorizationNote" type="text" placeholder="Use when Other authorization is selected">
                                 </div>
                                 <div class="small text-secondary mb-2" th:text="${request.financeStatusLabel}">Pending</div>
+                                <div class="small text-secondary mb-2" th:text="${request.enrollmentChargeSummary}">Charges summary</div>
                                 <div class="small text-secondary mb-2" th:if="${request.financeAuthorizationSummary != null and !#strings.isEmpty(request.financeAuthorizationSummary)}">
                                     Current authorizations: <span th:text="${request.financeAuthorizationSummary}">Enrollment fee paid</span>
                                 </div>

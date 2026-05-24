@@ -50,6 +50,18 @@ mvn spring-boot:run -Dspring-boot.run.profiles=mysql
 
 That uses [application-mysql.yml](/Users/michaelrodgers/school-llm-system/src/main/resources/application-mysql.yml). Update the credentials there or override them with environment variables.
 
+## PowerSchool import
+
+The LMS can now import the PowerSchool TSV exports directly into its staging tables.
+
+Example:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=mysql -Dspring-boot.run.arguments="--app.powerschool-import.enabled=true --app.powerschool-import.paths=/Users/michaelrodgers/gca-school-lms-projects/Students_export_03-18-26.tsv,/Users/michaelrodgers/gca-school-lms-projects/StoredGrades_export-03-18-26.tsv,/Users/michaelrodgers/gca-school-lms-projects/PGFinalGrades_export-03-18-26.tsv,/Users/michaelrodgers/gca-school-lms-projects/Sections_export-03-18-26.tsv,/Users/michaelrodgers/gca-school-lms-projects/SectionTeacher_export-03-18-26.tsv,/Users/michaelrodgers/gca-school-lms-projects/Person_export-03-18-26.tsv,/Users/michaelrodgers/gca-school-lms-projects/PersonAddress_export-03-18-26.tsv,/Users/michaelrodgers/gca-school-lms-projects/PersonAddressAssoc_export-03-18-26.tsv,/Users/michaelrodgers/gca-school-lms-projects/StudentContactAssoc_export-03-18-26.tsv"
+```
+
+When enabled, the app imports each listed TSV into the LMS PowerSchool staging tables during startup and fails fast if any file cannot be parsed or imported.
+
 ## Current scope
 
 This first scaffold includes:

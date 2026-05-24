@@ -6,11 +6,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -23,28 +20,17 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/webjars/**", "/login", "/error", "/favicon.ico").permitAll()
                 .requestMatchers("/", "/dashboard").authenticated()
-                .requestMatchers("/portal/guardian/**").hasRole("PARENT_GUARDIAN")
-                .requestMatchers("/records/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
+                .requestMatchers("/portal/guardian/**").hasAnyRole("PARENT_GUARDIAN", "SYSTEM_ADMIN")
+                .requestMatchers("/admin/imports/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
+                .requestMatchers("/reports/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
+                .requestMatchers("/records/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF", "GUIDANCE_COUNSELOR")
                 .requestMatchers("/finance/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_FINANCE", "SCHOOL_CASHIER")
-                .requestMatchers("/academics/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF")
+                .requestMatchers("/academics/**").hasAnyRole("SYSTEM_ADMIN", "SCHOOL_ADMIN", "SCHOOL_STAFF", "GUIDANCE_COUNSELOR")
                 .anyRequest().authenticated())
             .httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(login -> login.loginPage("/login").defaultSuccessUrl("/dashboard", true).permitAll())
             .logout(Customizer.withDefaults())
             .build();
-    }
-
-    @Bean
-    UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        return new InMemoryUserDetailsManager(
-            User.withUsername("sysadmin").password(passwordEncoder.encode("change-me")).roles("SYSTEM_ADMIN").build(),
-            User.withUsername("principal").password(passwordEncoder.encode("change-me")).roles("SCHOOL_ADMIN").build(),
-            User.withUsername("registrar").password(passwordEncoder.encode("change-me")).roles("SCHOOL_STAFF").build(),
-            User.withUsername("finance").password(passwordEncoder.encode("change-me")).roles("SCHOOL_FINANCE").build(),
-            User.withUsername("cashier").password(passwordEncoder.encode("change-me")).roles("SCHOOL_CASHIER").build(),
-            User.withUsername("guardian").password(passwordEncoder.encode("change-me")).roles("PARENT_GUARDIAN").build(),
-            User.withUsername("student").password(passwordEncoder.encode("change-me")).roles("STUDENT").build()
-        );
     }
 
     @Bean

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -58,6 +58,61 @@
                             <button class="btn btn-primary" type="submit">Save school profile</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4" sec:authorize="hasRole('SYSTEM_ADMIN')">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 mb-1" th:text="${appUserForm.username != null and !#strings.isEmpty(appUserForm.username) ? 'Edit user account' : 'User accounts'}">User accounts</h2>
+                    <p class="text-secondary mb-3">Create or update login accounts and assign application roles.</p>
+                    <form method="post" th:action="@{/admin/settings/users}" th:object="${appUserForm}">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input class="form-control" th:field="*{username}" type="text">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input class="form-control" th:field="*{password}" placeholder="Leave blank to keep current password" type="password">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Display name</label>
+                            <input class="form-control" th:field="*{displayName}" type="text">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input class="form-control" th:field="*{email}" type="email">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" id="appUserEnabled" th:field="*{enabled}" type="checkbox">
+                            <label class="form-check-label" for="appUserEnabled">Enabled</label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Roles</label>
+                            <div class="border rounded p-3">
+                                <div class="form-check mb-2" th:each="appRole : ${appRoles}">
+                                    <input class="form-check-input"
+                                           th:id="${'role-' + appRole.code.name()}"
+                                           th:field="*{roles}"
+                                           th:value="${appRole.code.name()}"
+                                           type="checkbox">
+                                    <label class="form-check-label"
+                                           th:for="${'role-' + appRole.code.name()}"
+                                           th:text="${appRole.code.name() + ' — ' + appRole.name}">SYSTEM_ADMIN</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Save user</button>
+                    </form>
+                    <hr class="my-4">
+                    <div class="list-group">
+                        <a class="list-group-item list-group-item-action"
+                           th:each="appUser : ${appUsers}"
+                           th:href="@{/admin/settings(editUsername=${appUser.username})}">
+                            <div class="fw-semibold" th:text="${appUser.username}">sysadmin</div>
+                            <div class="small text-secondary" th:text="${appUser.roleSummary}">SYSTEM_ADMIN</div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
